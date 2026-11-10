@@ -1,7 +1,7 @@
 export const site = {
   name: 'Veodar',
   url: 'https://veodar.com',
-  email: 'hola@veodar.com',
+  email: 'info@veodar.com',
   locale: 'es_ES',
   tagline: 'Automatizaciones con IA y software a medida',
   description:

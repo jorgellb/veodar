@@ -43,6 +43,12 @@
       "permanent": true
     }
   ],
+  "rewrites": [
+    {
+      "source": "/api/contacto/",
+      "destination": "/api/contacto"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

@@ -1,0 +1,832 @@
+---
+// The contact form. It posts to the Vercel Function in api/contacto.js, which sends
+// the message to the studio inbox through Resend. With JavaScript it submits in
+// place; without it, it is a plain form post and the result comes back as an anchor
+// on this page (#enviado, #revisar, #no-enviado), shown with :target.
+import Icon from './Icon.astro';
+import { BUDGETS, LIMITS, NEEDS, TIMING } from '../../api/_contact.js';
+
+const needIcons: Record<string, string> = {
+  ia: 'spark',
+  web: 'browser',
+  movil: 'phone',
+  escritorio: 'desktop',
+  marca: 'mark',
+  '3d': 'cube',
+  seo: 'search',
+  otro: 'compass',
+};
+// HOLA in Morse, for the confirmation: 1 = dot, 3 = dash, 0 = gap between letters.
+const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
+---
+
+<div class="cf-card" id="formulario" data-contact>
+  <p class="cf-notice cf-notice--ok" id="enviado" tabindex="-1">
+    <Icon name="check" size={16} /> Mensaje enviado. Te responderemos por correo.
+  </p>
+  <p class="cf-notice cf-notice--bad" id="revisar" tabindex="-1">
+    Falta algún dato o no es válido. Revisa el formulario y vuelve a enviarlo.
+  </p>
+  <p class="cf-notice cf-notice--bad" id="no-enviado" tabindex="-1">
+    No se ha podido enviar ahora mismo. Escríbenos a <a href="mailto:info@veodar.com">info@veodar.com</a>.
+  </p>
+
+  <form class="cf" action="/api/contacto/" method="post" novalidate aria-labelledby="cf-title">
+    <header class="cf-head">
+      <p class="cf-eyebrow"><i></i>Formulario</p>
+      <h2 class="cf-title" id="cf-title">Cuéntanos el trámite</h2>
+      <p class="cf-sub">Lo lee una persona del equipo y te responde por correo.</p>
+    </header>
+
+    <fieldset class="cf-group" data-field="needs" aria-describedby="err-needs">
+      <legend class="cf-label">¿Qué necesitas? <span>Puedes marcar varias</span></legend>
+      <div class="cf-chips">
+        {
+          Object.entries(NEEDS).map(([value, label]) => (
+            <label class="cf-chip">
+              <input type="checkbox" name="needs" value={value} />
+              <span class="cf-chip-ico">
+                <Icon name={needIcons[value]} size={16} />
+              </span>
+              <span class="cf-chip-text">{label}</span>
+              <span class="cf-tick" aria-hidden="true">
+                <Icon name="check" size={12} />
+              </span>
+            </label>
+          ))
+        }
+      </div>
+      <p class="cf-error" id="err-needs"></p>
+    </fieldset>
+
+    <div class="cf-row">
+      <div class="cf-field" data-field="name">
+        <label class="cf-label" for="cf-name">Nombre</label>
+        <input class="cf-input" id="cf-name" name="name" type="text" autocomplete="name" maxlength={LIMITS.name[1]} required aria-describedby="err-name" />
+        <p class="cf-error" id="err-name"></p>
+      </div>
+      <div class="cf-field" data-field="email">
+        <label class="cf-label" for="cf-email">Correo</label>
+        <input class="cf-input" id="cf-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength={LIMITS.email} required aria-describedby="err-email" />
+        <p class="cf-error" id="err-email"></p>
+      </div>
+    </div>
+
+    <div class="cf-field" data-field="company">
+      <label class="cf-label" for="cf-company">Empresa <span>Opcional</span></label>
+      <input class="cf-input" id="cf-company" name="company" type="text" autocomplete="organization" maxlength={LIMITS.company} aria-describedby="err-company" />
+      <p class="cf-error" id="err-company"></p>
+    </div>
+
+    <fieldset class="cf-group" data-field="budget">
+      <legend class="cf-label">Presupuesto orientativo <span>Opcional</span></legend>
+      <div class="cf-pills">
+        {
+          Object.entries(BUDGETS).map(([value, label]) => (
+            <label class="cf-pill">
+              <input type="radio" name="budget" value={value} />
+              <span>{label}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+    <fieldset class="cf-group" data-field="timing">
+      <legend class="cf-label">¿Para cuándo? <span>Opcional</span></legend>
+      <div class="cf-pills">
+        {
+          Object.entries(TIMING).map(([value, label]) => (
+            <label class="cf-pill">
+              <input type="radio" name="timing" value={value} />
+              <span>{label}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <div class="cf-field" data-field="message">
+      <label class="cf-label" for="cf-message">El trámite</label>
+      <textarea
+        class="cf-input cf-textarea"
+        id="cf-message"
+        name="message"
+        rows="6"
+        maxlength={LIMITS.message[1]}
+        required
+        aria-describedby="cf-hint err-message"
+        placeholder="Quién lo usa, qué se hace hoy a mano y qué sistema no se puede tocar. Contado en bruto vale."></textarea>
+      <div class="cf-under">
+        <p class="cf-error" id="err-message"></p>
+        <p class="cf-count" id="cf-hint" aria-live="off"><span data-count>0</span> / {LIMITS.message[1]}</p>
+      </div>
+    </div>
+
+    <!-- Spam traps: a field people never see, and the time the form was opened. -->
+    <div class="cf-trap" aria-hidden="true">
+      <label>No rellenes este campo <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+    </div>
+    <input type="hidden" name="t" value="" data-started />
+
+    <div class="cf-field" data-field="consent">
+      <label class="cf-consent">
+        <input type="checkbox" name="consent" required aria-describedby="err-consent cf-legal" />
+        <span class="cf-box" aria-hidden="true"><Icon name="check" size={13} /></span>
+        <span>Acepto que Veodar use estos datos para responder a mi mensaje.</span>
+      </label>
+      <p class="cf-error" id="err-consent"></p>
+      <p class="cf-legal" id="cf-legal">
+        Responsable: Veodar. Finalidad: responder a tu mensaje y, si sigue adelante, preparar una propuesta. El mensaje nos llega por correo a través de Resend y no se cede a nadie más. Para consultar o borrar tus datos, escribe a info@veodar.com.
+      </p>
+    </div>
+
+    <div class="cf-foot">
+      <button type="submit" class="btn btn-accent cf-submit">
+        <span class="cf-spin" aria-hidden="true"></span>
+        <span data-submit-label>Enviar mensaje</span>
+        <Icon name="arrow" size={17} class="arrow" />
+      </button>
+      <p class="cf-alt">¿Prefieres el correo? <a href="mailto:info@veodar.com">info@veodar.com</a></p>
+    </div>
+    <p class="cf-status" role="alert" data-status></p>
+  </form>
+
+  <div class="cf-done" data-done hidden tabindex="-1" aria-labelledby="cf-done-title">
+    <div class="cf-morse" aria-hidden="true">
+      {morse.map((unit, i) => (unit === 0 ? <span class="cf-gap" /> : <span class:list={['cf-mark', unit === 3 && 'cf-mark--dash']} style={`--i:${i}`} />))}
+      <span class="cf-arrive" style={`--i:${morse.length}`}><Icon name="check" size={18} /></span>
+    </div>
+    <h2 class="cf-title" id="cf-done-title">Mensaje enviado</h2>
+    <p class="cf-sub">Lo hemos recibido. Te responderemos a <strong data-done-email>tu correo</strong>, con una pregunta concreta o una propuesta de llamada.</p>
+    <button type="button" class="btn btn-ghost cf-again" data-again>Enviar otro mensaje</button>
+  </div>
+</div>
+
+<style>
+  .cf-card {
+    position: relative;
+    padding: 28px;
+    border-radius: 28px;
+    background: var(--color-card);
+    box-shadow:
+      inset 0 0 0 1px var(--color-line),
+      0 2px 4px rgb(22 20 44 / 0.03),
+      0 40px 80px -40px rgb(22 20 44 / 0.35);
+    scroll-margin-top: 90px;
+  }
+  @media (max-width: 520px) {
+    .cf-card {
+      padding: 20px 16px;
+      border-radius: 22px;
+    }
+  }
+
+  /* Results of a plain (no JavaScript) form post. */
+  .cf-notice {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-size: 14.5px;
+    line-height: 1.45;
+  }
+  .cf-notice:target {
+    display: flex;
+  }
+  .cf-notice--ok {
+    background: var(--color-mint);
+    color: var(--color-ink);
+  }
+  .cf-notice--bad {
+    background: var(--color-blush);
+    color: var(--color-ink);
+  }
+  .cf-notice a {
+    text-decoration: underline;
+  }
+
+  .cf {
+    display: grid;
+    gap: 26px;
+  }
+  .cf[hidden] {
+    display: none;
+  }
+  .cf-head {
+    display: grid;
+    gap: 6px;
+  }
+  .cf-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent-ink);
+  }
+  .cf-eyebrow i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+  .cf-title {
+    margin-top: 4px;
+    font-family: var(--font-display);
+    font-size: clamp(28px, 3vw, 34px);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  .cf-sub {
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+
+  .cf-group {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .cf-label {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 560;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-2);
+  }
+  .cf-label span {
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-muted);
+  }
+
+  /* What they need: chips with an icon that turn ink when chosen. */
+  .cf-chips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .cf-chip {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 50px;
+    padding: 8px 12px 8px 8px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    font-size: 14.5px;
+    font-weight: 520;
+    line-height: 1.2;
+    cursor: pointer;
+    transition:
+      background-color 0.25s,
+      color 0.25s,
+      box-shadow 0.25s,
+      transform 0.3s var(--ease-spring);
+  }
+  .cf-chip:hover {
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  }
+  .cf-chip:active {
+    transform: scale(0.98);
+  }
+  .cf-chip input,
+  .cf-pill input,
+  .cf-consent input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+  }
+  .cf-chip-ico {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--color-paper-2);
+    transition:
+      background-color 0.25s,
+      color 0.25s;
+  }
+  .cf-chip-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .cf-tick {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    color: transparent;
+    transition:
+      background-color 0.25s,
+      color 0.25s,
+      box-shadow 0.25s,
+      transform 0.35s var(--ease-spring);
+  }
+  .cf-chip:has(input:checked) {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+  .cf-chip:has(input:checked) .cf-chip-ico {
+    background: var(--color-accent);
+    color: #1a0a03;
+  }
+  .cf-chip:has(input:checked) .cf-tick {
+    background: var(--color-accent);
+    color: #1a0a03;
+    box-shadow: none;
+    transform: scale(1.08);
+  }
+  .cf-chip:has(input:focus-visible),
+  .cf-pill:has(input:focus-visible),
+  .cf-consent:has(input:focus-visible) .cf-box {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Phones: the options flow as tags of their own width instead of a cramped grid. */
+  @media (max-width: 560px) {
+    .cf-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .cf-chip {
+      min-height: 42px;
+      padding: 5px 13px 5px 5px;
+      gap: 8px;
+      border-radius: 999px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .cf-chip-ico {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+    }
+    .cf-tick {
+      display: none;
+    }
+  }
+
+  /* Single choices: pills. */
+  .cf-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .cf-pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.25s,
+      color 0.25s,
+      box-shadow 0.25s;
+  }
+  .cf-pill:hover {
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  }
+  .cf-pill:has(input:checked) {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+
+  .cf-row {
+    display: grid;
+    gap: 26px 14px;
+  }
+  @media (min-width: 640px) {
+    .cf-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .cf-field {
+    min-width: 0;
+  }
+  .cf-input {
+    display: block;
+    width: 100%;
+    min-height: 50px;
+    padding: 12px 15px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    font-size: 16px;
+    color: var(--color-ink);
+    transition:
+      box-shadow 0.2s,
+      background-color 0.2s;
+  }
+  .cf-input::placeholder {
+    color: color-mix(in srgb, var(--color-muted) 75%, transparent);
+  }
+  .cf-input:hover {
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  }
+  .cf-input:focus {
+    outline: none;
+    box-shadow:
+      inset 0 0 0 1.5px var(--color-ink),
+      0 0 0 4px rgb(255 90 31 / 0.16);
+  }
+  .cf-textarea {
+    min-height: 156px;
+    resize: vertical;
+    line-height: 1.55;
+  }
+  .cf-under {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .cf-count {
+    flex: none;
+    margin-top: 8px;
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--color-muted);
+  }
+
+  .cf-error {
+    margin-top: 8px;
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: var(--color-accent-ink);
+  }
+  .cf-error:empty {
+    display: none;
+  }
+  .cf-field[data-invalid] .cf-input {
+    box-shadow:
+      inset 0 0 0 1.5px var(--color-accent-ink),
+      0 0 0 4px rgb(255 90 31 / 0.1);
+  }
+  .cf-group[data-invalid] .cf-chip {
+    box-shadow: inset 0 0 0 1px rgb(184 54 10 / 0.45);
+  }
+  .cf-field[data-invalid] .cf-box {
+    box-shadow: inset 0 0 0 1.5px var(--color-accent-ink);
+  }
+
+  .cf-trap {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .cf-consent {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 15px;
+    line-height: 1.45;
+    cursor: pointer;
+  }
+  .cf-box {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    margin-top: 0;
+    border-radius: 7px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    color: transparent;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      box-shadow 0.2s;
+  }
+  .cf-consent:has(input:checked) .cf-box {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    box-shadow: none;
+  }
+  .cf-legal {
+    margin-top: 10px;
+    padding-left: 34px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+
+  .cf-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 20px;
+    padding-top: 22px;
+    border-top: 1px solid var(--color-line);
+  }
+  .cf-submit {
+    min-height: 54px;
+    padding: 0 26px;
+    font-size: 16px;
+  }
+  @media (max-width: 520px) {
+    .cf-submit {
+      width: 100%;
+    }
+  }
+  .cf-alt {
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+  .cf-alt a {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--color-line-strong);
+    text-underline-offset: 3px;
+  }
+  .cf-spin {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgb(26 10 3 / 0.25);
+    border-top-color: #1a0a03;
+    animation: cf-spin 0.7s linear infinite;
+  }
+  @keyframes cf-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .cf[data-sending] .cf-spin {
+    display: block;
+  }
+  .cf[data-sending] .cf-submit :global(.arrow) {
+    display: none;
+  }
+  .cf[data-sending] .cf-submit {
+    pointer-events: none;
+    opacity: 0.85;
+  }
+  .cf-status {
+    font-size: 14.5px;
+    line-height: 1.45;
+    color: var(--color-accent-ink);
+  }
+  .cf-status:empty {
+    display: none;
+  }
+  .cf-status a {
+    text-decoration: underline;
+  }
+
+  /* Sent: HOLA goes out in Morse and lands as a tick. */
+  .cf-done {
+    display: grid;
+    justify-items: start;
+    gap: 12px;
+    padding: 20px 0 8px;
+    outline: none;
+    animation: cf-in 0.6s var(--ease-out-soft) both;
+  }
+  .cf-done[hidden] {
+    display: none;
+  }
+  @keyframes cf-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+  .cf-morse {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+    margin-bottom: 18px;
+  }
+  .cf-mark {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    animation: cf-key 0.32s var(--ease-out-soft) both;
+    animation-delay: calc(var(--i) * 0.07s);
+  }
+  .cf-mark--dash {
+    width: 27px;
+  }
+  .cf-gap {
+    width: 12px;
+  }
+  @keyframes cf-key {
+    from {
+      opacity: 0;
+      transform: scaleX(0.2);
+    }
+  }
+  .cf-arrive {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    margin-left: 10px;
+    border-radius: 50%;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    animation: cf-pop 0.5s var(--ease-spring) both;
+    animation-delay: calc(var(--i) * 0.07s + 0.1s);
+  }
+  @keyframes cf-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+  }
+  .cf-done .cf-title {
+    font-size: clamp(32px, 4vw, 44px);
+  }
+  .cf-done .cf-sub {
+    max-width: 44ch;
+    font-size: 16px;
+  }
+  .cf-done strong {
+    color: var(--color-ink);
+    font-weight: 560;
+  }
+  .cf-again {
+    margin-top: 14px;
+  }
+</style>
+
+<script>
+  import { LIMITS } from '../../api/_contact.js';
+
+  type Errors = Partial<Record<'name' | 'email' | 'company' | 'needs' | 'message' | 'consent', string>>;
+
+  const card = document.querySelector<HTMLElement>('[data-contact]');
+  const form = card?.querySelector<HTMLFormElement>('form');
+  if (card && form) {
+    const done = card.querySelector<HTMLElement>('[data-done]')!;
+    const status = form.querySelector<HTMLElement>('[data-status]')!;
+    const label = form.querySelector<HTMLElement>('[data-submit-label]')!;
+    const message = form.querySelector<HTMLTextAreaElement>('textarea[name="message"]')!;
+    const count = form.querySelector<HTMLElement>('[data-count]')!;
+    const started = form.querySelector<HTMLInputElement>('[data-started]')!;
+    started.value = String(Date.now());
+
+    const EMAIL = /^[^\s@<>()",;]+@[^\s@<>()",;]+\.[^\s@<>()",;]{2,}$/;
+    const fields = ['needs', 'name', 'email', 'company', 'message', 'consent'] as const;
+    const read = () => {
+      const data = new FormData(form);
+      return {
+        name: String(data.get('name') ?? '').trim(),
+        email: String(data.get('email') ?? '').trim(),
+        company: String(data.get('company') ?? '').trim(),
+        needs: data.getAll('needs').map(String),
+        budget: String(data.get('budget') ?? ''),
+        timing: String(data.get('timing') ?? ''),
+        message: String(data.get('message') ?? '').trim(),
+        consent: data.get('consent') === 'on',
+        website: String(data.get('website') ?? ''),
+        t: Number(started.value),
+      };
+    };
+    // The same rules as the server, so most mistakes are caught before sending.
+    const check = (d: ReturnType<typeof read>): Errors => {
+      const errors: Errors = {};
+      if (d.name.length < LIMITS.name[0]) errors.name = 'Escribe tu nombre.';
+      if (!EMAIL.test(d.email)) errors.email = 'Revisa el correo: lo necesitamos para responderte.';
+      if (d.needs.length === 0) errors.needs = 'Elige al menos una opción, aunque sea «Aún no lo sé».';
+      if (d.message.length < LIMITS.message[0]) errors.message = 'Cuéntanos un poco más: con dos o tres frases basta.';
+      if (!d.consent) errors.consent = 'Necesitamos tu permiso para responderte.';
+      return errors;
+    };
+    const show = (errors: Errors) => {
+      for (const name of fields) {
+        const holder = form.querySelector<HTMLElement>(`[data-field="${name}"]`);
+        const slot = form.querySelector<HTMLElement>(`#err-${name}`);
+        const text = errors[name] ?? '';
+        holder?.toggleAttribute('data-invalid', Boolean(text));
+        holder?.querySelectorAll('input, textarea').forEach((el) => {
+          if (el.getAttribute('type') !== 'radio') el.setAttribute('aria-invalid', String(Boolean(text)));
+        });
+        if (slot) slot.textContent = text;
+      }
+      const first = fields.find((name) => errors[name]);
+      if (first) form.querySelector<HTMLElement>(`[data-field="${first}"] input, [data-field="${first}"] textarea`)?.focus();
+    };
+
+    // Clear a field's error as soon as it is fixed.
+    form.addEventListener('input', (event) => {
+      const holder = (event.target as HTMLElement).closest<HTMLElement>('[data-field]');
+      if (!holder?.hasAttribute('data-invalid')) return;
+      const name = holder.dataset.field as keyof Errors;
+      if (!check(read())[name]) {
+        holder.removeAttribute('data-invalid');
+        const slot = form.querySelector(`#err-${name}`);
+        if (slot) slot.textContent = '';
+      }
+    });
+    message.addEventListener('input', () => (count.textContent = String(message.value.length)));
+
+    // Optional single choices can be undone by clicking them again.
+    form.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach((radio) => {
+      let was = false;
+      radio.addEventListener('pointerdown', () => (was = radio.checked));
+      radio.closest('label')?.addEventListener('pointerdown', () => (was = radio.checked));
+      radio.addEventListener('click', () => {
+        if (was) radio.checked = false;
+        was = false;
+      });
+    });
+
+    const fail = (html: string) => {
+      status.innerHTML = html;
+    };
+    const FALLBACK = 'No se ha podido enviar ahora mismo. Escríbenos a <a href="mailto:info@veodar.com">info@veodar.com</a> y lo vemos.';
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (form.hasAttribute('data-sending')) return;
+      status.textContent = '';
+      const data = read();
+      const errors = check(data);
+      if (Object.keys(errors).length) return show(errors);
+      show({});
+
+      form.setAttribute('data-sending', '');
+      label.textContent = 'Enviando…';
+      try {
+        const response = await fetch('/api/contacto/', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const body = await response.json().catch(() => ({}));
+        if (response.ok && body.ok) {
+          card.querySelector('[data-done-email]')!.textContent = data.email;
+          form.hidden = true;
+          done.hidden = false;
+          done.focus({ preventScroll: true });
+          card.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+          document.dispatchEvent(new CustomEvent('veo:sent'));
+        } else if (response.status === 400 && body.errors) {
+          show(body.errors as Errors);
+        } else {
+          fail(FALLBACK);
+        }
+      } catch {
+        fail(FALLBACK);
+      } finally {
+        form.removeAttribute('data-sending');
+        label.textContent = 'Enviar mensaje';
+      }
+    });
+
+    card.querySelector('[data-again]')?.addEventListener('click', () => {
+      form.reset();
+      count.textContent = '0';
+      started.value = String(Date.now());
+      done.hidden = true;
+      form.hidden = false;
+      form.querySelector<HTMLInputElement>('input[name="needs"]')?.focus();
+    });
+  }
+</script>

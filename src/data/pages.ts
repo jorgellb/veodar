@@ -498,9 +498,9 @@ export const pages: Page[] = [
     slug: 'contacto',
     title: 'Contacto',
     description:
-      'Escribe a hola@veodar.com con el trámite de esta semana. Veodar dice si el encargo es web, escritorio, móvil o una automatización con IA, y si encaja.',
-    h1: 'El trámite de esta semana, por correo',
-    lead: 'No hace falta un pliego ni una presentación. Hace falta el trabajo que hoy se hace a mano, quién lo sufre y qué sistema no se puede cambiar. Con eso sabemos si el encargo es web, escritorio, móvil o una automatización, y si estamos en condiciones de hacerlo. El correo es hola@veodar.com.',
+      'Cuéntanos el trámite de esta semana desde el formulario o en info@veodar.com. Veodar dice si el encargo es web, escritorio, móvil o una automatización con IA, y si encaja.',
+    h1: 'El trámite de esta semana, en un mensaje',
+    lead: 'No hace falta un pliego ni una presentación. Hace falta el trabajo que hoy se hace a mano, quién lo sufre y qué sistema no se puede cambiar. Con eso sabemos si el encargo es web, escritorio, móvil o una automatización, y si estamos en condiciones de hacerlo. Escríbelo en el formulario o, si lo prefieres, en info@veodar.com.',
     blocks: [
       {
         id: 'mensaje',
@@ -545,7 +545,7 @@ export const pages: Page[] = [
     faq: [
       {
         q: '¿Por dónde escribo?',
-        a: 'A hola@veodar.com. En el asunto basta el equipo o el tipo de trabajo. El cuerpo es el trámite de hoy, aunque esté contado en bruto: quién lo usa, qué se hace a mano y qué sistema no se puede tocar.',
+        a: 'Por el formulario de esta página o en info@veodar.com: los dos llegan al mismo buzón. Basta el trámite de hoy, aunque esté contado en bruto: quién lo usa, qué se hace a mano y qué sistema no se puede tocar.',
       },
       {
         q: '¿Respondéis con un presupuesto en el primer correo?',
@@ -670,7 +670,7 @@ export const extras: Record<string, PageExtra> = {
     ctaLabel: 'Escribir a Veodar',
   },
   contacto: {
-    kicker: 'Correo',
+    kicker: 'Contacto',
     deliverablesTitle: 'Qué tiene que traer el primer correo.',
     deliverables: [
       'Quién lo usa de verdad, no solo quién firma',
@@ -679,9 +679,9 @@ export const extras: Record<string, PageExtra> = {
       'Si hay fecha, dicha aunque incomode',
     ],
     related: ['precios', 'desarrollo-web', 'automatizaciones-ia'],
-    ctaTitle: 'El correo es hola@veodar.com.',
+    ctaTitle: 'El correo es info@veodar.com.',
     ctaText: 'En el asunto, el equipo o el tipo de trabajo. En el cuerpo, el trámite de hoy, aunque esté contado en bruto.',
-    ctaHref: 'mailto:hola@veodar.com',
+    ctaHref: 'mailto:info@veodar.com',
     ctaLabel: 'Escribir el correo',
   },
 };
