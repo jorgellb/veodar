@@ -8,8 +8,10 @@ import Figure from './iso/Figure.astro';
 import ServiceCard from './ServiceCard.astro';
 import type { Block, Faq as FaqItem } from '../data/pages';
 import type { Tint } from '../data/services';
-import { services } from '../data/services';
+import { servicesFor } from '../data/services';
 import { breadcrumbLd, faqLd } from '../data/site';
+import { langOf, pathTo } from '../i18n';
+import { linkify, startLinks } from '../i18n/links';
 
 interface Props {
   title: string;
@@ -33,9 +35,48 @@ interface Props {
   stack?: string[];
   tint?: Tint;
   extraLd?: Record<string, unknown>[];
+  /** schema.org type of the page (WebPage, ContactPage, CollectionPage…). */
+  pageType?: string;
 }
 
 const p = Astro.props;
+const lang = langOf(Astro.url);
+const services = servicesFor(lang);
+// Contextual keyword links in the running text (once per target, see src/i18n/links.ts).
+startLinks(Astro.url.pathname);
+const linked = (text: string) => linkify(text, lang, Astro.url.pathname, 1);
+const T = {
+  es: {
+    crumbs: 'Migas de pan',
+    cta: 'Cuéntanos tu proyecto',
+    detail: 'Leer el detalle',
+    tech: 'Tecnologías',
+    onPage: 'En esta página',
+    get: 'Qué recibís',
+    questions: 'Preguntas',
+    deliverables: 'Entregables',
+    faqTitle: 'Lo que nos suelen preguntar',
+    fits: 'Encaja con',
+    all: 'Todos los servicios',
+    updated: 'Actualizado',
+  },
+  en: {
+    crumbs: 'Breadcrumb',
+    cta: 'Tell us about your project',
+    detail: 'Read the details',
+    tech: 'Technologies',
+    onPage: 'On this page',
+    get: 'What you get',
+    questions: 'Questions',
+    deliverables: 'Deliverables',
+    faqTitle: 'What we usually get asked',
+    fits: 'Works well with',
+    all: 'All services',
+    updated: 'Updated',
+  },
+}[lang];
+const today = new Date();
+const updated = today.toLocaleDateString(lang === 'en' ? 'en-US' : 'es-ES', { year: 'numeric', month: 'long' });
 // A page can put something of its own beside the headline (Contacto puts its form);
 // the figure then moves under the text on wide screens and after it on phones.
 const aside = Astro.slots.has('hero-aside');
@@ -51,11 +92,11 @@ const tintBg: Record<string, string> = {
 const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
 ---
 
-<BaseLayout title={p.title} description={p.description} jsonLd={ld}>
+<BaseLayout title={p.title} description={p.description} jsonLd={ld} pageType={p.pageType}>
   <div class="read-progress" aria-hidden="true"></div>
   <section class="pt-8 pb-16 md:pt-12 md:pb-24" data-spine={aside ? '0.4726' : '0.4885'}>
     <div class="wrap">
-      <nav aria-label="Migas de pan" class="font-mono text-[12px] tracking-[0.04em] text-muted">
+      <nav aria-label={T.crumbs} class="font-mono text-[12px] tracking-[0.04em] text-muted">
         <ol class="flex flex-wrap items-center gap-2">
           {
             p.crumbs.map((crumb, index) => (
@@ -84,18 +125,18 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
           {
             !aside && (
               <div class="mt-9 flex flex-wrap gap-3" data-reveal style="--d:180ms">
-                <a href={p.ctaHref ?? '/contacto/'} class="btn btn-primary">
-                  {p.ctaLabel ?? 'Cuéntanos tu proyecto'} <Icon name="arrow" size={17} class="arrow" />
+                <a href={p.ctaHref ?? pathTo('contacto', lang)} class="btn btn-primary">
+                  {p.ctaLabel ?? T.cta} <Icon name="arrow" size={17} class="arrow" />
                 </a>
                 <a href="#detalle" class="btn btn-ghost">
-                  Leer el detalle
+                  {T.detail}
                 </a>
               </div>
             )
           }
           {
             p.stack && (
-              <ul class="mt-10 flex flex-wrap gap-1.5" aria-label="Tecnologías" data-reveal style="--d:240ms">
+              <ul class="mt-10 flex flex-wrap gap-1.5" aria-label={T.tech} data-reveal style="--d:240ms">
                 {p.stack.map((tech) => (
                   <li class="chip">{tech}</li>
                 ))}
@@ -127,7 +168,7 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
     <div class="wrap grid gap-12 lg:grid-cols-[240px_1fr] lg:gap-20">
       <aside class="hidden lg:block">
         <nav class="sticky top-28" aria-label="En esta página">
-          <p class="font-mono text-[11.5px] tracking-[0.12em] text-muted uppercase">En esta página</p>
+          <p class="font-mono text-[11.5px] tracking-[0.12em] text-muted uppercase">{T.onPage}</p>
           <ul class="mt-4 grid gap-1 border-l border-line" data-toc>
             {
               p.blocks.map((block) => (
@@ -138,8 +179,8 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
                 </li>
               ))
             }
-            <li><a href="#entregables" class="toc-link">Qué recibís</a></li>
-            <li><a href="#preguntas" class="toc-link">Preguntas</a></li>
+            <li><a href="#entregables" class="toc-link">{T.get}</a></li>
+            <li><a href="#preguntas" class="toc-link">{T.questions}</a></li>
           </ul>
         </nav>
       </aside>
@@ -152,7 +193,7 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
               <h2 class="display h-md mt-3">{block.heading}</h2>
               <div class="prose-v mt-6 text-[17px]">
                 {block.paragraphs.map((paragraph) => (
-                  <p>{paragraph}</p>
+                  <p set:html={linked(paragraph)} />
                 ))}
               </div>
             </article>
@@ -160,7 +201,7 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
         }
 
         <div id="entregables" class:list={['mt-16 rounded-[28px] p-8 md:p-10', tintBg[p.tint ?? 'paper']]} data-section data-node>
-          <p class="eyebrow !text-ink-2">Entregables</p>
+          <p class="eyebrow !text-ink-2">{T.deliverables}</p>
           <h2 class="display h-md mt-4 max-w-[20ch]">{p.deliverablesTitle}</h2>
           <ul class="mt-8 grid gap-3 sm:grid-cols-2">
             {
@@ -180,7 +221,10 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
   </section>
 
   <div class="border-t border-line">
-    <Faq items={p.faq} title="Lo que nos suelen preguntar" />
+    <Faq items={p.faq} title={T.faqTitle} />
+    <p class="wrap -mt-14 pb-14 font-mono text-[11.5px] tracking-[0.06em] text-muted md:-mt-20 md:pb-20">
+      {T.updated}: <time datetime={today.toISOString().slice(0, 10)}>{updated}</time>
+    </p>
   </div>
 
   {
@@ -188,9 +232,9 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
       <section class="border-t border-line py-20 md:py-28" data-spine="0.331" aria-labelledby="related-title">
         <div class="wrap">
           <div class="flex flex-wrap items-end justify-between gap-4">
-            <h2 id="related-title" class="display h-lg">Encaja con</h2>
-            <a href="/servicios/" class="link-arrow">
-              Todos los servicios <Icon name="arrow" size={16} />
+            <h2 id="related-title" class="display h-lg">{T.fits}</h2>
+            <a href={pathTo('servicios', lang)} class="link-arrow">
+              {T.all} <Icon name="arrow" size={16} />
             </a>
           </div>
           <ul class="mt-10 grid gap-4 md:grid-cols-3">

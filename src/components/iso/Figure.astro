@@ -1,5 +1,7 @@
 ---
 import '../../styles/anatomy-iso.css';
+import { langOf } from '../../i18n';
+import { localizeSvg } from '../../i18n/figures';
 
 const svgs = import.meta.glob<string>('../../generated/*.svg', { query: '?raw', import: 'default', eager: true });
 
@@ -15,9 +17,11 @@ interface Props {
   node?: boolean;
 }
 
-const { name, fig, title, hint = 'En bucle', caption, compact = false, bare = false, readout = true, node = !bare } = Astro.props;
-const svg = svgs[`../../generated/${name}.svg`];
-if (!svg) throw new Error(`Figura sin generar: ${name}`);
+const lang = langOf(Astro.url);
+const { name, fig, title, hint = lang === 'en' ? 'Looping' : 'En bucle', caption, compact = false, bare = false, readout = true, node = !bare } = Astro.props;
+const raw = svgs[`../../generated/${name}.svg`];
+if (!raw) throw new Error(`Figura sin generar: ${name}`);
+const svg = localizeSvg(raw, name, lang);
 ---
 
 <figure class:list={['veo-fig iso', compact && 'veo-fig--compact', bare && 'veo-fig--bare']} data-theme="light" data-figure={name}>

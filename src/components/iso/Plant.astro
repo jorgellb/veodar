@@ -1,29 +1,51 @@
 ---
-import svg from '../../generated/plant.svg?raw';
+import raw from '../../generated/plant.svg?raw';
 import '../../styles/anatomy-iso.css';
+import { langOf } from '../../i18n';
+import { localizeSvg } from '../../i18n/figures';
 
 interface Props {
   fig?: string;
 }
 const { fig = 'Fig. 01' } = Astro.props;
+const lang = langOf(Astro.url);
+const svg = localizeSvg(raw, 'plant', lang);
+const T = {
+  es: {
+    aria: 'Figura interactiva: usa las flechas para cambiar el umbral de confianza',
+    title: 'Línea de triaje con IA',
+    threshold: 'Umbral',
+    down: 'Bajar el umbral',
+    up: 'Subir el umbral',
+    value: '0,80',
+    caption: 'Cada tarjeta pasa bajo el lector de IA. El reloj marca la confianza; si no llega al umbral rojo, el carro la lleva a la bandeja de revisión y una persona la sella antes de archivarla.',
+  },
+  en: {
+    aria: 'Interactive figure: use the arrow keys to change the confidence threshold',
+    title: 'AI triage line',
+    threshold: 'Threshold',
+    down: 'Lower the threshold',
+    up: 'Raise the threshold',
+    value: '0.80',
+    caption: 'Each card passes under the AI reader. The gauge shows the confidence; if it falls short of the red threshold, the carriage takes it to the review tray and a person stamps it before filing.',
+  },
+}[lang];
 ---
 
 <figure class="veo-fig plant iso" data-theme="light" data-plant>
-  <div class="veo-plate plant-plate" tabindex="0" data-node data-hub-target aria-label="Figura interactiva: usa las flechas para cambiar el umbral de confianza">
+  <div class="veo-plate plant-plate" tabindex="0" data-node data-hub-target aria-label={T.aria}>
     <span class="veo-corner" data-corner="fig">{fig}</span>
-    <span class="veo-corner" data-corner="title">Línea de triaje con IA</span>
+    <span class="veo-corner" data-corner="title">{T.title}</span>
     <Fragment set:html={svg} />
     <div class="plant-controls" data-corner="hint">
-      <span class="plant-label">Umbral</span>
-      <button type="button" class="plant-btn" data-step="-1" aria-label="Bajar el umbral">−</button>
-      <output class="plant-th" data-threshold aria-live="polite">0,80</output>
-      <button type="button" class="plant-btn" data-step="1" aria-label="Subir el umbral">+</button>
+      <span class="plant-label">{T.threshold}</span>
+      <button type="button" class="plant-btn" data-step="-1" aria-label={T.down}>−</button>
+      <output class="plant-th" data-threshold aria-live="polite">{T.value}</output>
+      <button type="button" class="plant-btn" data-step="1" aria-label={T.up}>+</button>
     </div>
     <strong class="veo-corner" data-corner="readout" data-status aria-live="polite"></strong>
   </div>
-  <figcaption class="sr-only">
-    Cada tarjeta pasa bajo el lector de IA. El reloj marca la confianza; si no llega al umbral rojo, el carro la lleva a la bandeja de revisión y una persona la sella antes de archivarla.
-  </figcaption>
+  <figcaption class="sr-only">{T.caption}</figcaption>
 </figure>
 
 <style>
@@ -136,16 +158,18 @@ const { fig = 'Fig. 01' } = Astro.props;
   import M from '../../generated/plant.json';
 
   type Vec3 = [number, number, number];
+  const EN = document.documentElement.lang === 'en';
+  const LANE_EN: Record<string, string> = { Soporte: 'Support', 'Revisión': 'Review' };
   const P = M.P as { origin: [number, number]; scale: number; azimuth: number; elevation: number };
 
   const CARDS = [
-    { type: 'Factura de proveedor', conf: 0.96, lane: 0 },
-    { type: 'Correo de avería', conf: 0.91, lane: 1 },
-    { type: 'Pedido nuevo', conf: 0.86, lane: 2 },
-    { type: 'Contrato con cambios', conf: 0.58, lane: 0 },
-    { type: 'Lead desde la web', conf: 0.93, lane: 2 },
-    { type: 'Albarán sin firma', conf: 0.74, lane: 0 },
-    { type: 'Queja de cliente', conf: 0.83, lane: 1 },
+    { type: EN ? 'Supplier invoice' : 'Factura de proveedor', conf: 0.96, lane: 0 },
+    { type: EN ? 'Fault report email' : 'Correo de avería', conf: 0.91, lane: 1 },
+    { type: EN ? 'New order' : 'Pedido nuevo', conf: 0.86, lane: 2 },
+    { type: EN ? 'Contract with changes' : 'Contrato con cambios', conf: 0.58, lane: 0 },
+    { type: EN ? 'Lead from the website' : 'Lead desde la web', conf: 0.93, lane: 2 },
+    { type: EN ? 'Unsigned delivery note' : 'Albarán sin firma', conf: 0.74, lane: 0 },
+    { type: EN ? 'Customer complaint' : 'Queja de cliente', conf: 0.83, lane: 1 },
   ];
   const REVIEW = 3;
 
@@ -170,7 +194,7 @@ const { fig = 'Fig. 01' } = Astro.props;
   };
   const span = (u: number, [a, b]: readonly [number, number]) => clamp01((u - a) / (b - a));
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-  const fmt = (v: number) => v.toFixed(2).replace('.', ',');
+  const fmt = (v: number) => (EN ? v.toFixed(2) : v.toFixed(2).replace('.', ','));
 
   function coilZ(z0: number, z1: number, cx: number, cy: number, radius: number, turns: number) {
     const count = Math.max(12, Math.round(turns * 18));
@@ -376,14 +400,15 @@ const { fig = 'Fig. 01' } = Astro.props;
       sortStack(keys);
 
       // Readout.
-      const laneName = lane === null ? '' : lane === REVIEW ? 'revisión humana' : M.lanes[lane].name;
-      if (u < T.feed[1]) say(`Entra: ${card.type}`);
-      else if (u < T.scan[0]) say(`${card.type} → lector`);
-      else if (u < T.decide[0]) say(`Leyendo… confianza ${fmt(Math.max(0, needle))}`);
-      else if (u < T.belt2[0]) say(card.conf >= threshold ? `${fmt(card.conf)} ≥ ${fmt(threshold)} → ${laneName}` : `${fmt(card.conf)} < ${fmt(threshold)} → revisión humana`);
-      else if (u < T.slide[1]) say(`Carril: ${laneName}`);
-      else if (review && u < T.fade[0]) say('Una persona revisa y sella');
-      else say(review ? 'Revisado y archivado' : `Archivado en ${laneName}`);
+      const human = EN ? 'human review' : 'revisión humana';
+      const laneName = lane === null ? '' : lane === REVIEW ? human : EN ? (LANE_EN[M.lanes[lane].name] ?? M.lanes[lane].name) : M.lanes[lane].name;
+      if (u < T.feed[1]) say(EN ? `In: ${card.type}` : `Entra: ${card.type}`);
+      else if (u < T.scan[0]) say(EN ? `${card.type} → reader` : `${card.type} → lector`);
+      else if (u < T.decide[0]) say(EN ? `Reading… confidence ${fmt(Math.max(0, needle))}` : `Leyendo… confianza ${fmt(Math.max(0, needle))}`);
+      else if (u < T.belt2[0]) say(card.conf >= threshold ? `${fmt(card.conf)} ≥ ${fmt(threshold)} → ${laneName}` : `${fmt(card.conf)} < ${fmt(threshold)} → ${human}`);
+      else if (u < T.slide[1]) say(EN ? `Lane: ${laneName}` : `Carril: ${laneName}`);
+      else if (review && u < T.fade[0]) say(EN ? 'A person reviews and stamps it' : 'Una persona revisa y sella');
+      else say(review ? (EN ? 'Reviewed and filed' : 'Revisado y archivado') : EN ? `Filed in ${laneName}` : `Archivado en ${laneName}`);
     }
 
     const shown = () => {

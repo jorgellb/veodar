@@ -219,6 +219,23 @@
     background-size: 100% 1px;
   }
 
+  /* Contextual links inside running text (src/i18n/links.ts): quiet until hovered. */
+  a.ctx-link {
+    color: inherit;
+    font-weight: 540;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+    text-underline-offset: 3px;
+    transition:
+      color 0.2s,
+      text-decoration-color 0.2s;
+  }
+  a.ctx-link:hover {
+    color: var(--color-accent-ink);
+    text-decoration-color: var(--color-accent);
+  }
+
   .tile {
     border-radius: 22px;
     background: var(--color-card);

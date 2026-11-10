@@ -1,0 +1,11 @@
+---
+import InfoPage from '../../views/InfoPage.astro';
+
+export function getStaticPaths() {
+  const ids = { solutions: 'soluciones', pricing: 'precios', contact: 'contacto' } as const;
+  return Object.entries(ids).map(([slug, id]) => ({ params: { slug }, props: { id } }));
+}
+const { id } = Astro.props;
+---
+
+<InfoPage id={id} />

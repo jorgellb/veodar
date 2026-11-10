@@ -97,7 +97,7 @@ out.push(`<clipPath id="tg-tape"><path d="${tapePaths.top}"/></clipPath><g clip-
 const IF = G.frameAlong([TAPE.x0 - 1, TAPE.y - 3.6, TAPE.z + 2.2], [0, 1, 0]);
 out.push(S(G.disc(0, 7.2, 2.2, IF, P, {}), { tone: "mid", crease: "none" }));
 
-out.push(label({ x: -96, y: 30, w: 54, d: 12, r: 1 }, "HOLA@VEODAR"));
+out.push(label({ x: -96, y: 30, w: 54, d: 12, r: 1 }, "INFO@VEODAR"));
 out.push(lamp(-22, -14, 6, 1.6, "contact"));
 
 const glow = `<defs><radialGradient id="tg-glow"><stop offset="0" stop-color="#ff5a1f" stop-opacity=".55"/><stop offset=".45" stop-color="#ff5a1f" stop-opacity=".18"/><stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/></radialGradient></defs>`;

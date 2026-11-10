@@ -1,9 +1,13 @@
 import { iso, pathOf, segment, translateAlong } from '../iso-kit.mjs';
-import { ease, helpers, lerp, span, type Factory, type Proj, type Vec3 } from './runtime';
+import { tr, ease, helpers, lerp, span, type Factory, type Proj, type Vec3 } from './runtime';
 
 const EVENT = 4.6;
 const USES = [0, 1, 2, 3];
-const ACCESS = ['lectura de pedidos', 'alta de oportunidades', 'bandeja de soporte', 'copias de seguridad'];
+const ACCESS = () =>
+  tr('es', 'en') === 'en'
+    ? ['read orders', 'create opportunities', 'support inbox', 'backups']
+    : ['lectura de pedidos', 'alta de oportunidades', 'bandeja de soporte', 'copias de seguridad'];
+const NAME_EN: Record<string, string> = { Correo: 'Email', Nube: 'Cloud' };
 
 const create: Factory = (root, M) => {
   const P = M.P as Proj;
@@ -53,7 +57,8 @@ const create: Factory = (root, M) => {
     const inside: Vec3 = [M.slot.x, M.slot.y - M.keyY, M.slot.z - (hz - 30) - 5];
     const mix = (a: Vec3, b: Vec3, f: number): Vec3 => [lerp(a[0], b[0], f), lerp(a[1], b[1], f), lerp(a[2], b[2], f)];
     let p: Vec3 = hook;
-    let text = `Llave ${M.names[which]} · sale del cuadro`;
+    const name = tr(M.names[which], NAME_EN[M.names[which]] ?? M.names[which]);
+    let text = tr(`Llave ${name} · sale del cuadro`, `${name} key · leaves the cabinet`);
     if (u < 0.6) p = mix(hook, outPt, ease(span(u, 0, 0.6)));
     else if (u < 1.6) {
       const f = ease(span(u, 0.6, 1.6));
@@ -62,16 +67,16 @@ const create: Factory = (root, M) => {
     } else if (u < 2.0) p = mix(above, inside, ease(span(u, 1.6, 2.0)));
     else if (u < 2.9) {
       p = inside;
-      text = `Abre: ${ACCESS[which]} · solo esa puerta`;
+      text = tr(`Abre: ${ACCESS()[which]} · solo esa puerta`, `Opens: ${ACCESS()[which]} · that door only`);
     } else if (u < 3.3) p = mix(inside, above, ease(span(u, 2.9, 3.3)));
     else if (u < 4.3) {
       const f = ease(span(u, 3.3, 4.3));
       p = mix(above, outPt, f);
       p[2] += Math.sin(f * Math.PI) * 10;
-      text = `Vuelve al gancho · acceso registrado`;
+      text = tr('Vuelve al gancho · acceso registrado', 'Back on the hook · access logged');
     } else {
       p = mix(outPt, hook, ease(span(u, 4.3, 4.6)));
-      text = `Vuelve al gancho · acceso registrado`;
+      text = tr('Vuelve al gancho · acceso registrado', 'Back on the hook · access logged');
     }
     const away = u > 0.02 && u < 4.58;
     hangs.forEach((el: SVGGElement, i: number) => (el.style.display = i === which && away ? 'none' : ''));
@@ -81,8 +86,8 @@ const create: Factory = (root, M) => {
     else mover.removeAttribute('clip-path');
     h.on(lampOpen, u > 2.0 && u < 2.9);
     const inLock = u > 2.0 && u < 2.9;
-    const line1 = inLock ? `${String(M.names[which]).toUpperCase()} ABIERTO` : 'BLOQUEADO';
-    const line2 = inLock ? ACCESS[which] : 'sin llave no hay acceso';
+    const line1 = inLock ? tr(`${String(name).toUpperCase()} ABIERTO`, `${String(name).toUpperCase()} OPEN`) : tr('BLOQUEADO', 'LOCKED');
+    const line2 = inLock ? ACCESS()[which] : tr('sin llave no hay acceso', 'no key, no access');
     if (sys.textContent !== line1) sys.textContent = line1;
     if (sys2.textContent !== line2) sys2.textContent = line2;
     h.on(lampPrint, u > 2.2 && u < 2.7);

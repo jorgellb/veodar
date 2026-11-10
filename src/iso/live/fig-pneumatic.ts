@@ -1,5 +1,5 @@
 import { iso, lineOnTop, pathOf } from '../iso-kit.mjs';
-import { ease, helpers, polar, span, type Factory, type Proj, type Vec3 } from './runtime';
+import { tr, ease, helpers, polar, span, type Factory, type Proj, type Vec3 } from './runtime';
 
 // Phases in seconds: [route or station, start, end].
 const LEGS: [number, number, number][] = [
@@ -48,7 +48,7 @@ const create: Factory = (root, M) => {
   let needleX = 0;
   const apply = (t: number, dt: number) => {
     const u = t % CYCLE;
-    let text = 'En espera';
+    let text = tr('En espera', 'Idle');
     LEGS.forEach(([r, a, b], i) => {
       const total = lengths[r][lengths[r].length - 1];
       if (u >= a && u <= b) {
@@ -57,14 +57,16 @@ const create: Factory = (root, M) => {
         const to = Math.min(total, head);
         caps[r].setAttribute('d', to > from + 0.2 ? sub(r, from, to) : '');
       } else caps[r].setAttribute('d', '');
-      if (u >= a && u < b) text = ['GET /api/pedidos/142 → API', 'SELECT … FROM pedidos WHERE id = 142', '1 fila · 6 ms → API', '200 OK · JSON 1,2 KB → navegador'][i];
+      if (u >= a && u < b) text = (tr('es', 'en') === 'en'
+          ? ['GET /api/orders/142 → API', 'SELECT … FROM orders WHERE id = 142', '1 row · 6 ms → API', '200 OK · JSON 1.2 KB → browser']
+          : ['GET /api/pedidos/142 → API', 'SELECT … FROM pedidos WHERE id = 142', '1 fila · 6 ms → API', '200 OK · JSON 1,2 KB → navegador'])[i];
     });
     const atApi = (u > 1.6 && u < 2.1) || (u > 5.2 && u < 5.7);
     const atDb = u > 3.3 && u < 4.0;
-    if (u > 1.6 && u < 2.1) text = 'API: sesión válida, permiso de lectura';
-    if (atDb) text = 'Base de datos: índice por id';
-    if (u > 5.2 && u < 5.7) text = 'API: respuesta firmada';
-    if (u >= 7.0) text = 'Pintado en pantalla · 48 ms en total';
+    if (u > 1.6 && u < 2.1) text = tr('API: sesión válida, permiso de lectura', 'API: valid session, read permission');
+    if (atDb) text = tr('Base de datos: índice por id', 'Database: index by id');
+    if (u > 5.2 && u < 5.7) text = tr('API: respuesta firmada', 'API: signed response');
+    if (u >= 7.0) text = tr('Pintado en pantalla · 48 ms en total', 'Painted on screen · 48 ms in total');
     h.on(apiLamp, atApi);
     h.on(dbLamp, atDb);
     // Screen fills line by line once the response lands.

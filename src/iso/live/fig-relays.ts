@@ -1,7 +1,8 @@
 import { ringOf, extrude, solidSvg, translateAlong } from '../iso-kit.mjs';
-import { ease, helpers, span, type Factory, type Proj } from './runtime';
+import { tr, ease, helpers, span, type Factory, type Proj } from './runtime';
 
 const CYCLE = 11;
+const TOOL_EN: Record<string, string> = { leer_correo: 'read_email', clasificar: 'classify', crear_borrador: 'create_draft', consultar_erp: 'query_erp', enviar_pago: 'send_payment' };
 const FIRE = (i: number) => 1.4 + i * 1.6;
 
 const create: Factory = (root, M) => {
@@ -57,9 +58,14 @@ const create: Factory = (root, M) => {
     const powered = u > 0.9 && u < 9.6;
     h.on(master, powered);
 
-    let text = powered ? 'Llave girada: credencial activa' : u >= 9.6 ? 'Credencial revocada: el carril se apaga' : 'Sin credencial';
+    let text = powered
+      ? tr('Llave girada: credencial activa', 'Key turned: credential active')
+      : u >= 9.6
+        ? tr('Credencial revocada: el carril se apaga', 'Credential revoked: the rail powers down')
+        : tr('Sin credencial', 'No credential');
     let cpuOn = false;
-    M.tools.forEach((tool: string, i: number) => {
+    M.tools.forEach((toolEs: string, i: number) => {
+      const tool = tr(toolEs, TOOL_EN[toolEs] ?? toolEs);
       const s = FIRE(i);
       const travel = span(u, s, s + 0.5);
       const inFlight = u >= s && u < s + 0.55;
@@ -77,8 +83,8 @@ const create: Factory = (root, M) => {
       const blink = !M.allowed[i] && u > s + 0.5 && u < s + 1.4 && Math.floor((u - s - 0.5) / 0.22) % 2 === 0;
       h.on(lamps[i], blink, 'data-err');
       if (u >= s && u < s + 1.5) {
-        if (u < s + 0.5) text = `Llamada: ${tool}()`;
-        else text = M.allowed[i] ? `${tool} · permitido` : `${tool} · bloqueado, sin permiso`;
+        if (u < s + 0.5) text = tr(`Llamada: ${tool}()`, `Call: ${tool}()`);
+        else text = M.allowed[i] ? tr(`${tool} · permitido`, `${tool} · allowed`) : tr(`${tool} · bloqueado, sin permiso`, `${tool} · blocked, no permission`);
       }
     });
     h.on(cpu, cpuOn);

@@ -271,3 +271,21 @@ describe('Turnstile', () => {
     assert.equal(response.headers.get('location'), '/contacto/#no-enviado');
   });
 });
+
+describe('English pages', () => {
+  it('tells the inbox the message came from the English site', () => {
+    const parsed = parseSubmission({ ...valid, lang: 'en' }, NOW);
+    assert.equal(parsed.data.lang, 'en');
+    const email = buildEmail(parsed.data, env);
+    assert.match(email.text, /Idioma: inglés/);
+    assert.equal(parseSubmission({ ...valid, lang: 'fr' }, NOW).data.lang, 'es');
+  });
+
+  it('sends a plain English form post back to the English contact page', async () => {
+    const { fetchImpl } = resend();
+    const ok = await handle(post({ ...valid, lang: 'en' }, { form: true }), env, { fetchImpl, now: NOW });
+    assert.equal(ok.headers.get('location'), '/en/contact/#enviado');
+    const bad = await handle(post({ ...valid, lang: 'en', message: 'x' }, { form: true }), env, { fetchImpl, now: NOW });
+    assert.equal(bad.headers.get('location'), '/en/contact/#revisar');
+  });
+});

@@ -1,56 +1,10 @@
 ---
-import DocPage from '../components/DocPage.astro';
-import ContactForm from '../components/ContactForm.astro';
-import { pages, extras } from '../data/pages';
-import type { Tint } from '../data/services';
-
-const meta: Record<string, { figure: string; tint: Tint; title: string }> = {
-  soluciones: { figure: 'relays', tint: 'mint', title: 'Relés por área' },
-  precios: { figure: 'sequencer', tint: 'butter', title: 'Programador de levas' },
-  contacto: { figure: 'telegraph', tint: 'blush', title: 'Manipulador Morse' },
-};
+import InfoPage from '../views/InfoPage.astro';
 
 export function getStaticPaths() {
-  return pages
-    .filter((page) => ['soluciones', 'precios', 'contacto'].includes(page.slug))
-    .map((page) => ({ params: { slug: page.slug }, props: { page } }));
+  return (['soluciones', 'precios', 'contacto'] as const).map((id) => ({ params: { slug: id }, props: { id } }));
 }
-
-const { page } = Astro.props;
-const extra = extras[page.slug];
-const m = meta[page.slug];
-// The same template for all three; Contacto adds its form beside the headline.
-const props = {
-  title: page.title,
-  description: page.description,
-  kicker: extra.kicker,
-  h1: page.h1,
-  lead: page.lead,
-  blocks: page.blocks,
-  faq: page.faq,
-  deliverablesTitle: extra.deliverablesTitle,
-  deliverables: extra.deliverables,
-  related: extra.related.filter((slug) => !['precios', 'contacto', 'soluciones'].includes(slug)),
-  ctaTitle: extra.ctaTitle,
-  ctaText: extra.ctaText,
-  ctaHref: extra.ctaHref,
-  ctaLabel: extra.ctaLabel,
-  crumbs: [
-    { name: 'Inicio', path: '/' },
-    { name: page.slug[0].toUpperCase() + page.slug.slice(1), path: `/${page.slug}/` },
-  ],
-  figure: m.figure,
-  sceneTitle: m.title,
-  tint: m.tint,
-};
+const { id } = Astro.props;
 ---
 
-{
-  page.slug === 'contacto' ? (
-    <DocPage {...props}>
-      <ContactForm slot="hero-aside" />
-    </DocPage>
-  ) : (
-    <DocPage {...props} />
-  )
-}
+<InfoPage id={id} />

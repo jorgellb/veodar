@@ -53,6 +53,8 @@ export function parseSubmission(input, now = Date.now()) {
     timing: text(raw.timing) in TIMING ? text(raw.timing) : '',
     message: text(raw.message).replace(/\r\n/g, '\n'),
     consent: truthy(raw.consent),
+    // Which version of the site the message came from.
+    lang: raw.lang === 'en' ? 'en' : 'es',
   };
 
   const errors = {};
@@ -91,6 +93,7 @@ export function buildEmail(data, env) {
     ['Necesita', needs.join(', ')],
     ['Presupuesto', data.budget ? BUDGETS[data.budget] : '—'],
     ['Plazo', data.timing ? TIMING[data.timing] : '—'],
+    ['Idioma', data.lang === 'en' ? 'inglés (veodar.com/en/)' : 'español'],
   ];
   const who = data.company ? `${data.name} (${data.company})` : data.name;
   const subject = `Nuevo mensaje de ${who} · ${needs.join(', ')}`.slice(0, 160);
@@ -167,8 +170,9 @@ export async function verifyTurnstile(token, request, env, fetchImpl = fetch) {
 }
 
 const json = (status, body) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
-// Without JavaScript the result is an anchor on the contact page, shown with :target in CSS.
-const back = (anchor) => new Response(null, { status: 303, headers: { location: `/contacto/#${anchor}`, 'cache-control': 'no-store' } });
+// Without JavaScript the result is an anchor on the contact page (in the visitor's
+// language), shown with :target in CSS.
+const contactPage = (input) => (input?.lang === 'en' ? '/en/contact/' : '/contacto/');
 const SENT = 'enviado';
 const CHECK = 'revisar';
 const FAILED = 'no-enviado';
@@ -192,12 +196,14 @@ export async function handle(request, env, { fetchImpl = fetch, now = Date.now()
     if (host !== new URL(request.url).host) return json(403, { ok: false, error: 'origin' });
   }
 
+  let input;
+  const back = (anchor) =>
+    new Response(null, { status: 303, headers: { location: `${contactPage(input)}#${anchor}`, 'cache-control': 'no-store' } });
   const type = request.headers.get('content-type') ?? '';
   const isForm = type.includes('application/x-www-form-urlencoded') || type.includes('multipart/form-data');
   const raw = await request.text();
   if (raw.length > LIMITS.body) return isForm ? back(CHECK) : json(413, { ok: false, error: 'size' });
 
-  let input;
   try {
     if (isForm) {
       const params = new URLSearchParams(raw);

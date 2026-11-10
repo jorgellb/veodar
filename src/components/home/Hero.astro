@@ -1,6 +1,47 @@
 ---
 import Icon from '../Icon.astro';
 import Nexus from '../iso/Nexus.astro';
+import { langOf, pathTo, serviceHref } from '../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    systems: 'Tus sistemas',
+    build: 'Lo que construimos',
+    routeFrom: 'Ver el recorrido de',
+    routeTo: 'Ver el recorrido hasta',
+    tag: 'Nuevo',
+    pillLong: 'Agentes con MCP conectados a tu ERP y tu CRM',
+    pillShort: 'Agentes con MCP en tu ERP y CRM',
+    cta: 'Cuéntanos tu proyecto',
+    seeServices: 'Ver servicios',
+    live: 'En vivo',
+    route: 'El taller, en marcha',
+    did: 'Cada tarea sale de un sistema, pasa por la IA y llega a un producto.',
+    done: 'tareas resueltas',
+    reviewed: 'confirmadas por una persona',
+    stack: 'Tecnologías con las que trabajamos',
+    hubs: { correo: 'Correo', erp: 'ERP', crm: 'CRM', documentos: 'Documentos', agentes: 'Agentes IA', web: 'Web', movil: 'App móvil', escritorio: 'Escritorio' },
+  },
+  en: {
+    systems: 'Your systems',
+    build: 'What we build',
+    routeFrom: 'Show the route from',
+    routeTo: 'Show the route to',
+    tag: 'New',
+    pillLong: 'MCP agents connected to your ERP and CRM',
+    pillShort: 'MCP agents in your ERP and CRM',
+    cta: 'Tell us about your project',
+    seeServices: 'See services',
+    live: 'Live',
+    route: 'The workshop, running',
+    did: 'Each task leaves a system, goes through the AI and reaches a product.',
+    done: 'tasks done',
+    reviewed: 'confirmed by a person',
+    stack: 'Technologies we work with',
+    hubs: { correo: 'Email', erp: 'ERP', crm: 'CRM', documentos: 'Documents', agentes: 'AI agents', web: 'Web', movil: 'Mobile app', escritorio: 'Desktop' },
+  },
+}[lang];
 
 const stack = [
   'Claude',
@@ -33,25 +74,25 @@ const stack = [
 // the sockets on each island's pier in the scene below (iso/fig-nexus.mjs), which
 // is what keeps the fibres from crossing.
 const hubsIn = [
-  { id: 'correo', label: 'Correo', icon: 'mail', x: 34, y: 0 },
-  { id: 'erp', label: 'ERP', icon: 'layers', x: 126, y: 86 },
-  { id: 'crm', label: 'CRM', icon: 'sliders', x: 0, y: 176 },
-  { id: 'documentos', label: 'Documentos', icon: 'layout', x: 56, y: 270 },
+  { id: 'correo', label: T.hubs.correo, icon: 'mail', x: 34, y: 0 },
+  { id: 'erp', label: T.hubs.erp, icon: 'layers', x: 126, y: 86 },
+  { id: 'crm', label: T.hubs.crm, icon: 'sliders', x: 0, y: 176 },
+  { id: 'documentos', label: T.hubs.documentos, icon: 'layout', x: 56, y: 270 },
 ];
 const hubsOut = [
-  { id: 'agentes', label: 'Agentes IA', icon: 'spark', x: 100, y: 0 },
-  { id: 'web', label: 'Web', icon: 'browser', x: 0, y: 86 },
-  { id: 'movil', label: 'App móvil', icon: 'phone', x: 62, y: 176 },
-  { id: 'escritorio', label: 'Escritorio', icon: 'desktop', x: 18, y: 270 },
+  { id: 'agentes', label: T.hubs.agentes, icon: 'spark', x: 100, y: 0 },
+  { id: 'web', label: T.hubs.web, icon: 'browser', x: 0, y: 86 },
+  { id: 'movil', label: T.hubs.movil, icon: 'phone', x: 62, y: 176 },
+  { id: 'escritorio', label: T.hubs.escritorio, icon: 'desktop', x: 18, y: 270 },
 ];
 ---
 
 <section class="hero" data-dark data-spine="0.5" aria-labelledby="hero-title">
   <div class="hero-hubs hero-hubs--in">
-    <p class="hub-label">Tus sistemas</p>
+    <p class="hub-label">{T.systems}</p>
     {
       hubsIn.map((hub, index) => (
-        <button type="button" class="hub" data-hub="in" data-id={hub.id} data-reveal aria-label={`Ver el recorrido de ${hub.label}`} style={`left:${hub.x}px;top:${hub.y + 34}px;--d:${400 + index * 110}ms`}>
+        <button type="button" class="hub" data-hub="in" data-id={hub.id} data-reveal aria-label={`${T.routeFrom} ${hub.label}`} style={`left:${hub.x}px;top:${hub.y + 34}px;--d:${400 + index * 110}ms`}>
           <i class="hub-ico">
             <Icon name={hub.icon} size={16} />
           </i>
@@ -61,10 +102,10 @@ const hubsOut = [
     }
   </div>
   <div class="hero-hubs hero-hubs--out">
-    <p class="hub-label hub-label--right">Lo que construimos</p>
+    <p class="hub-label hub-label--right">{T.build}</p>
     {
       hubsOut.map((hub, index) => (
-        <button type="button" class="hub" data-hub="out" data-id={hub.id} data-reveal aria-label={`Ver el recorrido hasta ${hub.label}`} style={`left:${hub.x}px;top:${hub.y + 34}px;--d:${460 + index * 110}ms`}>
+        <button type="button" class="hub" data-hub="out" data-id={hub.id} data-reveal aria-label={`${T.routeTo} ${hub.label}`} style={`left:${hub.x}px;top:${hub.y + 34}px;--d:${460 + index * 110}ms`}>
           <i class="hub-ico hub-ico--out">
             <Icon name={hub.icon} size={16} />
           </i>
@@ -75,26 +116,30 @@ const hubsOut = [
   </div>
 
   <div class="wrap pt-8 text-center md:pt-10">
-    <a href="/servicios/automatizaciones-ia/" class="hero-pill" data-reveal>
-      <span class="hero-pill-tag">Nuevo</span>
+    <a href={serviceHref('automatizaciones-ia', lang)} class="hero-pill" data-reveal>
+      <span class="hero-pill-tag">{T.tag}</span>
       <span class="hero-pill-text">
-        <span class="hero-pill-long">Agentes con MCP conectados a tu ERP y tu CRM</span>
-        <span class="hero-pill-short">Agentes con MCP en tu ERP y CRM</span>
+        <span class="hero-pill-long">{T.pillLong}</span>
+        <span class="hero-pill-short">{T.pillShort}</span>
       </span>
       <Icon name="arrow" size={15} class="hero-pill-arrow" />
     </a>
 
     <h1 id="hero-title" class="display h-hero mx-auto mt-7 max-w-[13ch] text-paper" data-reveal style="--d:80ms">
-      Ponemos la IA a <em>trabajar</em>. Y le construimos el taller.
+      {lang === 'en' ? <>We put AI to <em>work</em>. And we build its workshop.</> : <>Ponemos la IA a <em>trabajar</em>. Y le construimos el taller.</>}
     </h1>
 
     <p class="lead mx-auto mt-7 max-w-[52ch] !text-paper/75" data-reveal style="--d:160ms">
-      Automatizaciones con IA, desarrollo web y apps móviles y de escritorio con la tecnología más actual. Diseñado y construido por el mismo equipo, con el código y las cuentas a nombre de tu empresa.
+      {
+        lang === 'en'
+          ? 'AI automation, web development, and mobile and desktop apps built with the latest technology. Designed and built by the same team, with the code and accounts in your company’s name.'
+          : 'Automatizaciones con IA, desarrollo web y apps móviles y de escritorio con la tecnología más actual. Diseñado y construido por el mismo equipo, con el código y las cuentas a nombre de tu empresa.'
+      }
     </p>
 
     <div class="mt-9 flex flex-wrap items-center justify-center gap-3" data-reveal style="--d:240ms">
-      <a href="/contacto/" class="btn btn-accent">Cuéntanos tu proyecto <Icon name="arrow" size={17} class="arrow" /></a>
-      <a href="#servicios" class="btn btn-ghost-light">Ver servicios</a>
+      <a href={pathTo('contacto', lang)} class="btn btn-accent">{T.cta} <Icon name="arrow" size={17} class="arrow" /></a>
+      <a href="#servicios" class="btn btn-ghost-light">{T.seeServices}</a>
     </div>
   </div>
 
@@ -102,19 +147,19 @@ const hubsOut = [
     <Nexus />
 
     <div class="hero-log" data-log>
-      <p class="hero-log-live"><i class="live-dot"></i>En vivo</p>
+      <p class="hero-log-live"><i class="live-dot"></i>{T.live}</p>
       <p class="hero-log-line">
-        <strong data-log-route>El taller, en marcha</strong>
-        <span data-log-did>Cada tarea sale de un sistema, pasa por la IA y llega a un producto.</span>
+        <strong data-log-route>{T.route}</strong>
+        <span data-log-did>{T.did}</span>
       </p>
       <p class="hero-log-count">
-        <span><b data-log-done>0</b> <i data-log-done-label>tareas resueltas</i></span>
-        <span><b data-log-reviewed>0</b> <i data-log-reviewed-label>confirmadas por una persona</i></span>
+        <span><b data-log-done>0</b> <i data-log-done-label>{T.done}</i></span>
+        <span><b data-log-reviewed>0</b> <i data-log-reviewed-label>{T.reviewed}</i></span>
       </p>
     </div>
   </div>
 
-  <div class="hero-marquee relative z-[1] mt-14 py-5 md:mt-16" aria-label="Tecnologías con las que trabajamos">
+  <div class="hero-marquee relative z-[1] mt-14 py-5 md:mt-16" aria-label={T.stack}>
     <div class="marquee" role="presentation">
       <ul class="marquee-track">
         {[...stack, ...stack].map((item, index) => <li aria-hidden={index >= stack.length ? 'true' : undefined}>{item}</li>)}
@@ -469,9 +514,10 @@ const hubsOut = [
       set('[data-log-route]', d.route);
       set('[data-log-did]', d.did);
       set('[data-log-done]', String(d.done));
-      set('[data-log-done-label]', d.done === 1 ? 'tarea resuelta' : 'tareas resueltas');
+      const en = document.documentElement.lang === 'en';
+      set('[data-log-done-label]', en ? (d.done === 1 ? 'task done' : 'tasks done') : d.done === 1 ? 'tarea resuelta' : 'tareas resueltas');
       set('[data-log-reviewed]', String(d.reviewed));
-      set('[data-log-reviewed-label]', d.reviewed === 1 ? 'confirmada por una persona' : 'confirmadas por una persona');
+      set('[data-log-reviewed-label]', en ? 'confirmed by a person' : d.reviewed === 1 ? 'confirmada por una persona' : 'confirmadas por una persona');
       line.removeAttribute('data-fresh');
       void line.offsetWidth;
       line.setAttribute('data-fresh', '');

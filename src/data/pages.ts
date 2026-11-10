@@ -1,3 +1,7 @@
+import { pagesA, extrasA } from './en/pages-a';
+import { pagesB, extrasB } from './en/pages-b';
+import type { Lang } from '../i18n';
+
 export type Faq = { q: string; a: string };
 export type Block = { id?: string; nav?: string; heading: string; paragraphs: string[] };
 
@@ -16,7 +20,7 @@ export const pages: Page[] = [
     slug: 'desarrollo-web',
     title: 'Desarrollo web a medida para empresas',
     description:
-      'Veodar diseña y desarrolla portales, áreas privadas y herramientas web con cuentas, permisos y estados. El repositorio, el dominio y el despliegue quedan a nombre de la empresa.',
+      'Diseñamos y desarrollamos portales de clientes, áreas privadas y herramientas web con cuentas y permisos. Código, dominio y despliegue a nombre de tu empresa.',
     h1: 'Desarrollo web a medida para empresas',
     lead: 'Una web de empresa deja de ser un folleto en el momento en que alguien tiene que entrar, ver solo lo suyo y dejar un dato que otro sistema va a usar mañana. Ahí el gestor de contenidos se queda corto. Veodar construye esa pieza: la interfaz, la lógica y el despliegue, con el repositorio a nombre de quien paga.',
     blocks: [
@@ -94,7 +98,7 @@ export const pages: Page[] = [
     slug: 'aplicaciones-escritorio',
     title: 'Aplicaciones de escritorio para empresas',
     description:
-      'Aplicaciones de escritorio para puestos de taller, archivos locales y aparatos conectados. Instalador, actualización reversible y trabajo que sigue cuando se cae la red.',
+      'Aplicaciones de escritorio para puestos de taller, archivos locales y aparatos. Instalador firmado, actualización reversible y trabajo que sigue sin red.',
     h1: 'Aplicaciones de escritorio para empresas',
     lead: 'Hay trabajo que se rompe en cuanto se mete en una pestaña: el plano de dos gigas, la báscula del muelle, el puesto que tiene que abrir aunque la wifi del almacén se caiga, el archivo que la norma no deja subir a ninguna nube. Veodar construye la aplicación que ese puesto abre cada mañana.',
     blocks: [
@@ -496,9 +500,9 @@ export const pages: Page[] = [
   },
   {
     slug: 'contacto',
-    title: 'Contacto',
+    title: 'Contacto: cuéntanos tu proyecto de IA o software',
     description:
-      'Cuéntanos el trámite de esta semana desde el formulario o en info@veodar.com. Veodar dice si el encargo es web, escritorio, móvil o una automatización con IA, y si encaja.',
+      'Cuéntanos el trámite de esta semana en el formulario o en info@veodar.com. Te decimos si es web, escritorio, móvil o una automatización con IA, y si encaja.',
     h1: 'El trámite de esta semana, en un mensaje',
     lead: 'No hace falta un pliego ni una presentación. Hace falta el trabajo que hoy se hace a mano, quién lo sufre y qué sistema no se puede cambiar. Con eso sabemos si el encargo es web, escritorio, móvil o una automatización, y si estamos en condiciones de hacerlo. Escríbelo en el formulario o, si lo prefieres, en info@veodar.com.',
     blocks: [
@@ -534,9 +538,9 @@ export const pages: Page[] = [
       {
         id: 'idioma',
         nav: 'Idioma y distancia',
-        heading: 'Castellano, y una persona que pueda decir “esto no es así”.',
+        heading: 'Castellano o inglés, y una persona que pueda decir “esto no es así”.',
         paragraphs: [
-          'Trabajamos en castellano, también con equipos fuera de España si el día a día del proyecto es en castellano. La documentación de entrega sale en el idioma en el que el equipo va a mantener la herramienta. El código se entrega igual: para que otro equipo pueda leerlo sin nosotros.',
+          'Trabajamos en castellano y en inglés, también con equipos fuera de España. La documentación de entrega sale en el idioma en el que el equipo va a mantener la herramienta. El código se entrega igual: para que otro equipo pueda leerlo sin nosotros.',
           'No hace falta que estemos en vuestra oficina para el primer corte. Sí hace falta una persona vuestra que pueda enseñar el trámite y corregir la pantalla cuando mienta. Sin esa persona, el proyecto se construye sobre nuestra suposición y el puesto lo nota el primer día.',
           'La distancia no cambia el método: ejemplo real, alcance escrito, un corte que alguien usa, y la lista de lo que queda encendido para que TI y seguridad no se enteren el último viernes.',
         ],
@@ -557,7 +561,7 @@ export const pages: Page[] = [
       },
       {
         q: '¿Trabajáis fuera de España?',
-        a: 'Sí, en castellano. La distancia no cambia el método: ejemplo real, alcance escrito y un corte que alguien usa. La documentación sale en el idioma en el que se va a mantener la herramienta.',
+        a: 'Sí, en castellano o en inglés. La distancia no cambia el método: ejemplo real, alcance escrito y un corte que alguien usa. La documentación sale en el idioma en el que se va a mantener la herramienta.',
       },
     ],
   },
@@ -685,3 +689,9 @@ export const extras: Record<string, PageExtra> = {
     ctaLabel: 'Escribir el correo',
   },
 };
+
+// ── Both languages ───────────────────────────────────────────────────────
+const pagesEn: Page[] = [...pagesA, ...pagesB];
+const extrasEn: Record<string, PageExtra> = { ...extrasA, ...extrasB };
+export const pagesFor = (lang: Lang) => (lang === 'en' ? pagesEn : pages);
+export const extrasFor = (lang: Lang) => (lang === 'en' ? extrasEn : extras);

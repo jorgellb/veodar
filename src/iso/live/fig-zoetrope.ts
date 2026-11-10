@@ -1,5 +1,5 @@
 import { iso, pathOf, translateAlong } from '../iso-kit.mjs';
-import { helpers, type Factory, type Proj, type Vec3 } from './runtime';
+import { tr, helpers, type Factory, type Proj, type Vec3 } from './runtime';
 
 const CYCLE = 1.8; // one bounce = one turn of the drum = twelve frames
 
@@ -87,7 +87,12 @@ const create: Factory = (root, M) => {
       curveDot.setAttribute('transform', `translate(${(G.x + p * G.s).toFixed(2)} ${(G.y + G.s - height(p) * (G.s - 3)).toFixed(2)})`);
       frameText.textContent = `${String(frame + 1).padStart(2, '0')}/${N}`;
       const { sy } = shape(p);
-      h.say(`Fotograma ${String(frame + 1).padStart(2, '0')}/${N} · ${sy < 1 ? 'aplasta' : sy > 1 ? 'estira' : 'en el aire'} · escala ${sy.toFixed(2).replace('.', ',')}`);
+      h.say(
+        tr(
+          `Fotograma ${String(frame + 1).padStart(2, '0')}/${N} · ${sy < 1 ? 'aplasta' : sy > 1 ? 'estira' : 'en el aire'} · escala ${sy.toFixed(2).replace('.', ',')}`,
+          `Frame ${String(frame + 1).padStart(2, '0')}/${N} · ${sy < 1 ? 'squash' : sy > 1 ? 'stretch' : 'in the air'} · scale ${sy.toFixed(2)}`,
+        ),
+      );
     }
     playhead.setAttribute('transform', translateAlong(P, [M.track.x0 + u * M.track.x1, 0, 0]));
   };

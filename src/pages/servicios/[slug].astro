@@ -1,49 +1,11 @@
 ---
-import DocPage from '../../components/DocPage.astro';
-import { services, serviceHref } from '../../data/services';
-import { site } from '../../data/site';
+import ServicePage from '../../views/ServicePage.astro';
+import { servicesFor } from '../../data/services';
 
 export function getStaticPaths() {
-  return services.map((service) => ({ params: { slug: service.slug }, props: { service } }));
+  return servicesFor('es').map((service) => ({ params: { slug: service.slug }, props: { service } }));
 }
-
 const { service } = Astro.props;
-const url = new URL(serviceHref(service.slug), site.url).href;
-const serviceLd = {
-  '@type': 'Service',
-  '@id': `${url}#service`,
-  name: service.name,
-  serviceType: service.name,
-  description: service.description,
-  url,
-  provider: { '@id': `${site.url}/#organization` },
-  areaServed: [{ '@type': 'Country', name: 'España' }, { '@type': 'Place', name: 'Latinoamérica' }],
-  availableLanguage: 'es',
-};
 ---
 
-<DocPage
-  title={service.title}
-  description={service.description}
-  kicker={service.kicker}
-  h1={service.h1}
-  lead={service.lead}
-  blocks={service.blocks}
-  faq={service.faq}
-  deliverablesTitle={service.deliverablesTitle}
-  deliverables={service.deliverables}
-  related={service.related}
-  ctaTitle={service.ctaTitle}
-  ctaText={service.ctaText}
-  crumbs={[
-    { name: 'Inicio', path: '/' },
-    { name: 'Servicios', path: '/servicios/' },
-    { name: service.name, path: serviceHref(service.slug) },
-  ]}
-  figure={service.figure}
-  sceneTitle={service.name}
-  sceneCaption={service.sceneCaption}
-  stack={service.stack}
-  tint={service.tint}
-  extraLd={[serviceLd]}
-/>
+<ServicePage service={service} />

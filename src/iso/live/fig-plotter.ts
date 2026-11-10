@@ -1,5 +1,5 @@
 import { iso, pathOf, translateAlong } from '../iso-kit.mjs';
-import { clamp01, helpers, span, type Factory, type Proj } from './runtime';
+import { tr, clamp01, helpers, span, type Factory, type Proj } from './runtime';
 
 const DRAW = 78; // sheet units per second with the pen down
 const TRAVEL = 190; // and with the pen up
@@ -74,13 +74,13 @@ const create: Factory = (root, M) => {
     // Where the pen is.
     let pos: number[] = M.home;
     let down = false;
-    let name = 'Hoja nueva · rejilla de 12 columnas';
+    let name = tr('Hoja nueva · rejilla de 12 columnas', 'New sheet · 12-column grid');
     const current = steps.find((s) => u < s.t1);
     if (u >= END) {
       const back = span(u, END + 0.2, END + 1.4);
       const lastPt = steps[steps.length - 1].pts.slice(-1)[0];
       pos = [lastPt[0] + (M.home[0] - lastPt[0]) * back, lastPt[1] + (M.home[1] - lastPt[1]) * back];
-      name = 'Esquema completo · listo para prototipo';
+      name = tr('Esquema completo · listo para prototipo', 'Layout complete · ready for prototyping');
       live.innerHTML = '';
     } else if (current) {
       name = elements[current.el].name;

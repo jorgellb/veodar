@@ -1,5 +1,5 @@
 import { iso, lineOnTop, pathOf, segment, translateAlong } from '../iso-kit.mjs';
-import { ease, helpers, lerp, polar, span, type Factory, type Proj } from './runtime';
+import { tr, ease, helpers, lerp, polar, span, type Factory, type Proj } from './runtime';
 
 const CYCLE = 14;
 // Each step changes one option; the price follows from the same formula every time.
@@ -14,7 +14,7 @@ const STEPS = [
 const PRINT = 10.6;
 const RESET = 12.8;
 const price = (s: (typeof STEPS)[number]) => 120 + s.mod * 140 * s.tier + (s.door ? 45 * s.mod * s.tier : 0) + (s.finish ? 60 : 0);
-const euros = (n: number) => `${Math.round(n).toLocaleString('es-ES').replace(/\./g, ' ')} €`;
+const euros = (n: number) => (document.documentElement.lang === 'en' ? `€${Math.round(n).toLocaleString('en-US')}` : `${Math.round(n).toLocaleString('es-ES').replace(/\./g, ' ')} €`);
 
 const create: Factory = (root, M) => {
   const P = M.P as Proj;
@@ -85,7 +85,10 @@ const create: Factory = (root, M) => {
     const shown = resetting ? price(STEPS[0]) : lerp(price(prev), price(step), ease(span(since, 0.1, 0.75)));
     const label = euros(Math.round(shown / 5) * 5);
     if (priceText.textContent !== label) priceText.textContent = label;
-    const spec = `${step.mod} mód · ${step.tier} alt${step.door ? ' · puertas' : ''}${step.finish ? ' · naranja' : ''}`;
+    const spec = tr(
+      `${step.mod} mód · ${step.tier} alt${step.door ? ' · puertas' : ''}${step.finish ? ' · naranja' : ''}`,
+      `${step.mod} mod · ${step.tier} high${step.door ? ' · doors' : ''}${step.finish ? ' · orange' : ''}`,
+    );
     if (specText.textContent !== spec) specText.textContent = spec;
 
     // Quote: paper feeds out of the slot once the configuration is final.
@@ -106,10 +109,13 @@ const create: Factory = (root, M) => {
 
     h.say(
       resetting
-        ? 'Nueva configuración'
+        ? tr('Nueva configuración', 'New configuration')
         : u >= PRINT
-          ? `Presupuesto impreso · ${euros(price(step))} · pedido al ERP`
-          : `${step.mod} ${step.mod === 1 ? 'módulo' : 'módulos'} · ${step.tier} ${step.tier === 1 ? 'altura' : 'alturas'}${step.door ? ' · con puertas' : ''}${step.finish ? ' · acabado naranja' : ''} → ${euros(price(step))}`,
+          ? tr(`Presupuesto impreso · ${euros(price(step))} · pedido al ERP`, `Quote printed · ${euros(price(step))} · order sent to the ERP`)
+          : tr(
+              `${step.mod} ${step.mod === 1 ? 'módulo' : 'módulos'} · ${step.tier} ${step.tier === 1 ? 'altura' : 'alturas'}${step.door ? ' · con puertas' : ''}${step.finish ? ' · acabado naranja' : ''} → ${euros(price(step))}`,
+              `${step.mod} ${step.mod === 1 ? 'module' : 'modules'} · ${step.tier} ${step.tier === 1 ? 'height' : 'heights'}${step.door ? ' · with doors' : ''}${step.finish ? ' · orange finish' : ''} → ${euros(price(step))}`,
+            ),
     );
   };
   return { apply, still: 8.6 };

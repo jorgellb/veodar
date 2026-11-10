@@ -2,43 +2,146 @@
 import Logo from './Logo.astro';
 import Icon from './Icon.astro';
 import ServiceGlyph from './ServiceGlyph.astro';
-import { services, serviceHref } from '../data/services';
-import { askAi } from '../data/site';
+import LangSwitch from './LangSwitch.astro';
+import { servicesFor, serviceHref } from '../data/services';
+import { askAiFor } from '../data/site';
+import { langOf, pathTo } from '../i18n';
 
 interface Props {
   tone?: 'light' | 'dark';
 }
 const { tone = 'light' } = Astro.props;
+const lang = langOf(Astro.url);
+const services = servicesFor(lang);
+const href = (id: string) => serviceHref(id, lang);
+const askAi = askAiFor(lang);
 
 const engineering = services.filter((service) => service.group === 'ingenieria');
 const studio = services.filter((service) => service.group === 'estudio');
 const featured = engineering[0];
 const engineeringRest = engineering.slice(1);
 
-const areas = [
-  { name: 'TI', desc: 'Marco, accesos y despliegue', href: '/soluciones/#ti', icon: 'layers' },
-  { name: 'Seguridad', desc: 'Qué dato, qué credencial', href: '/soluciones/#seguridad', icon: 'shield' },
-  { name: 'Finanzas', desc: 'Cierres sin copiar cifras', href: '/soluciones/#finanzas', icon: 'tag' },
-  { name: 'Personas', desc: 'Altas y documentos que faltan', href: '/soluciones/#personas', icon: 'mail' },
-  { name: 'RevOps', desc: 'Estados que el CRM no obliga', href: '/soluciones/#revops', icon: 'sliders' },
-  { name: 'Legal', desc: 'Plazos, versiones y aceptaciones', href: '/soluciones/#legal', icon: 'key' },
-];
+const T = {
+  es: {
+    home: 'Veodar, inicio',
+    main: 'Principal',
+    services: 'Servicios',
+    solutions: 'Soluciones',
+    resources: 'Recursos',
+    pricing: 'Precios',
+    contact: 'Contacto',
+    cta: 'Cuéntanos tu proyecto',
+    openMenu: 'Abrir menú',
+    closeMenu: 'Cerrar menú',
+    menu: 'Menú',
+    popular: 'Lo más pedido',
+    seeService: 'Ver el servicio',
+    engineering: 'Ingeniería',
+    studio: 'Estudio',
+    allServices: 'Todos los servicios',
+    unsure: '¿No sabes qué formato necesitas? Cuéntanos el problema y lo proponemos nosotros.',
+    byArea: 'Por área de la empresa',
+    teamFirst: 'Un equipo primero',
+    teamFirstText: 'Cada área encarga lo suyo. La lista de producción es una.',
+    seeSolutions: 'Ver soluciones',
+    askAi: 'Pregúntale a una IA',
+    askAiText: '¿Quién es Veodar? Que te lo cuente tu asistente.',
+    rowsServices: `Ingeniería y estudio · ${services.length}`,
+    rowsSolutions: 'Por área de la empresa · 6',
+    rowsResources: 'Proceso, preguntas y contacto',
+    rowsPricing: 'Cómo se escribe un presupuesto',
+    resourcesCap: 'Proceso, preguntas y contacto · 4',
+  },
+  en: {
+    home: 'Veodar, home',
+    main: 'Main',
+    services: 'Services',
+    solutions: 'Solutions',
+    resources: 'Resources',
+    pricing: 'Pricing',
+    contact: 'Contact',
+    cta: 'Tell us about your project',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
+    menu: 'Menu',
+    popular: 'Most requested',
+    seeService: 'See the service',
+    engineering: 'Engineering',
+    studio: 'Studio',
+    allServices: 'All services',
+    unsure: "Not sure which format you need? Tell us the problem and we'll propose one.",
+    byArea: 'By department',
+    teamFirst: 'One team first',
+    teamFirstText: 'Each department commissions its own work. The production list stays one.',
+    seeSolutions: 'See solutions',
+    askAi: 'Ask an AI',
+    askAiText: 'Who is Veodar? Let your assistant tell you.',
+    rowsServices: `Engineering & studio · ${services.length}`,
+    rowsSolutions: 'By department · 6',
+    rowsResources: 'Process, questions and contact',
+    rowsPricing: 'How a quote gets written',
+    resourcesCap: 'Process, questions and contact · 4',
+  },
+}[lang];
 
+const areaText = {
+  es: [
+    ['TI', 'Marco, accesos y despliegue'],
+    ['Seguridad', 'Qué dato, qué credencial'],
+    ['Finanzas', 'Cierres sin copiar cifras'],
+    ['Personas', 'Altas y documentos que faltan'],
+    ['RevOps', 'Estados que el CRM no obliga'],
+    ['Legal', 'Plazos, versiones y aceptaciones'],
+  ],
+  en: [
+    ['IT', 'Frame, access and deployment'],
+    ['Security', 'Which data, which credential'],
+    ['Finance', 'Closing without copying figures'],
+    ['People', 'Onboarding and missing documents'],
+    ['RevOps', 'Stages the CRM doesn’t enforce'],
+    ['Legal', 'Deadlines, versions and approvals'],
+  ],
+}[lang];
+const areas = ['ti', 'seguridad', 'finanzas', 'personas', 'revops', 'legal'].map((id, i) => ({
+  name: areaText[i][0],
+  desc: areaText[i][1],
+  href: pathTo('soluciones', lang, id),
+  icon: ['layers', 'shield', 'tag', 'mail', 'sliders', 'key'][i],
+}));
+
+const resourceText = {
+  es: [
+    ['Precios', 'Cómo se escribe un presupuesto'],
+    ['Cómo trabajamos', 'Construir, desplegar, operar'],
+    ['Preguntas frecuentes', 'Lo que nos preguntan siempre'],
+    ['Contacto', 'El siguiente paso, por correo'],
+  ],
+  en: [
+    ['Pricing', 'How a quote gets written'],
+    ['How we work', 'Build, deploy, operate'],
+    ['FAQ', 'What we always get asked'],
+    ['Contact', 'The next step, by email'],
+  ],
+}[lang];
 const resources = [
-  { name: 'Precios', desc: 'Cómo se escribe un presupuesto', href: '/precios/', icon: 'tag' },
-  { name: 'Cómo trabajamos', desc: 'Construir, desplegar, operar', href: '/#proceso', icon: 'compass' },
-  { name: 'Preguntas frecuentes', desc: 'Lo que nos preguntan siempre', href: '/#preguntas', icon: 'search' },
-  { name: 'Contacto', desc: 'El siguiente paso, por correo', href: '/contacto/', icon: 'mail' },
-];
+  { href: pathTo('precios', lang), icon: 'tag' },
+  { href: pathTo('home', lang, 'proceso'), icon: 'compass' },
+  { href: pathTo('home', lang, 'preguntas'), icon: 'search' },
+  { href: pathTo('contacto', lang), icon: 'mail' },
+].map((item, i) => ({ ...item, name: resourceText[i][0], desc: resourceText[i][1] }));
 
 // Phone menu: the four rows on the fibre, and what each one opens.
 const path = Astro.url.pathname;
-const here = path.startsWith('/servicios') ? 'servicios' : path.startsWith('/soluciones') ? 'soluciones' : path.startsWith('/precios') ? 'precios' : '';
+const here =
+  /^\/(en\/services|servicios)\//.test(path) ? 'servicios'
+  : /^\/(en\/solutions|soluciones)\//.test(path) ? 'soluciones'
+  : /^\/(en\/pricing|precios)\//.test(path) ? 'precios'
+  : '';
 const rows = [
-  { id: 'servicios', name: 'Servicios', cap: `Ingeniería y estudio · ${services.length}` },
-  { id: 'soluciones', name: 'Soluciones', cap: `Por área de la empresa · ${areas.length}` },
-  { id: 'recursos', name: 'Recursos', cap: 'Proceso, preguntas y contacto' },
-  { id: 'precios', name: 'Precios', cap: 'Cómo se escribe un presupuesto', href: '/precios/' },
+  { id: 'servicios', name: T.services, cap: T.rowsServices },
+  { id: 'soluciones', name: T.solutions, cap: T.rowsSolutions },
+  { id: 'recursos', name: T.resources, cap: T.rowsResources },
+  { id: 'precios', name: T.pricing, cap: T.rowsPricing, href: pathTo('precios', lang) },
 ];
 
 // The fibre mesh behind the phone menu: a jittered grid from a fixed seed, so every build draws the same one.
@@ -88,37 +191,38 @@ const tintBg: Record<string, string> = {
 
 <header class="site-header" data-nav data-tone={tone}>
   <div class="wrap flex h-[68px] items-center gap-2">
-    <a href="/" class="mr-3 shrink-0" aria-label="Veodar, inicio">
+    <a href="/" class="mr-3 shrink-0" aria-label={T.home}>
       <Logo />
     </a>
 
-    <nav class="hidden items-center lg:flex" aria-label="Principal">
+    <nav class="hidden items-center lg:flex" aria-label={T.main}>
       <ul class="flex items-center">
         <li>
           <button type="button" class="nav-trigger" data-trigger="servicios" aria-expanded="false" aria-controls="panel-servicios">
-            Servicios <Icon name="chevron" size={14} class="chev" />
+            {T.services} <Icon name="chevron" size={14} class="chev" />
           </button>
         </li>
         <li>
           <button type="button" class="nav-trigger" data-trigger="soluciones" aria-expanded="false" aria-controls="panel-soluciones">
-            Soluciones <Icon name="chevron" size={14} class="chev" />
+            {T.solutions} <Icon name="chevron" size={14} class="chev" />
           </button>
         </li>
         <li>
           <button type="button" class="nav-trigger" data-trigger="recursos" aria-expanded="false" aria-controls="panel-recursos">
-            Recursos <Icon name="chevron" size={14} class="chev" />
+            {T.resources} <Icon name="chevron" size={14} class="chev" />
           </button>
         </li>
-        <li><a href="/precios/" class="nav-trigger">Precios</a></li>
+        <li><a href={pathTo('precios', lang)} class="nav-trigger">{T.pricing}</a></li>
       </ul>
     </nav>
 
     <div class="ml-auto flex items-center gap-2">
-      <a href="/contacto/" class="nav-trigger nav-contact">Contacto</a>
-      <a href="/contacto/" class="btn btn-primary hidden !min-h-[40px] !px-4 !text-[14px] sm:inline-flex">
-        Cuéntanos tu proyecto <Icon name="arrow" size={16} class="arrow" />
+      <LangSwitch />
+      <a href={pathTo('contacto', lang)} class="nav-trigger nav-contact">{T.contact}</a>
+      <a href={pathTo('contacto', lang)} class="btn btn-primary hidden !min-h-[40px] !px-4 !text-[14px] sm:inline-flex">
+        {T.cta} <Icon name="arrow" size={16} class="arrow" />
       </a>
-      <button type="button" class="nav-burger lg:hidden" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-movil" data-burger>
+      <button type="button" class="nav-burger lg:hidden" aria-label={T.openMenu} aria-expanded="false" aria-controls="menu-movil" data-burger>
         <span></span><span></span>
       </button>
     </div>
@@ -127,27 +231,27 @@ const tintBg: Record<string, string> = {
   <!-- Desktop mega menu: one morphing surface, three panels -->
   <div class="mega" data-mega hidden>
     <div class="mega-surface" data-surface>
-      <div class="mega-panel" id="panel-servicios" data-panel="servicios" role="region" aria-label="Servicios">
+      <div class="mega-panel" id="panel-servicios" data-panel="servicios" role="region" aria-label={T.services}>
         <div class="grid w-[1080px] grid-cols-[300px_1fr_1.35fr] gap-2 p-2">
-          <a href={serviceHref(featured.slug)} class="feature-card spot bg-ink text-paper">
-            <span class="chip !bg-white/10 !text-paper !shadow-none">Lo más pedido</span>
+          <a href={href(featured.slug)} class="feature-card spot bg-ink text-paper">
+            <span class="chip !bg-white/10 !text-paper !shadow-none">{T.popular}</span>
             <span class="mt-auto">
               <span class="block font-display text-[30px] leading-[0.98] tracking-[-0.03em]">{featured.name}</span>
               <span class="mt-2 block text-[14px] leading-snug text-paper/75">{featured.menu}</span>
               <span class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-medium text-accent">
-                Ver el servicio <Icon name="arrow" size={15} />
+                {T.seeService} <Icon name="arrow" size={15} />
               </span>
             </span>
             <span class="feature-art"><ServiceGlyph slug={featured.slug} /></span>
           </a>
 
           <div class="mega-col">
-            <p class="mega-label">Ingeniería</p>
+            <p class="mega-label">{T.engineering}</p>
             <ul class="grid gap-0.5">
               {
                 engineeringRest.map((service) => (
                   <li>
-                    <a href={serviceHref(service.slug)} class="mega-link">
+                    <a href={href(service.slug)} class="mega-link">
                       <span class:list={['mega-ico', tintBg[service.tint]]}>
                         <Icon name={service.icon} size={19} />
                       </span>
@@ -160,18 +264,18 @@ const tintBg: Record<string, string> = {
                 ))
               }
             </ul>
-            <a href="/servicios/" class="mega-foot">
-              Todos los servicios <Icon name="arrow" size={15} />
+            <a href={pathTo('servicios', lang)} class="mega-foot">
+              {T.allServices} <Icon name="arrow" size={15} />
             </a>
           </div>
 
           <div class="mega-col">
-            <p class="mega-label">Estudio</p>
+            <p class="mega-label">{T.studio}</p>
             <ul class="grid grid-cols-2 gap-0.5">
               {
                 studio.map((service) => (
                   <li>
-                    <a href={serviceHref(service.slug)} class="mega-link mega-link--compact">
+                    <a href={href(service.slug)} class="mega-link mega-link--compact">
                       <span class:list={['mega-ico mega-ico--sm', tintBg[service.tint]]}>
                         <Icon name={service.icon} size={16} />
                       </span>
@@ -185,16 +289,16 @@ const tintBg: Record<string, string> = {
             </ul>
             <div class="mega-note">
               <Icon name="spark" size={16} class="text-accent-ink" />
-              <span>¿No sabes qué formato necesitas? Cuéntanos el problema y lo proponemos nosotros.</span>
+              <span>{T.unsure}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="mega-panel" id="panel-soluciones" data-panel="soluciones" role="region" aria-label="Soluciones">
+      <div class="mega-panel" id="panel-soluciones" data-panel="soluciones" role="region" aria-label={T.solutions}>
         <div class="grid w-[820px] grid-cols-[1fr_260px] gap-2 p-2">
           <div class="mega-col">
-            <p class="mega-label">Por área de la empresa</p>
+            <p class="mega-label">{T.byArea}</p>
             <ul class="grid grid-cols-2 gap-0.5">
               {
                 areas.map((area) => (
@@ -213,17 +317,17 @@ const tintBg: Record<string, string> = {
               }
             </ul>
           </div>
-          <a href="/soluciones/" class="feature-card spot bg-mint text-ink">
-            <span class="chip">Un equipo primero</span>
+          <a href={pathTo('soluciones', lang)} class="feature-card spot bg-mint text-ink">
+            <span class="chip">{T.teamFirst}</span>
             <span class="mt-auto">
-              <span class="block font-display text-[26px] leading-[1] tracking-[-0.03em]">Cada área encarga lo suyo. La lista de producción es una.</span>
-              <span class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-medium">Ver soluciones <Icon name="arrow" size={15} /></span>
+              <span class="block font-display text-[26px] leading-[1] tracking-[-0.03em]">{T.teamFirstText}</span>
+              <span class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-medium">{T.seeSolutions} <Icon name="arrow" size={15} /></span>
             </span>
           </a>
         </div>
       </div>
 
-      <div class="mega-panel" id="panel-recursos" data-panel="recursos" role="region" aria-label="Recursos">
+      <div class="mega-panel" id="panel-recursos" data-panel="recursos" role="region" aria-label={T.resources}>
         <div class="grid w-[760px] grid-cols-[1fr_280px] gap-2 p-2">
           <div class="mega-col">
             <p class="mega-label">Veodar</p>
@@ -246,8 +350,8 @@ const tintBg: Record<string, string> = {
             </ul>
           </div>
           <div class="feature-card bg-lilac text-ink">
-            <span class="chip">Pregúntale a una IA</span>
-            <span class="mt-auto block font-display text-[24px] leading-[1.02] tracking-[-0.03em]">¿Quién es Veodar? Que te lo cuente tu asistente.</span>
+            <span class="chip">{T.askAi}</span>
+            <span class="mt-auto block font-display text-[24px] leading-[1.02] tracking-[-0.03em]">{T.askAiText}</span>
             <span class="mt-4 flex flex-wrap gap-1.5">
               {
                 askAi.map((ai) => (
@@ -267,7 +371,7 @@ const tintBg: Record<string, string> = {
 <div class="mega-scrim" data-scrim hidden></div>
 
 <!-- Phone menu: a night panel that opens from the menu button like an iris. -->
-<div class="msheet" id="menu-movil" data-sheet data-view="root" role="dialog" aria-modal="true" aria-label="Menú" hidden>
+<div class="msheet" id="menu-movil" data-sheet data-view="root" role="dialog" aria-modal="true" aria-label={T.menu} hidden>
   <svg class="ms-mesh" viewBox={`0 0 ${MW} ${MH}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <path class="ms-mesh-lines" d={meshLines}></path>
     {meshFlows.map((flow) => <path class="ms-flow" pathLength="100" d={flow.d} style={`--fd:${flow.delay}s`}></path>)}
@@ -276,13 +380,13 @@ const tintBg: Record<string, string> = {
 
   <div class="ms-top">
     <div class="wrap flex h-[68px] items-center">
-      <a href="/" class="shrink-0" aria-label="Veodar, inicio"><Logo inverted /></a>
-      <button type="button" class="ms-close" aria-label="Cerrar menú" data-close><span></span><span></span></button>
+      <a href="/" class="shrink-0" aria-label={T.home}><Logo inverted /></a>
+      <button type="button" class="ms-close" aria-label={T.closeMenu} data-close><span></span><span></span></button>
     </div>
   </div>
 
   <div class="ms-levels">
-    <section class="ms-level" data-level="root" aria-label="Menú">
+    <section class="ms-level" data-level="root" aria-label={T.menu}>
       <div class="wrap">
         <ul class="ms-list" style={`--n:${rows.length}`}>
           <li class="ms-packet" aria-hidden="true"></li>
@@ -310,27 +414,28 @@ const tintBg: Record<string, string> = {
         </ul>
 
         <div class="ms-foot">
-          <a href="/contacto/" class="btn btn-accent ms-cta">Cuéntanos tu proyecto <Icon name="arrow" size={17} class="arrow" /></a>
+          <a href={pathTo('contacto', lang)} class="btn btn-accent ms-cta">{T.cta} <Icon name="arrow" size={17} class="arrow" /></a>
           <a href="mailto:info@veodar.com" class="ms-mail"><Icon name="mail" size={15} /> info@veodar.com</a>
+          <div class="ms-lang"><LangSwitch variant="sheet" /></div>
         </div>
       </div>
     </section>
 
-    <section class="ms-level" id="ms-servicios" data-level="servicios" aria-label="Servicios" inert>
+    <section class="ms-level" id="ms-servicios" data-level="servicios" aria-label={T.services} inert>
       <div class="ms-bar">
-        <div class="wrap"><button type="button" class="ms-back" data-back><Icon name="chevron" size={17} class="ms-chev-back" /> Menú</button></div>
+        <div class="wrap"><button type="button" class="ms-back" data-back><Icon name="chevron" size={17} class="ms-chev-back" /> {T.menu}</button></div>
       </div>
       <div class="wrap">
-        <h2 class="ms-head"><span>Servicios</span></h2>
-        <p class="ms-head-cap">Ingeniería · {engineering.length}</p>
+        <h2 class="ms-head"><span>{T.services}</span></h2>
+        <p class="ms-head-cap">{T.engineering} · {engineering.length}</p>
         <ul class="ms-tiles">
           {
             engineering.map((service, i) => (
               <li class:list={['ms-tile', i === 0 && 'ms-tile--feature']} style={`--i:${i};--tint:${tintVar[service.tint]}`}>
-                <a href={serviceHref(service.slug)} aria-current={path.startsWith(serviceHref(service.slug)) ? 'page' : undefined}>
+                <a href={href(service.slug)} aria-current={path.startsWith(href(service.slug)) ? 'page' : undefined}>
                   <span class="ms-art"><ServiceGlyph slug={service.slug} /></span>
                   <span class="ms-tile-text">
-                    {i === 0 && <span class="ms-flag">Lo más pedido</span>}
+                    {i === 0 && <span class="ms-flag">{T.popular}</span>}
                     <span class="ms-tile-name">{service.name}</span>
                     <span class="ms-tile-desc">{service.menu}</span>
                   </span>
@@ -339,12 +444,12 @@ const tintBg: Record<string, string> = {
             ))
           }
         </ul>
-        <p class="ms-head-cap ms-head-cap--sub">Estudio · {studio.length}</p>
+        <p class="ms-head-cap ms-head-cap--sub">{T.studio} · {studio.length}</p>
         <ul class="ms-tiles">
           {
             studio.map((service, i) => (
               <li class="ms-tile" style={`--i:${i + engineering.length};--tint:${tintVar[service.tint]}`}>
-                <a href={serviceHref(service.slug)} aria-current={path.startsWith(serviceHref(service.slug)) ? 'page' : undefined}>
+                <a href={href(service.slug)} aria-current={path.startsWith(href(service.slug)) ? 'page' : undefined}>
                   <span class="ms-art"><ServiceGlyph slug={service.slug} /></span>
                   <span class="ms-tile-text">
                     <span class="ms-tile-name">{service.name}</span>
@@ -355,17 +460,17 @@ const tintBg: Record<string, string> = {
             ))
           }
         </ul>
-        <a href="/servicios/" class="ms-all">Todos los servicios <Icon name="arrow" size={16} /></a>
+        <a href={pathTo('servicios', lang)} class="ms-all">{T.allServices} <Icon name="arrow" size={16} /></a>
       </div>
     </section>
 
-    <section class="ms-level" id="ms-soluciones" data-level="soluciones" aria-label="Soluciones" inert>
+    <section class="ms-level" id="ms-soluciones" data-level="soluciones" aria-label={T.solutions} inert>
       <div class="ms-bar">
-        <div class="wrap"><button type="button" class="ms-back" data-back><Icon name="chevron" size={17} class="ms-chev-back" /> Menú</button></div>
+        <div class="wrap"><button type="button" class="ms-back" data-back><Icon name="chevron" size={17} class="ms-chev-back" /> {T.menu}</button></div>
       </div>
       <div class="wrap">
-        <h2 class="ms-head"><span>Soluciones</span></h2>
-        <p class="ms-head-cap">Por área de la empresa · {areas.length}</p>
+        <h2 class="ms-head"><span>{T.solutions}</span></h2>
+        <p class="ms-head-cap">{T.byArea} · {areas.length}</p>
         <ul class="ms-rows">
           {
             areas.map((area, i) => (
@@ -381,21 +486,21 @@ const tintBg: Record<string, string> = {
             ))
           }
         </ul>
-        <a href="/soluciones/" class="ms-card bg-mint" style={`--i:${areas.length}`}>
-          <span class="chip">Un equipo primero</span>
-          <span class="ms-card-text">Cada área encarga lo suyo. La lista de producción es una.</span>
-          <span class="ms-card-link">Ver soluciones <Icon name="arrow" size={15} /></span>
+        <a href={pathTo('soluciones', lang)} class="ms-card bg-mint" style={`--i:${areas.length}`}>
+          <span class="chip">{T.teamFirst}</span>
+          <span class="ms-card-text">{T.teamFirstText}</span>
+          <span class="ms-card-link">{T.seeSolutions} <Icon name="arrow" size={15} /></span>
         </a>
       </div>
     </section>
 
-    <section class="ms-level" id="ms-recursos" data-level="recursos" aria-label="Recursos" inert>
+    <section class="ms-level" id="ms-recursos" data-level="recursos" aria-label={T.resources} inert>
       <div class="ms-bar">
-        <div class="wrap"><button type="button" class="ms-back" data-back><Icon name="chevron" size={17} class="ms-chev-back" /> Menú</button></div>
+        <div class="wrap"><button type="button" class="ms-back" data-back><Icon name="chevron" size={17} class="ms-chev-back" /> {T.menu}</button></div>
       </div>
       <div class="wrap">
-        <h2 class="ms-head"><span>Recursos</span></h2>
-        <p class="ms-head-cap">Proceso, preguntas y contacto · {resources.length}</p>
+        <h2 class="ms-head"><span>{T.resources}</span></h2>
+        <p class="ms-head-cap">{T.resourcesCap}</p>
         <ul class="ms-rows">
           {
             resources.map((item, i) => (
@@ -412,8 +517,8 @@ const tintBg: Record<string, string> = {
           }
         </ul>
         <div class="ms-card bg-lilac" style={`--i:${resources.length}`}>
-          <span class="chip">Pregúntale a una IA</span>
-          <span class="ms-card-text">¿Quién es Veodar? Que te lo cuente tu asistente.</span>
+          <span class="chip">{T.askAi}</span>
+          <span class="ms-card-text">{T.askAiText}</span>
           <span class="mt-4 flex flex-wrap gap-1.5">
             {
               askAi.map((ai) => (
@@ -451,6 +556,10 @@ const tintBg: Record<string, string> = {
   .site-header[data-tone='dark']:not([data-scrolled]):not([data-open]) :global(.btn-primary) {
     background: var(--color-accent);
     color: #1a0a03;
+  }
+  /* On the dark hero the switch's thumb is paper, so the active letters turn night. */
+  .site-header[data-tone='dark']:not([data-scrolled]):not([data-open]) :global(.ls) {
+    --ls-on: var(--color-night);
   }
   .site-header[data-tone='dark']:not([data-scrolled]):not([data-open]) .nav-burger {
     box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.3);
@@ -1013,6 +1122,9 @@ const tintBg: Record<string, string> = {
     content: ' · Aquí';
     color: var(--color-accent);
   }
+  :global(html[lang='en']) .ms-item[data-here] .ms-cap::after {
+    content: ' · Here';
+  }
 
   /* The packet that runs down the trunk, timed to light each node as it passes. */
   .ms-packet {
@@ -1144,6 +1256,11 @@ const tintBg: Record<string, string> = {
     width: 100%;
     min-height: 56px;
     font-size: 16px;
+  }
+  .ms-lang {
+    display: flex;
+    justify-content: center;
+    margin-top: 6px;
   }
   .ms-mail {
     display: inline-flex;

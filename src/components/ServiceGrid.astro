@@ -1,12 +1,16 @@
 ---
 import ServiceCard from './ServiceCard.astro';
-import { services, serviceGroups } from '../data/services';
+import { servicesFor, serviceGroupsFor } from '../data/services';
+import { langOf } from '../i18n';
 
 interface Props {
   headingLevel?: 'h2' | 'h3';
 }
 const { headingLevel = 'h3' } = Astro.props;
 const Heading = headingLevel;
+const lang = langOf(Astro.url);
+const services = servicesFor(lang);
+const serviceGroups = serviceGroupsFor(lang);
 ---
 
 {

@@ -1,0 +1,69 @@
+---
+// /servicios/ and /en/services/: the twelve services, grouped.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ServiceGrid from '../components/ServiceGrid.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { servicesFor, serviceHref } from '../data/services';
+import { breadcrumbLd, site } from '../data/site';
+import { langOf, pathTo } from '../i18n';
+
+const lang = langOf(Astro.url);
+const services = servicesFor(lang);
+const T = {
+  es: {
+    home: 'Inicio',
+    services: 'Servicios',
+    title: 'Servicios: IA, desarrollo web, apps, diseño y SEO',
+    description:
+      'Doce servicios de un equipo: automatizaciones con IA, desarrollo web, apps móviles y de escritorio, marca, diseño web, 3D, configuradores, vídeo, rediseño y SEO.',
+    catalog: 'Servicios de Veodar',
+    lead: 'Ingeniería para poner el software y la IA a trabajar. Estudio para que se entienda, se recuerde y se encuentre. Elige un servicio o cuéntanos el problema y proponemos el formato.',
+    list: 'Lista de servicios',
+  },
+  en: {
+    home: 'Home',
+    services: 'Services',
+    title: 'Services: AI, Web Development, Apps, Design and SEO',
+    description:
+      'Twelve services from one team: AI automation, web development, mobile and desktop apps, brand, web design, 3D, configurators, video, redesign and SEO.',
+    catalog: 'Veodar services',
+    lead: 'Engineering to put software and AI to work. A studio to make it understood, remembered and found. Pick a service, or tell us the problem and we’ll propose the format.',
+    list: 'List of services',
+  },
+}[lang];
+
+const ld = [
+  breadcrumbLd([
+    { name: T.home, path: pathTo('home', lang) },
+    { name: T.services, path: pathTo('servicios', lang) },
+  ]),
+  {
+    '@type': 'ItemList',
+    name: T.catalog,
+    itemListElement: services.map((service, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: service.name,
+      url: new URL(serviceHref(service.slug, lang), site.url).href,
+    })),
+  },
+];
+---
+
+<BaseLayout title={T.title} description={T.description} jsonLd={ld} pageType="CollectionPage">
+  <section class="pt-14 pb-10 md:pt-20">
+    <div class="wrap">
+      <p class="eyebrow" data-reveal>{T.services}</p>
+      <h1 class="display h-hero mt-6 max-w-[12ch]" data-reveal style="--d:60ms">
+        {lang === 'en' ? <>Everything we <em>build</em>.</> : <>Todo lo que <em>construimos</em>.</>}
+      </h1>
+      <p class="lead mt-7 max-w-[56ch]" data-reveal style="--d:120ms">{T.lead}</p>
+    </div>
+  </section>
+  <section class="pb-24 md:pb-32" aria-label={T.list}>
+    <div class="wrap">
+      <ServiceGrid headingLevel="h2" />
+    </div>
+  </section>
+  <CtaBand />
+</BaseLayout>

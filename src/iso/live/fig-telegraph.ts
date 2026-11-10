@@ -1,8 +1,9 @@
 import { iso, lineOnTop } from '../iso-kit.mjs';
-import { helpers, type Factory, type Proj } from './runtime';
+import { tr, helpers, type Factory, type Proj } from './runtime';
 
-const CODE: Record<string, string> = { H: '....', O: '---', L: '.-..', A: '.-' };
-const WORD = 'HOLA';
+const CODE: Record<string, string> = { H: '....', O: '---', L: '.-..', A: '.-', E: '.' };
+// The key sends a greeting in the page's language.
+const WORD = typeof document !== 'undefined' && document.documentElement.lang === 'en' ? 'HELLO' : 'HOLA';
 const UNIT = 0.17;
 const SPEED = 11; // tape units per second
 
@@ -96,8 +97,10 @@ const create: Factory = (root, M) => {
     const letters = [...WORD].filter((_, li) => events.filter((e) => e.letter === li).every((e) => e.off <= u)).join('');
     const inLetter = current ? current.letter : -1;
     const pattern = inLetter >= 0 ? CODE[WORD[inLetter]].replace(/\./g, '·').replace(/-/g, '–').split('').join(' ') : '';
-    const done = sent ? 'Mensaje enviado · te respondemos por correo' : 'HOLA enviado · ahora te toca a ti';
-    h.say(u >= END ? done : `Transmitiendo: ${letters || '…'}${pattern ? `  ${pattern}` : ''}`);
+    const done = sent
+      ? tr('Mensaje enviado · te respondemos por correo', 'Message sent · we’ll reply by email')
+      : tr('HOLA enviado · ahora te toca a ti', 'HELLO sent · your turn now');
+    h.say(u >= END ? done : tr(`Transmitiendo: ${letters || '…'}${pattern ? `  ${pattern}` : ''}`, `Sending: ${letters || '…'}${pattern ? `  ${pattern}` : ''}`));
   };
   return { apply, still: END + 0.4 };
 };

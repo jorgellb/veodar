@@ -1,11 +1,11 @@
 import { lineOnTop, translateAlong } from '../iso-kit.mjs';
-import { ease, helpers, lerp, polar, pulse, span, type Factory, type Proj } from './runtime';
+import { tr, ease, helpers, lerp, polar, pulse, span, type Factory, type Proj } from './runtime';
 
 const TURN = 3.5;
 const NAMES: Record<string, string> = {
-  card: 'Tarjeta de visita · marca a 12 mm',
-  letter: 'Papel de carta · marca a 18 mm',
-  icon: 'Icono de app · marca a 1024 px',
+  card: tr('Tarjeta de visita · marca a 12 mm', 'Business card · mark at 12 mm'),
+  letter: tr('Papel de carta · marca a 18 mm', 'Letterhead · mark at 18 mm'),
+  icon: tr('Icono de app · marca a 1024 px', 'App icon · mark at 1024 px'),
 };
 
 const create: Factory = (root, M) => {
@@ -66,7 +66,7 @@ const create: Factory = (root, M) => {
     });
 
     const current = pieces[turn];
-    h.say(v >= 1.0 && v < 2.05 ? 'Estampando · color.acento #FF5A1F' : NAMES[current.name]);
+    h.say(v >= 1.0 && v < 2.05 ? tr('Estampando · color.acento #FF5A1F', 'Stamping · color.accent #FF5A1F') : NAMES[current.name]);
   };
   return { apply, still: TURN + 1.5 };
 };

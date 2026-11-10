@@ -1,0 +1,63 @@
+---
+// Soluciones / Precios / Contacto (and their English pages), from src/data/pages.ts.
+import DocPage from '../components/DocPage.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { pagesFor, extrasFor } from '../data/pages';
+import type { Tint } from '../data/services';
+import { langOf, pathTo, type PageKey } from '../i18n';
+
+interface Props {
+  id: 'soluciones' | 'precios' | 'contacto';
+}
+const { id } = Astro.props;
+const lang = langOf(Astro.url);
+const page = pagesFor(lang).find((item) => item.slug === id)!;
+const extra = extrasFor(lang)[id];
+
+const meta: Record<string, { figure: string; tint: Tint; title: Record<'es' | 'en', string>; type: string }> = {
+  soluciones: { figure: 'relays', tint: 'mint', title: { es: 'Relés por área', en: 'Relays by department' }, type: 'WebPage' },
+  precios: { figure: 'sequencer', tint: 'butter', title: { es: 'Programador de levas', en: 'Cam programmer' }, type: 'WebPage' },
+  contacto: { figure: 'telegraph', tint: 'blush', title: { es: 'Manipulador Morse', en: 'Morse key' }, type: 'ContactPage' },
+};
+const crumbName: Record<string, Record<'es' | 'en', string>> = {
+  soluciones: { es: 'Soluciones', en: 'Solutions' },
+  precios: { es: 'Precios', en: 'Pricing' },
+  contacto: { es: 'Contacto', en: 'Contact' },
+};
+const m = meta[id];
+// The same template for all three; Contacto adds its form beside the headline.
+const props = {
+  title: page.title,
+  description: page.description,
+  kicker: extra.kicker,
+  h1: page.h1,
+  lead: page.lead,
+  blocks: page.blocks,
+  faq: page.faq,
+  deliverablesTitle: extra.deliverablesTitle,
+  deliverables: extra.deliverables,
+  related: extra.related.filter((slug) => !['precios', 'contacto', 'soluciones'].includes(slug)),
+  ctaTitle: extra.ctaTitle,
+  ctaText: extra.ctaText,
+  ctaHref: extra.ctaHref.startsWith('mailto:') ? extra.ctaHref : pathTo('contacto', lang),
+  ctaLabel: extra.ctaLabel,
+  crumbs: [
+    { name: lang === 'en' ? 'Home' : 'Inicio', path: pathTo('home', lang) },
+    { name: crumbName[id][lang], path: pathTo(id as PageKey, lang) },
+  ],
+  figure: m.figure,
+  sceneTitle: m.title[lang],
+  tint: m.tint,
+  pageType: m.type,
+};
+---
+
+{
+  id === 'contacto' ? (
+    <DocPage {...props}>
+      <ContactForm slot="hero-aside" />
+    </DocPage>
+  ) : (
+    <DocPage {...props} />
+  )
+}

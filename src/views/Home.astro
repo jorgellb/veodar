@@ -1,0 +1,163 @@
+---
+// Home page, in the language of its URL (/ or /en/).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/home/Hero.astro';
+import Pillars from '../components/home/Pillars.astro';
+import Process from '../components/home/Process.astro';
+import Principles from '../components/home/Principles.astro';
+import ServiceGrid from '../components/ServiceGrid.astro';
+import Faq from '../components/Faq.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import { servicesFor, serviceHref } from '../data/services';
+import { faqLd, site, siteText } from '../data/site';
+import { langOf, pathTo } from '../i18n';
+import { startLinks } from '../i18n/links';
+
+const lang = langOf(Astro.url);
+const services = servicesFor(lang);
+startLinks(Astro.url.pathname);
+
+const faqEs = [
+  {
+    q: '¿Qué tipo de automatizaciones con IA hacéis?',
+    a: 'Tareas concretas que ya existen y se repiten: clasificar correos y tickets, extraer datos de documentos y facturas, preparar borradores de respuesta, conciliar pedidos o avisar cuando algo no cuadra. Usamos agentes y flujos conectados a vuestro ERP, CRM o correo, con una persona o una regla que confirma antes de publicar.',
+  },
+  {
+    q: '¿Con qué modelos de IA trabajáis?',
+    a: 'Con el que mejor resuelva la tarea: Claude, GPT, Gemini o modelos abiertos alojados por vosotros. Conectamos herramientas con MCP y orquestamos con LangGraph, n8n o código propio. La tarea y las reglas no quedan atadas a un proveedor.',
+  },
+  {
+    q: '¿Web, app móvil o aplicación de escritorio?',
+    a: 'Lo decide el trabajo. Web si hay cuentas, permisos y un dato que otro sistema lee mañana; móvil si alguien registra el trabajo de pie y sin cobertura; escritorio si el puesto depende de archivos locales o aparatos. Si no encaja ninguno, lo decimos.',
+  },
+  {
+    q: '¿Quién es el propietario del código?',
+    a: 'Vuestra empresa. El repositorio, el dominio, las cuentas de nube y las de las tiendas de aplicaciones se crean a vuestro nombre. Entregamos la guía de despliegue para que otro equipo pueda seguir sin nosotros.',
+  },
+  {
+    q: '¿Cuánto cuesta un proyecto?',
+    a: 'Depende del alcance: roles y permisos, integraciones, trabajo sin conexión, publicación en tiendas o el nivel de autonomía de la IA. No publicamos tarifa; en la primera respuesta os decimos si encaja y qué habría que acotar para dar una cifra cerrada.',
+  },
+  {
+    q: '¿Trabajáis con empresas fuera de España?',
+    a: 'Sí, en castellano o en inglés, con equipos en España, Latinoamérica y el resto de Europa. El método no cambia con la distancia: ejemplo real, alcance escrito y un primer corte que alguien usa.',
+  },
+  {
+    q: '¿También hacéis diseño, 3D y SEO?',
+    a: 'Sí. Nuestro estudio cubre identidad de marca, diseño web, desarrollo creativo, webs 3D, configuradores, vídeos de lanzamiento, rediseños sin perder posicionamiento y SEO con visibilidad en buscadores de IA.',
+  },
+];
+
+const faqEn = [
+  {
+    q: 'What kind of AI automation do you build?',
+    a: "Specific tasks that already exist and repeat: sorting emails and tickets, extracting data from documents and invoices, drafting replies, reconciling orders or flagging when something doesn't add up. We use agents and workflows connected to your ERP, CRM or email, with a person or a rule that confirms before anything is published.",
+  },
+  {
+    q: 'Which AI models do you work with?',
+    a: "Whichever solves the task best: Claude, GPT, Gemini or open models hosted by you. We connect tools with MCP and orchestrate with LangGraph, n8n or our own code. The task and the rules aren't tied to a provider.",
+  },
+  {
+    q: 'Website, mobile app or desktop application?',
+    a: "The work decides. Web if there are accounts, permissions and data another system reads tomorrow; mobile if someone logs work standing up and without signal; desktop if the workstation depends on local files or devices. If none fits, we say so.",
+  },
+  {
+    q: 'Who owns the code?',
+    a: 'Your company. The repository, the domain, the cloud accounts and the app store accounts are created in your name. We hand over the deployment guide so another team can carry on without us.',
+  },
+  {
+    q: 'How much does a project cost?',
+    a: "It depends on the scope: roles and permissions, integrations, offline work, app store publishing or how autonomous the AI is. We don't publish a rate card; in our first reply we tell you whether it fits and what would need narrowing to give a firm figure.",
+  },
+  {
+    q: 'Do you work with companies outside Spain?',
+    a: "Yes, in English or Spanish, with teams in Spain, Latin America and the rest of Europe. Distance doesn't change the method: a real example, a written scope and a first release someone uses.",
+  },
+  {
+    q: 'Do you also do design, 3D and SEO?',
+    a: 'Yes. Our studio covers brand identity, web design, creative development, 3D websites, configurators, launch videos, redesigns that keep your rankings and SEO with visibility in AI search.',
+  },
+];
+const faq = lang === 'en' ? faqEn : faqEs;
+
+const T = {
+  es: {
+    title: 'Automatizaciones con IA y software a medida',
+    description:
+      'Automatizaciones con IA, desarrollo web, apps móviles y de escritorio, diseño, 3D y SEO. Un mismo equipo diseña y construye, con el código a tu nombre.',
+    eyebrow: 'Servicios',
+    lead: 'La ingeniería pone el software a trabajar. El estudio hace que se entienda, se recuerde y se encuentre.',
+    all: 'Ver todos los servicios',
+    catalog: 'Servicios de Veodar',
+  },
+  en: {
+    title: 'AI Automation and Custom Software Studio',
+    description:
+      'AI automation, web development, mobile and desktop apps, design, 3D and SEO. One team designs and builds it, with the code in your company’s name.',
+    eyebrow: 'Services',
+    lead: 'Engineering puts software to work. The studio makes it understood, remembered and found.',
+    all: 'See all services',
+    catalog: 'Veodar services',
+  },
+}[lang];
+
+const ld = [
+  {
+    '@type': 'ProfessionalService',
+    '@id': `${site.url}/#service`,
+    name: 'Veodar',
+    url: `${site.url}/`,
+    email: site.email,
+    description: siteText[lang].description,
+    provider: { '@id': `${site.url}/#organization` },
+    availableLanguage: ['Spanish', 'English'],
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: T.catalog,
+      itemListElement: services.map((service) => ({
+        '@type': 'Offer',
+        itemOffered: {
+          '@type': 'Service',
+          name: service.name,
+          description: service.description,
+          url: new URL(serviceHref(service.slug, lang), site.url).href,
+        },
+      })),
+    },
+  },
+  faqLd(faq),
+];
+---
+
+<BaseLayout title={T.title} description={T.description} jsonLd={ld} darkHero>
+  <Hero />
+  <Pillars />
+
+  <section id="servicios" class="bg-paper-2/60 py-24 md:py-36" data-spine="0.5" aria-labelledby="services-title">
+    <div class="wrap">
+      <div class="grid gap-8 md:grid-cols-[1.2fr_1fr] md:items-end">
+        <div data-reveal>
+          <p class="eyebrow">{T.eyebrow}</p>
+          <h2 id="services-title" class="display h-xl mt-5 max-w-[15ch]">
+            {lang === 'en' ? <>Twelve services. <em>One</em> team behind them.</> : <>Doce servicios. <em>Un</em> equipo que los une.</>}
+          </h2>
+        </div>
+        <div data-reveal style="--d:100ms">
+          <p class="lead max-w-[44ch]">
+            {T.lead}
+          </p>
+          <a href={pathTo('servicios', lang)} class="link-arrow mt-5">{T.all} <Icon name="arrow" size={16} /></a>
+        </div>
+      </div>
+      <div class="mt-16">
+        <ServiceGrid />
+      </div>
+    </div>
+  </section>
+
+  <Process />
+  <Principles />
+  <Faq items={faq} />
+  <CtaBand />
+</BaseLayout>

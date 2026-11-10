@@ -1,5 +1,5 @@
 import { iso, radialTicks, translateAlong } from '../iso-kit.mjs';
-import { ease, helpers, span, type Factory, type Proj, type Vec3 } from './runtime';
+import { tr, ease, helpers, span, type Factory, type Proj, type Vec3 } from './runtime';
 
 const CYCLE = 11.5;
 const SCAN: [number, number] = [0.7, 6.6];
@@ -179,19 +179,19 @@ const create: Factory = (root, M) => {
       html += `<path class="scr-s scr-glow" data-t="acc" d="M${(Vw.cx - 24).toFixed(1)} ${y.toFixed(1)}h48"/>`;
     }
     mesh.innerHTML = html;
-    const label = `caras ${String(cleared ? 0 : scanned).padStart(2, '0')}/20`;
+    const label = tr(`caras ${String(cleared ? 0 : scanned).padStart(2, '0')}/20`, `faces ${String(cleared ? 0 : scanned).padStart(2, '0')}/20`);
     if (facesText.textContent !== label) facesText.textContent = label;
     h.on(lampScan, scanning);
     h.on(lampDone, u >= SCAN[1] && !cleared);
 
     h.say(
       scanning
-        ? `Escaneando · ${Math.round(((zs - zMin) / (zMax - zMin)) * 100)} % · ${scanned} de 20 caras`
+        ? tr(`Escaneando · ${Math.round(((zs - zMin) / (zMax - zMin)) * 100)} % · ${scanned} de 20 caras`, `Scanning · ${Math.round(((zs - zMin) / (zMax - zMin)) * 100)}% · ${scanned} of 20 faces`)
         : cleared
-          ? 'Pieza nueva en el plato'
+          ? tr('Pieza nueva en el plato', 'New part on the turntable')
           : u < SCAN[0]
-            ? 'Pieza en el plato · láser listo'
-            : 'Malla completa · 20 caras · gira a 60 fps',
+            ? tr('Pieza en el plato · láser listo', 'Part on the turntable · laser ready')
+            : tr('Malla completa · 20 caras · gira a 60 fps', 'Mesh complete · 20 faces · spinning at 60 fps'),
     );
   };
   return { apply, still: 4.2 };
