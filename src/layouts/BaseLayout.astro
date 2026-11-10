@@ -3,6 +3,8 @@ import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import { site, organizationLd, websiteLd } from '../data/site';
+import Analytics from '@vercel/analytics/astro';
+import SpeedInsights from '@vercel/speed-insights/astro';
 
 interface Props {
   title: string;
@@ -67,6 +69,11 @@ const graph = {
     </main>
     <Footer />
     <canvas class="net-canvas" data-network aria-hidden="true"></canvas>
+    <!-- Vercel: visits (Web Analytics) and real-user Core Web Vitals (Speed Insights).
+         Both are cookieless and only collect on the deployed site. They live in the body,
+         not the head: their custom elements would close the head early. -->
+    <Analytics />
+    <SpeedInsights />
     <script>
       import { startNetwork } from '../scripts/network';
 
