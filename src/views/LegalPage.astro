@@ -1,0 +1,179 @@
+---
+// Legal notice, privacy policy and cookie policy: a plain, readable document.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { LEGAL_UPDATED, legalFor, type LegalKey } from '../data/legal';
+import { breadcrumbLd } from '../data/site';
+import { langOf, pathTo } from '../i18n';
+
+interface Props {
+  doc: LegalKey;
+}
+const { doc } = Astro.props;
+const lang = langOf(Astro.url);
+const docs = legalFor(lang);
+const d = docs[doc];
+const T = {
+  es: { home: 'Inicio', updated: 'Última actualización', toc: 'En esta página', others: 'Otros textos legales' },
+  en: { home: 'Home', updated: 'Last updated', toc: 'On this page', others: 'Other legal pages' },
+}[lang];
+const others = (['avisoLegal', 'privacidad', 'cookies'] as LegalKey[]).filter((key) => key !== doc);
+const anchor = (i: number) => `s${i + 1}`;
+const html = (body: string) => (/^<(ul|button|ol)/.test(body) ? body : `<p>${body}</p>`);
+const ld = [
+  breadcrumbLd([
+    { name: T.home, path: pathTo('home', lang) },
+    { name: d.h1, path: pathTo(doc, lang) },
+  ]),
+];
+---
+
+<BaseLayout title={d.title} description={d.description} jsonLd={ld}>
+  <section class="pt-14 pb-8 md:pt-20">
+    <div class="wrap">
+      <p class="eyebrow" data-reveal>{d.eyebrow}</p>
+      <h1 class="display h-xl mt-5 max-w-[16ch]" data-reveal style="--d:60ms">{d.h1}</h1>
+      <p class="lead mt-6 max-w-[58ch]" data-reveal style="--d:120ms">{d.lead}</p>
+      <p class="mt-6 font-mono text-[12px] tracking-[0.06em] text-muted" data-reveal style="--d:160ms">
+        {T.updated}: <time datetime={LEGAL_UPDATED.iso}>{LEGAL_UPDATED[lang]}</time>
+      </p>
+    </div>
+  </section>
+
+  <section class="border-t border-line py-14 md:py-20" data-trunk-start="0.5">
+    <div class="wrap grid gap-12 lg:grid-cols-[240px_1fr] lg:gap-20">
+      <aside class="hidden lg:block">
+        <nav class="sticky top-28" aria-label={T.toc}>
+          <p class="font-mono text-[11.5px] tracking-[0.12em] text-muted uppercase">{T.toc}</p>
+          <ul class="mt-4 grid gap-1 border-l border-line">
+            {
+              d.sections.map((section, i) => (
+                <li>
+                  <a href={`#${anchor(i)}`} class="legal-toc">
+                    {section.heading}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </aside>
+
+      <div class="max-w-[720px]">
+        {
+          d.sections.map((section, i) => (
+            <article id={anchor(i)} class="legal-block">
+              <h2 class="legal-h">{section.heading}</h2>
+              <div class="legal-body mt-4">
+                {section.body.map((body) => (
+                  <Fragment set:html={html(body)} />
+                ))}
+              </div>
+            </article>
+          ))
+        }
+        {d.note && <p class="mt-12 text-[13.5px] leading-relaxed text-muted">{d.note}</p>}
+
+        <nav class="mt-14 border-t border-line pt-8" aria-label={T.others}>
+          <p class="font-mono text-[11.5px] tracking-[0.12em] text-muted uppercase">{T.others}</p>
+          <ul class="mt-4 flex flex-wrap gap-3">
+            {
+              others.map((key) => (
+                <li>
+                  <a href={pathTo(key, lang)} class="link-arrow">
+                    {docs[key].h1} <Icon name="arrow" size={15} />
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .legal-h {
+    font-family: var(--font-display);
+    font-size: clamp(1.45rem, 2.2vw, 1.8rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 420;
+  }
+  .legal-block + .legal-block {
+    margin-top: 3rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .legal-body {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--color-ink-2);
+  }
+  .legal-body :global(p + p),
+  .legal-body :global(p + ul),
+  .legal-body :global(ul + p),
+  .legal-body :global(p + button) {
+    margin-top: 1em;
+  }
+  .legal-body :global(ul) {
+    display: grid;
+    gap: 0.55em;
+    padding-left: 0;
+  }
+  .legal-body :global(li) {
+    position: relative;
+    padding-left: 1.3em;
+  }
+  .legal-body :global(li)::before {
+    content: '';
+    position: absolute;
+    left: 0.15em;
+    top: 0.68em;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--color-accent);
+  }
+  .legal-body :global(strong) {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .legal-body :global(a) {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-underline-offset: 3px;
+  }
+  .legal-body :global(.legal-btn) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 1.2rem;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-size: 15px;
+    font-weight: 560;
+    transition: transform 0.35s var(--ease-spring);
+  }
+  .legal-body :global(.legal-btn:active) {
+    transform: translateY(1px) scale(0.98);
+  }
+  .legal-toc {
+    display: block;
+    margin-left: -1px;
+    padding: 6px 0 6px 16px;
+    border-left: 2px solid transparent;
+    font-size: 14px;
+    color: var(--color-muted);
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .legal-toc:hover {
+    color: var(--color-ink);
+    border-left-color: var(--color-accent);
+  }
+</style>

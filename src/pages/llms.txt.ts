@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { servicesFor, serviceGroupsFor, serviceHref } from '../data/services';
 import { sectorsFor } from '../data/sectors';
-import { site, siteText } from '../data/site';
+import { company, site, siteText } from '../data/site';
 import { pathTo, sectorHref, type Lang } from '../i18n';
 
 // llms.txt (llmstxt.org): a plain summary for AI assistants and answer engines,
@@ -29,6 +29,7 @@ export const GET: APIRoute = () => {
 
 Veodar is an engineering and design studio based in Spain. One team designs and builds AI automations, web applications, mobile and desktop apps, plus brand, web design, interactive 3D, launch videos and SEO. It works in Spanish and English with companies in Spain, Latin America and the rest of Europe. Code, domain, cloud and app store accounts are created in the client's name. In AI automation, the AI proposes and a person or a written rule confirms; credentials are minimal, revocable and never live in the prompt.
 
+Company: ${company.legalName} (Spanish tax ID ${company.taxId}), ${company.street}, ${company.postalCode} ${company.locality}, ${company.region}, Spain
 Contact: ${site.email} · ${url(pathTo('contacto', 'en'))}
 Languages: Spanish (${url('/')}) and English (${url('/en/')})
 
