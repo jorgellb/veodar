@@ -1,0 +1,352 @@
+---
+import svg from '../../generated/nexus.svg?raw';
+import M from '../../generated/nexus.json';
+import '../../styles/anatomy-iso.css';
+
+// Sockets where the page's fibres drop in, as fractions of the stage.
+const ports = Object.fromEntries(Object.entries(M.ports).map(([id, [x, y]]) => [id, [x / M.w, y / M.h]]));
+const trunkX = M.trunk[M.trunk.length - 1][0] / M.w;
+const pct = ([x, y]: number[]) => `left:${((x / M.w) * 100).toFixed(2)}%;top:${((y / M.h) * 100).toFixed(2)}%`;
+---
+
+<figure class="nexus iso" data-theme="night" data-nexus>
+  <div class="nexus-stage" data-hub-target data-quiet data-trunk-start={trunkX.toFixed(4)} data-ports={JSON.stringify(ports)}>
+    <Fragment set:html={svg} />
+    <span class="nexus-note nexus-note--core" style={pct(M.anchors.core)}><i></i>La IA propone</span>
+    <span class="nexus-note nexus-note--review" style={pct(M.anchors.review)}><i></i>Una persona confirma</span>
+    <span class="nexus-cap" style={pct(M.anchors.left)}>Tus sistemas</span>
+    <span class="nexus-cap" style={pct(M.anchors.right)}>Lo que construimos</span>
+  </div>
+  <figcaption class="sr-only">
+    Cada tarea sale de uno de los sistemas de la empresa, pasa por el núcleo de IA y llega a uno de los productos que construimos. Cuando hace falta, una persona confirma antes de seguir.
+  </figcaption>
+</figure>
+
+<style>
+  .nexus {
+    margin: 0;
+  }
+  /* The page's chips sit a fixed distance from the window edge. On windows a little
+     over 1280px wide the scene narrows so every socket stays inboard of its chip,
+     which is what keeps the fibres from crossing. */
+  @media (min-width: 1280px) {
+    .nexus {
+      max-width: min(100%, calc(124.25vw - 509px));
+      margin-inline: auto;
+    }
+  }
+  .nexus-stage {
+    position: relative;
+  }
+  .nexus :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .nexus-note {
+    position: absolute;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 540;
+    white-space: nowrap;
+    color: var(--color-paper);
+    background: rgb(22 20 44 / 0.72);
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.16);
+    backdrop-filter: blur(6px);
+    pointer-events: none;
+    transition:
+      opacity 0.4s,
+      box-shadow 0.4s;
+    opacity: 0.55;
+  }
+  .nexus-note i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+  .nexus-note[data-on] {
+    opacity: 1;
+    box-shadow:
+      inset 0 0 0 1px rgb(255 90 31 / 0.7),
+      0 0 24px -4px rgb(255 90 31 / 0.6);
+  }
+  .nexus-note--core {
+    transform: translate(46px, -8px);
+  }
+  /* Hangs under the platform rim, clear of the trunk, on a leader that starts at the console. */
+  .nexus-note--review {
+    transform: translate(calc(-100% + 27px), 32px);
+  }
+  .nexus-note--review::before {
+    content: '';
+    position: absolute;
+    right: 26px;
+    bottom: 100%;
+    width: 1px;
+    height: 32px;
+    background: linear-gradient(var(--color-accent), rgb(244 240 230 / 0.3));
+  }
+  .nexus-note--review::after {
+    content: '';
+    position: absolute;
+    right: 24px;
+    bottom: calc(100% + 30px);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+  @media (min-width: 900px) {
+    .nexus-note {
+      display: inline-flex;
+    }
+  }
+  /* Island captions: only where the page's chips, which name the islands, are hidden. */
+  .nexus-cap {
+    position: absolute;
+    display: none;
+    transform: translate(-50%, 12px);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: rgb(244 240 230 / 0.5);
+    pointer-events: none;
+  }
+  @media (min-width: 760.02px) and (max-width: 1279.98px) {
+    .nexus-cap {
+      display: block;
+    }
+  }
+  /* Phones: zoom on the core; the islands stay as hints at both edges. */
+  @media (max-width: 760px) {
+    .nexus-stage {
+      overflow: hidden;
+      margin-inline: -20px;
+    }
+    .nexus :global(svg) {
+      width: 210%;
+      margin-left: -55%;
+    }
+  }
+</style>
+
+<script>
+  import { iso, pathOf, radialTicks, translateAlong } from '../../iso/iso-kit.mjs';
+  import { clamp01, drive, ease, helpers, pulse, span, type Proj, type Vec3 } from '../../iso/live/runtime';
+  import M from '../../generated/nexus.json';
+
+  // Each story takes one of the client's systems to one of the things we build.
+  const STORIES = [
+    { src: 'correo', dst: 'agentes', route: 'Correo → IA → Agentes IA', did: 'clasifica el correo y deja el borrador', review: false },
+    { src: 'erp', dst: 'web', route: 'ERP → IA → Web', did: 'pedidos y stock, al portal de clientes', review: false },
+    { src: 'crm', dst: 'movil', route: 'CRM → IA → App móvil', did: 'aviso al comercial en su teléfono', review: false },
+    { src: 'documentos', dst: 'escritorio', route: 'Documentos → IA → Escritorio', did: 'extrae el contrato y una persona lo confirma', review: true },
+  ];
+  // Seconds from the start of a story: down the chip's fibre, across the island,
+  // into the core, out to a product, and back up that product's fibre.
+  const T = { drop: 1.1, feed: [1.0, 1.4], in: [1.4, 2.2], think: [2.1, 3.4], out: [3.3, 4.1], land: 4.1, back: [4.4, 4.8], end: 5.5 };
+  const EVERY = 4.6;
+
+  const root = document.querySelector<HTMLElement>('[data-nexus]');
+  if (root) {
+    const P = M.P as Proj;
+    const h = helpers(root, P);
+    const ringsBack = h.q('[data-part="rings-back"]');
+    const ringsFront = h.q('[data-part="rings-front"]');
+    const halo = h.q('[data-part="halo"]');
+    const shine = h.q('[data-part="shine"]');
+    const beam = h.q('[data-part="beam"]');
+    const emitter = h.q('[data-part="emitter"]');
+    const ticks = h.q('[data-part="ticks"]');
+    const beads = h.q('[data-part="beads"]');
+    const button = h.q('[data-part="button"]');
+    const agentHalo = h.q('[data-part="agent-halo"]');
+    const noteCore = root.querySelector('.nexus-note--core');
+    const noteReview = root.querySelector('.nexus-note--review');
+    const lamps = [...root.querySelectorAll('.veo-lamp[data-part]')];
+    const uiOf = new Map<string, SVGElement[]>();
+    const ui = (id: string) => {
+      if (!uiOf.has(id)) uiOf.set(id, [...root.querySelectorAll<SVGElement>(`[data-part="ui-${id}"] [data-step]`)]);
+      return uiOf.get(id)!;
+    };
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const a = (P.azimuth * Math.PI) / 180;
+    const e = (P.elevation * Math.PI) / 180;
+    const view: Vec3 = [Math.cos(a) * Math.cos(e), Math.sin(a) * Math.cos(e), Math.sin(e)];
+    const C: Vec3 = [0, 0, M.core.orbZ];
+
+    // Polylines by length, for beads.
+    const measure = (pts: number[][]) => {
+      const acc = [0];
+      for (let i = 1; i < pts.length; i++) acc.push(acc[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+      return { pts, acc, len: acc[acc.length - 1] };
+    };
+    const along = (line: ReturnType<typeof measure>, f: number) => {
+      const s = clamp01(f) * line.len;
+      let i = 1;
+      while (i < line.acc.length - 1 && line.acc[i] < s) i++;
+      const t = (s - line.acc[i - 1]) / (line.acc[i] - line.acc[i - 1] || 1);
+      return [line.pts[i - 1][0] + (line.pts[i][0] - line.pts[i - 1][0]) * t, line.pts[i - 1][1] + (line.pts[i][1] - line.pts[i - 1][1]) * t];
+    };
+    const lines = (set: Record<string, number[][]>) => Object.fromEntries(Object.entries(set).map(([id, pts]) => [id, measure(pts)]));
+    const feedIn = lines(M.feedIn);
+    const routeIn = lines(M.routeIn);
+    const routeOut = lines(M.routeOut);
+    const feedOut = lines(M.feedOut);
+    const trunk = measure(M.trunk as number[][]);
+
+    // A gyroscope ring: a circle tilted by `tilt` and turned about z by `turn`, split by depth.
+    const ring = (radius: number, tilt: number, turn: number) => {
+      const front: string[] = [];
+      const back: string[] = [];
+      let run: number[][] = [];
+      let near: boolean | null = null;
+      const ct = Math.cos(tilt);
+      const st = Math.sin(tilt);
+      const cz = Math.cos(turn);
+      const sz = Math.sin(turn);
+      for (let i = 0; i <= 64; i++) {
+        const th = (i / 64) * Math.PI * 2;
+        const x0 = radius * Math.cos(th);
+        const y0 = radius * Math.sin(th) * ct;
+        const z0 = radius * Math.sin(th) * st;
+        const rel: Vec3 = [x0 * cz - y0 * sz, x0 * sz + y0 * cz, z0];
+        const isNear = rel[0] * view[0] + rel[1] * view[1] + rel[2] * view[2] > 0;
+        const flat = iso([C[0] + rel[0], C[1] + rel[1], C[2] + rel[2]], P);
+        if (near === null) near = isNear;
+        if (isNear !== near) {
+          run.push(flat);
+          (near ? front : back).push(pathOf(run));
+          run = [flat];
+          near = isNear;
+          continue;
+        }
+        run.push(flat);
+      }
+      if (run.length > 1) (near ? front : back).push(pathOf(run));
+      return { front: front.join(''), back: back.join('') };
+    };
+
+    type Run = { i: number; t0: number; dropped: boolean; landed: boolean; done: boolean };
+    const runs: Run[] = [];
+    const queue: number[] = [];
+    const filled: Record<string, number> = {};
+    let next = 0;
+    let nextAt = 0.4;
+    let spin = 0;
+    let done = 0;
+    let reviewed = 0;
+
+    const emit = (name: string, detail: unknown) => document.dispatchEvent(new CustomEvent(name, { detail }));
+
+    // A chip on the page asks for its story: run it next.
+    document.addEventListener('nexus:request', (event) => {
+      const id = (event as CustomEvent<{ id: string }>).detail.id;
+      const i = STORIES.findIndex((s) => s.src === id || s.dst === id);
+      if (i < 0 || queue.includes(i)) return;
+      queue.unshift(i);
+      nextAt = Math.min(nextAt, clockNow + 0.15);
+    });
+    let clockNow = 0;
+
+    const apply = (t: number, dt: number) => {
+      clockNow = t;
+      if (t >= nextAt && !still) {
+        const i = queue.length ? queue.shift()! : next++ % STORIES.length;
+        runs.push({ i, t0: t, dropped: false, landed: false, done: false });
+        filled[STORIES[i].dst] = 0;
+        nextAt = t + EVERY;
+      }
+      if (still && !runs.length) runs.push({ i: 0, t0: t - 2.6, dropped: true, landed: false, done: false });
+
+      let think = 0;
+      let press = 0;
+      let reviewing = false;
+      let dots = '';
+      const lit = new Set<string>();
+      const bead = ([x, y]: number[], dim = false) => `<circle class="nx-bead"${dim ? ' data-dim' : ''} cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${dim ? 2 : 3.4}"/>`;
+
+      for (const run of runs) {
+        const s = STORIES[run.i];
+        const tau = t - run.t0;
+        if (!run.dropped) {
+          run.dropped = true;
+          emit('nexus:pulse', { id: s.src, dur: T.drop });
+        }
+        if (tau > T.drop - 0.2 && tau < T.feed[1]) lit.add(`sock-${s.src}`);
+        if (tau > T.feed[0] && tau < T.feed[1]) dots += bead(along(feedIn[s.src], ease(span(tau, T.feed[0], T.feed[1]))));
+        if (tau > T.feed[1] - 0.1 && tau < T.in[1]) lit.add(`src-${s.src}`);
+        if (tau > T.in[0] && tau < T.in[1]) dots += bead(along(routeIn[s.src], ease(span(tau, T.in[0], T.in[1]))));
+        if (tau > T.in[0] + 0.3 && tau < T.in[1] + 0.2) lit.add('junction-in');
+        think = Math.max(think, pulse(tau, T.think[0], T.think[1], 0.4));
+        if (s.review) {
+          press = Math.max(press, pulse(tau, 2.6, 3.1, 0.12));
+          if (tau > 2.7 && tau < 3.7) reviewing = true;
+        }
+        if (tau > T.out[0] && tau < T.out[1]) dots += bead(along(routeOut[s.dst], ease(span(tau, T.out[0], T.out[1]))));
+        if (tau > T.out[0] && tau < T.out[0] + 0.6) lit.add('junction-out');
+        if (tau >= T.land) {
+          lit.add(`dst-${s.dst}`);
+          filled[s.dst] = Math.max(filled[s.dst] ?? 0, span(tau, T.land - 0.1, T.land + 0.8));
+        }
+        if (tau > T.back[0] && tau < T.back[1]) dots += bead(along(feedOut[s.dst], ease(span(tau, T.back[0], T.back[1]))));
+        // The product answers up its own fibre, to its chip on the page.
+        if (tau >= T.back[1] - 0.05) {
+          if (tau < T.back[1] + 0.5) lit.add(`sock-${s.dst}`);
+          if (!run.landed) {
+            run.landed = true;
+            emit('nexus:pulse', { id: s.dst, dur: 1.0 });
+          }
+        }
+        if (tau >= T.end && !run.done) {
+          run.done = true;
+          done += 1;
+          if (s.review) reviewed += 1;
+          emit('nexus:done', { route: s.route, did: s.did, review: s.review, done, reviewed });
+        }
+      }
+      for (let i = runs.length - 1; i >= 0; i--) if (runs[i].done && t - runs[i].t0 > T.end + 0.4) runs.splice(i, 1);
+
+      // The trunk always carries work on to the rest of the page.
+      for (let j = 0; j < 3; j++) dots += bead(along(trunk, (t * 0.32 + j / 3) % 1), true);
+      beads.innerHTML = dots;
+
+      // Core: rings speed up and the orb brightens while it works.
+      spin += dt * (0.5 + think * 3.2);
+      const r1 = ring(M.core.rings[0], 1.08, spin);
+      const r2 = ring(M.core.rings[1], -0.86, -spin * 0.72 + 1.1);
+      ringsBack.innerHTML = `<path class="nx-ring" data-back d="${r1.back}"/><path class="nx-ring" data-back data-acc d="${r2.back}"/>`;
+      ringsFront.innerHTML = `<path class="nx-ring" d="${r1.front}"/><path class="nx-ring" data-acc d="${r2.front}"/>`;
+      halo.setAttribute('opacity', (0.42 + think * 0.58).toFixed(2));
+      shine.setAttribute('opacity', (think * 0.22).toFixed(2));
+      beam.setAttribute('opacity', (0.35 + think * 0.65).toFixed(2));
+      emitter.setAttribute('opacity', (0.5 + think * 0.5).toFixed(2));
+      agentHalo.setAttribute('opacity', (0.2 + (filled.agentes ?? 0) * 0.5).toFixed(2));
+      const tk = radialTicks(0, 0, M.core.tickR, 48, 4, M.core.tickZ, [1.6, 3.4], P, spin * 0.25);
+      ticks.innerHTML = `<path class="iso-line" data-tone="lo" d="${tk.minor}"/><path class="iso-line" data-tone="mid" d="${tk.major}"/>`;
+      button.setAttribute('transform', translateAlong(P, [0, 0, -M.button * press]));
+      if (reviewing) lit.add('review');
+      noteCore?.toggleAttribute('data-on', think > 0.5);
+      noteReview?.toggleAttribute('data-on', reviewing);
+
+      // Lamps and product screens.
+      lamps.forEach((el) => h.on(el, lit.has(el.getAttribute('data-part')!)));
+      for (const s of STORIES) {
+        const steps = ui(s.dst);
+        const f = filled[s.dst] ?? 1;
+        steps.forEach((el) => el.setAttribute('opacity', f * steps.length >= Number(el.dataset.step) + 0.5 || f >= 1 ? '1' : '0.12'));
+      }
+    };
+
+    drive(root, { apply, still: 2.6 });
+  }
+</script>

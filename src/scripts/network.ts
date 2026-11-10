@@ -7,7 +7,7 @@ type Pt = { x: number; y: number };
 type Node = Pt & { hub: boolean; flash: number; layer: 0 | 1 };
 type Edge = { a: number; b: number; layer: 0 | 1 };
 type Path = { pts: Pt[]; acc: number[]; len: number; width: number };
-type Packet = { path: number; s: number; speed: number; life: number; trail: number };
+type Packet = { path: number; s: number; speed: number; life: number; trail: number; bright?: boolean };
 type Hopper = { from: number; to: number; s: number; len: number; speed: number; hops: number };
 type Rect = { x: number; y: number; w: number; h: number };
 
@@ -34,6 +34,8 @@ export function startNetwork(canvas: HTMLCanvasElement) {
   let darks: Rect[] = [];
   let hubFrom = 0;
   let hubTo = 0;
+  let sockets: Pt[] = [];
+  const hubPath = new Map<string, number>();
   const ROW = 160;
   let pointer: Pt | null = null;
   let frame = 0;
@@ -145,6 +147,8 @@ export function startNetwork(canvas: HTMLCanvasElement) {
     canvas.height = Math.round(vh * dpr);
     docH = document.documentElement.scrollHeight;
     darks = [...document.querySelectorAll('[data-dark]')].map(docRect);
+    // Scenes drawn straight on the page keep the near mesh out from under them.
+    const quiet = [...document.querySelectorAll('[data-quiet]')].map(docRect);
     const anchors = [...document.querySelectorAll('main [data-node], footer [data-node]')]
       .map(docRect)
       .filter((r) => r.w > 40 && r.h > 40)
@@ -167,7 +171,10 @@ export function startNetwork(canvas: HTMLCanvasElement) {
             x: area.x + (gx + 0.5 + (rand() - 0.5) * 0.7) * cell,
             y: area.y + (gy + 0.5 + (rand() - 0.5) * 0.7) * cell,
           };
-          const skip = rand() < 0.16 || (layer === 1 && anchors.some((r) => inside(p, r, 14))) || (cell < 100 && !inside(p, area));
+          const skip =
+            rand() < 0.16 ||
+            (layer === 1 && (anchors.some((r) => inside(p, r, 14)) || quiet.some((r) => inside(p, r, 6)))) ||
+            (cell < 100 && !inside(p, area));
           if (skip) {
             index[gy].push(-1);
             continue;
@@ -228,6 +235,12 @@ export function startNetwork(canvas: HTMLCanvasElement) {
 
     const trunk: Pt[] = [];
     let cur: Pt | null = null;
+    const startEl = document.querySelector<HTMLElement>('[data-trunk-start]');
+    if (startEl) {
+      const r = docRect(startEl);
+      cur = { x: r.x + r.w * Number(startEl.dataset.trunkStart || 0.5), y: r.y + r.h };
+      trunk.push(cur);
+    }
     const jog = (x: number, y: number) => {
       if (!cur || Math.abs(cur.x - x) < 2 || y < cur.y + 20) return;
       const c1 = { x: cur.x, y };
@@ -274,30 +287,26 @@ export function startNetwork(canvas: HTMLCanvasElement) {
     // Two side fibres of the bundle.
     for (const off of [-4, 4]) paths.splice(1, 0, makePath(trunk.map((q) => ({ x: q.x + off, y: q.y })), 1));
 
-    // Hubs: labelled systems in the hero, each on its own fibre into the machine.
+    // Hubs: every labelled chip in the hero drops a fibre into its own socket on the scene's piers.
+    // The sockets stand in the same order as the chips, edge of the window inward, so no two fibres cross.
     hubFrom = paths.length;
-    const target = document.querySelector('[data-hub-target]');
-    if (target) {
+    hubPath.clear();
+    sockets = [];
+    const target = document.querySelector<HTMLElement>('[data-hub-target]');
+    if (target?.dataset.ports) {
       const t = docRect(target);
-      const hubs = [...document.querySelectorAll<HTMLElement>('[data-hub]')].filter((el) => el.offsetParent !== null);
-      const side = (dir: string) =>
-        hubs
-          .filter((el) => el.dataset.hub === dir)
-          .map((el) => ({ r: docRect(el), dir }))
-          .sort((a, b) => a.r.x + a.r.w / 2 - (b.r.x + b.r.w / 2));
-      // The outermost hub takes the outermost port and the lowest tray, so no two fibres cross.
-      const plug = (list: { r: Rect; dir: string }[], from: number, to: number) =>
-        list.forEach(({ r, dir }, i) => {
-          const share = list.length > 1 ? i / (list.length - 1) : 0.5;
-          const rank = dir === 'out' ? list.length - 1 - i : i;
-          const port = { x: t.x + t.w * (from + (to - from) * share), y: t.y - 6 };
-          const start = { x: r.x + r.w / 2, y: r.y + r.h + 3 };
-          const pts = routed(start, port.y - 22 - rank * 13, port);
-          paths.push(makePath(dir === 'out' ? pts.reverse() : pts, 1.2));
-          ports.push({ p: port, dark: isDark(port) });
-        });
-      plug(side('in'), 0.2, 0.44);
-      plug(side('out'), 0.56, 0.8);
+      const portOf = JSON.parse(target.dataset.ports) as Record<string, [number, number]>;
+      for (const el of document.querySelectorAll<HTMLElement>('[data-hub]')) {
+        const id = el.dataset.id;
+        if (el.offsetParent === null || !id || !portOf[id]) continue;
+        const r = docRect(el);
+        const port = { x: t.x + t.w * portOf[id][0], y: t.y + t.h * portOf[id][1] };
+        const start = { x: r.x + r.w / 2, y: r.y + r.h + 3 };
+        const pts = routed(start, port.y - 26, port, 22);
+        hubPath.set(id, paths.length);
+        paths.push(makePath(el.dataset.hub === 'out' ? pts.reverse() : pts, 1.2));
+        sockets.push(port);
+      }
     }
     hubTo = paths.length;
 
@@ -476,16 +485,21 @@ export function startNetwork(canvas: HTMLCanvasElement) {
         }
         const tail = at(path, Math.max(0, pk.s - pk.trail));
         const grad = ctx.createLinearGradient(head.x, y, tail.x, tail.y - sy);
-        grad.addColorStop(0, `rgba(${ACCENT}, 0.85)`);
+        grad.addColorStop(0, `rgba(${ACCENT}, ${pk.bright ? 1 : 0.85})`);
         grad.addColorStop(1, `rgba(${ACCENT}, 0)`);
         ctx.strokeStyle = grad;
-        ctx.lineWidth = pk.path === 0 ? 2 : 1.4;
+        ctx.lineWidth = pk.bright ? 2.8 : pk.path === 0 ? 2 : 1.4;
         ctx.stroke();
-        glow(head.x, y, pk.path === 0 ? 22 : 15);
+        glow(head.x, y, pk.bright ? 40 : pk.path === 0 ? 22 : 15);
         ctx.beginPath();
-        ctx.arc(head.x, y, pk.path === 0 ? 1.8 : 1.3, 0, Math.PI * 2);
+        ctx.arc(head.x, y, pk.bright ? 2.8 : pk.path === 0 ? 1.8 : 1.3, 0, Math.PI * 2);
         ctx.fillStyle = dark ? '#fff4ec' : `rgb(${ACCENT})`;
         ctx.fill();
+      }
+      // Sockets on the hero scene: a small ember where each fibre lands.
+      for (const p of sockets) {
+        const y = p.y - sy;
+        if (y > -20 && y < vh + 20) glow(p.x, y, 16);
       }
       for (const hp of hoppers) {
         const a = nodes[hp.from];
@@ -533,9 +547,12 @@ export function startNetwork(canvas: HTMLCanvasElement) {
 
     if (dt <= 0) return;
     // Advance.
-    for (const pk of packets) {
+    for (let i = packets.length - 1; i >= 0; i--) {
+      const pk = packets[i];
       pk.s += pk.speed * dt;
-      if (pk.s > paths[pk.path].len + pk.trail) pk.s = 0;
+      if (pk.s <= paths[pk.path].len + pk.trail) continue;
+      if (pk.bright) packets.splice(i, 1);
+      else pk.s = 0;
     }
     for (const n of nodes) if (n.flash > 0) n.flash = Math.max(0, n.flash - dt * 1.6);
     for (let i = hoppers.length - 1; i >= 0; i--) {
@@ -585,6 +602,13 @@ export function startNetwork(canvas: HTMLCanvasElement) {
   draw(0);
   run();
   addEventListener('resize', rebuild);
+  // The hero scene asks for one bright packet along a chip's fibre, timed to its own story.
+  document.addEventListener('nexus:pulse', (event) => {
+    const { id, dur } = (event as CustomEvent<{ id: string; dur: number }>).detail;
+    const index = hubPath.get(id);
+    if (index === undefined || still.matches) return;
+    packets.push({ path: index, s: 0, speed: paths[index].len / dur, life: 1, trail: 110, bright: true });
+  });
   new ResizeObserver(() => {
     if (Math.abs(document.documentElement.scrollHeight - docH) > 4) rebuild();
   }).observe(document.body);

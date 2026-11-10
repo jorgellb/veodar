@@ -169,3 +169,29 @@
 .veo-coil[data-on] .iso-top,.veo-coil[data-on] .iso-fill{fill:#ffc4a8}
 .veo-coil[data-on] .iso-shade{fill:#ff9b70}
 .veo-coil[data-on] .iso-line{stroke:#b8360a}
+/* Night theme: figures drawn straight on the dark hero */
+.iso[data-theme="night"]{
+  --anatomy-page:transparent;--anatomy-card:transparent;--anatomy-text:#c9c4dc;--anatomy-strong:#f4f0e6;--anatomy-muted:#8d87b4;
+  --anatomy-paper:#1a1737;--anatomy-face:#221e46;--anatomy-top:#262250;
+  --anatomy-shade-0:#121027;--anatomy-shade-1:#161330;--anatomy-shade-2:#1b1839;--anatomy-shade-3:#201c42;
+  --anatomy-lit-top:#5c2a16;--anatomy-lit-shade:#3d1c11;
+  --anatomy-hi:#efeadf;--anatomy-mid:#938dba;--anatomy-lo:#5a5485;--anatomy-faint:#37325f;--anatomy-lit:#ff5a1f;
+  --anatomy-halo:#000;--anatomy-halo-opacity:.5;--anatomy-dot:#efeadf;--anatomy-weight:.85px;
+  --anatomy-mono:"Geist Mono Variable",ui-monospace,monospace;
+}
+.iso[data-theme="night"] .scr{fill:#0a0919;stroke:#efeadf;stroke-opacity:.8}
+.iso[data-theme="night"] .veo-lamp .iso-top{fill:#2c2857}
+.iso[data-theme="night"] .veo-lamp :is(.iso-top,.iso-fill,.iso-shade){transition:fill .25s}
+.iso[data-theme="night"] .veo-lamp[data-on] :is(.iso-top,.iso-fill,.iso-shade){fill:#ff5a1f}
+.iso[data-theme="night"] .veo-lamp[data-on] .iso-edge{stroke:#ffd9c2}
+.iso[data-theme="night"] .veo-lamp[data-on]{filter:drop-shadow(0 0 5px #ff5a1f)}
+.nx-grid{fill:none;stroke:#f4f0e6;stroke-opacity:.09;stroke-width:.7px;vector-effect:non-scaling-stroke}
+.nx-cable-edge{fill:none;stroke:#0d0b1f;stroke-width:6px;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.nx-cable{fill:none;stroke:#6a6398;stroke-width:1.6px;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.nx-orb{stroke:#ffd9c2;stroke-opacity:.55;stroke-width:.8px;vector-effect:non-scaling-stroke}
+.nx-ring{fill:none;stroke:#efeadf;stroke-width:1.5px;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.nx-ring[data-back]{stroke-opacity:.38}
+.nx-ring[data-acc]{stroke:#ff8a5c}
+.nx-bead{fill:#fff1e6;stroke:#ff5a1f;stroke-width:1.4px;filter:drop-shadow(0 0 4px #ff5a1f)}
+.nx-bead[data-dim]{fill:#ff8a5c;stroke:none;filter:none;opacity:.75}
+[data-step]{transition:opacity .35s}
