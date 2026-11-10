@@ -36,6 +36,9 @@ interface Props {
 }
 
 const p = Astro.props;
+// A page can put something of its own beside the headline (Contacto puts its form);
+// the figure then moves under the text on wide screens and after it on phones.
+const aside = Astro.slots.has('hero-aside');
 const relatedServices = p.related.map((slug) => services.find((s) => s.slug === slug)).filter((s) => s !== undefined);
 const tintBg: Record<string, string> = {
   mint: 'bg-mint',
@@ -50,7 +53,7 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
 
 <BaseLayout title={p.title} description={p.description} jsonLd={ld}>
   <div class="read-progress" aria-hidden="true"></div>
-  <section class="pt-8 pb-16 md:pt-12 md:pb-24" data-spine="0.4885">
+  <section class="pt-8 pb-16 md:pt-12 md:pb-24" data-spine={aside ? '0.4726' : '0.4885'}>
     <div class="wrap">
       <nav aria-label="Migas de pan" class="font-mono text-[12px] tracking-[0.04em] text-muted">
         <ol class="flex flex-wrap items-center gap-2">
@@ -73,15 +76,23 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
         </ol>
       </nav>
 
-      <div class="mt-10 grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
-        <div>
+      <div class:list={['mt-10 grid gap-12 lg:gap-14', aside ? 'hero-aside items-start lg:grid-cols-[1fr_1.12fr]' : 'items-center lg:grid-cols-[1fr_1.05fr]']}>
+        <div class="hero-text">
           <p class="eyebrow" data-reveal>{p.kicker}</p>
           <h1 class="display h-xl mt-5 max-w-[14ch]" data-reveal style="--d:60ms">{p.h1}</h1>
           <p class="lead mt-7 max-w-[56ch]" data-reveal style="--d:120ms">{p.lead}</p>
-          <div class="mt-9 flex flex-wrap gap-3" data-reveal style="--d:180ms">
-            <a href={p.ctaHref ?? '/contacto/'} class="btn btn-primary">{p.ctaLabel ?? 'Cuéntanos tu proyecto'} <Icon name="arrow" size={17} class="arrow" /></a>
-            <a href="#detalle" class="btn btn-ghost">Leer el detalle</a>
-          </div>
+          {
+            !aside && (
+              <div class="mt-9 flex flex-wrap gap-3" data-reveal style="--d:180ms">
+                <a href={p.ctaHref ?? '/contacto/'} class="btn btn-primary">
+                  {p.ctaLabel ?? 'Cuéntanos tu proyecto'} <Icon name="arrow" size={17} class="arrow" />
+                </a>
+                <a href="#detalle" class="btn btn-ghost">
+                  Leer el detalle
+                </a>
+              </div>
+            )
+          }
           {
             p.stack && (
               <ul class="mt-10 flex flex-wrap gap-1.5" aria-label="Tecnologías" data-reveal style="--d:240ms">
@@ -92,12 +103,19 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
             )
           }
         </div>
-        <div data-reveal style="--d:140ms">
+        {
+          aside && (
+            <div class="hero-form" data-reveal style="--d:120ms">
+              <slot name="hero-aside" />
+            </div>
+          )
+        }
+        <div class="hero-figure" data-reveal style="--d:140ms">
           {
             p.figure === 'plant' ? (
               <Plant />
             ) : (
-              <Figure name={p.figure} fig="Fig. 01" title={p.sceneTitle ?? p.kicker} caption={p.sceneCaption} />
+              <Figure name={p.figure} fig="Fig. 01" title={p.sceneTitle ?? p.kicker} caption={p.sceneCaption} compact={aside} />
             )
           }
         </div>
@@ -191,6 +209,24 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
 </BaseLayout>
 
 <style>
+  /* With a hero aside: text and figure share the left column, the aside takes the right. */
+  @media (min-width: 1024px) {
+    .hero-aside {
+      grid-template-areas:
+        'text form'
+        'figure form';
+      grid-template-rows: auto 1fr;
+    }
+    .hero-aside .hero-text {
+      grid-area: text;
+    }
+    .hero-aside .hero-form {
+      grid-area: form;
+    }
+    .hero-aside .hero-figure {
+      grid-area: figure;
+    }
+  }
   .toc-link {
     display: block;
     margin-left: -1px;

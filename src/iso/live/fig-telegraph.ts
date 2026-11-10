@@ -31,9 +31,18 @@ const create: Factory = (root, M) => {
   const spools = h.qa('[data-spool]');
   const T = M.tape;
   let shown = 0;
+  // When the contact form sends, the key starts its transmission again from the top.
+  let shift = 0;
+  let now = 0;
+  let sent = false;
+  document.addEventListener('veo:sent', () => {
+    shift = now;
+    sent = true;
+  });
 
   const apply = (t: number) => {
-    const u = t % CYCLE;
+    now = t;
+    const u = (((t - shift) % CYCLE) + CYCLE) % CYCLE;
     // Key position: a fast eased press per event.
     let press = 0;
     let lit = 0;
@@ -87,7 +96,8 @@ const create: Factory = (root, M) => {
     const letters = [...WORD].filter((_, li) => events.filter((e) => e.letter === li).every((e) => e.off <= u)).join('');
     const inLetter = current ? current.letter : -1;
     const pattern = inLetter >= 0 ? CODE[WORD[inLetter]].replace(/\./g, '·').replace(/-/g, '–').split('').join(' ') : '';
-    h.say(u >= END ? 'HOLA enviado · ahora te toca a ti' : `Transmitiendo: ${letters || '…'}${pattern ? `  ${pattern}` : ''}`);
+    const done = sent ? 'Mensaje enviado · te respondemos por correo' : 'HOLA enviado · ahora te toca a ti';
+    h.say(u >= END ? done : `Transmitiendo: ${letters || '…'}${pattern ? `  ${pattern}` : ''}`);
   };
   return { apply, still: END + 0.4 };
 };

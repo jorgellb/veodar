@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "figures": "node iso/all.mjs"
+    "figures": "node iso/all.mjs",
+    "test": "node --test tests/"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

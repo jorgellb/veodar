@@ -34,6 +34,18 @@ El sitio se despliega en Vercel (proyecto `veodar`, dominio `veodar.com`): cada 
 - `vercel.json` — barra final obligatoria (`/servicios` responde 308 a `/servicios/`, una sola URL por página), redirecciones permanentes de las URL antiguas de servicios y cabeceras de seguridad y caché. Las redirecciones viven aquí y no en `astro.config.mjs`: así Vercel responde con un 308 real en lugar de una página con meta refresh.
 - `BaseLayout.astro` carga `@vercel/analytics` (visitas) y `@vercel/speed-insights` (Core Web Vitals de usuarios reales). Solo recogen datos en el sitio desplegado y hay que activarlos en el panel del proyecto (pestañas *Analytics* y *Speed Insights*). En el plan Hobby, Web Analytics incluye 50.000 eventos al mes sin eventos personalizados; Speed Insights, 10.000 eventos cada 30 días.
 
+### Formulario de contacto (Resend)
+
+`/contacto/` lleva un formulario (`src/components/ContactForm.astro`) que envía a una Vercel Function, `api/contacto.js`. La lógica (validación, trampas antispam y el correo) está en `api/_contact.js`, con pruebas en `tests/contact.test.js` (`npm test`). La función manda el mensaje con la API de Resend y el «responder» del correo va directo a quien escribió.
+
+Variables de entorno en Vercel (Settings → Environment Variables, entorno Production):
+
+- `RESEND_API_KEY` — la clave de Resend.
+- `CONTACT_TO` — los buzones que reciben los mensajes, separados por comas.
+- `CONTACT_FROM` — remitente, p. ej. `Veodar <web@veodar.com>`, cuando veodar.com esté verificado en Resend. Sin ella se usa `onboarding@resend.dev`, que solo entrega al correo con el que se creó la cuenta de Resend.
+
+Sin JavaScript el formulario se envía igual y vuelve a `/contacto/#enviado`, `#revisar` o `#no-enviado`. `astro dev` no sirve `api/`; la función se prueba con `npm test` o ya desplegada.
+
 ## Red de fibra (fondo)
 
 `src/scripts/network.ts` dibuja en un único `<canvas>` fijo la malla de nodos, la troncal y los paquetes de datos. Estos atributos la gobiernan:
