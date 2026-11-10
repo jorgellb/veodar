@@ -1,0 +1,45 @@
+---
+import DocPage from '../components/DocPage.astro';
+import { pages, extras } from '../data/pages';
+import type { Tint } from '../data/services';
+
+const meta: Record<string, { figure: string; tint: Tint; title: string }> = {
+  soluciones: { figure: 'relays', tint: 'mint', title: 'Relés por área' },
+  precios: { figure: 'sequencer', tint: 'butter', title: 'Programador de levas' },
+  contacto: { figure: 'telegraph', tint: 'blush', title: 'Manipulador Morse' },
+};
+
+export function getStaticPaths() {
+  return pages
+    .filter((page) => ['soluciones', 'precios', 'contacto'].includes(page.slug))
+    .map((page) => ({ params: { slug: page.slug }, props: { page } }));
+}
+
+const { page } = Astro.props;
+const extra = extras[page.slug];
+const m = meta[page.slug];
+---
+
+<DocPage
+  title={page.title}
+  description={page.description}
+  kicker={extra.kicker}
+  h1={page.h1}
+  lead={page.lead}
+  blocks={page.blocks}
+  faq={page.faq}
+  deliverablesTitle={extra.deliverablesTitle}
+  deliverables={extra.deliverables}
+  related={extra.related.filter((slug) => !['precios', 'contacto', 'soluciones'].includes(slug))}
+  ctaTitle={extra.ctaTitle}
+  ctaText={extra.ctaText}
+  ctaHref={extra.ctaHref}
+  ctaLabel={extra.ctaLabel}
+  crumbs={[
+    { name: 'Inicio', path: '/' },
+    { name: page.slug[0].toUpperCase() + page.slug.slice(1), path: `/${page.slug}/` },
+  ]}
+  figure={m.figure}
+  sceneTitle={m.title}
+  tint={m.tint}
+/>

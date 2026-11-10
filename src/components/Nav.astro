@@ -1,0 +1,733 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import ServiceGlyph from './ServiceGlyph.astro';
+import { services, serviceHref } from '../data/services';
+import { askAi } from '../data/site';
+
+interface Props {
+  tone?: 'light' | 'dark';
+}
+const { tone = 'light' } = Astro.props;
+
+const engineering = services.filter((service) => service.group === 'ingenieria');
+const studio = services.filter((service) => service.group === 'estudio');
+const featured = engineering[0];
+const engineeringRest = engineering.slice(1);
+
+const areas = [
+  { name: 'TI', desc: 'Marco, accesos y despliegue', href: '/soluciones/#ti', icon: 'layers' },
+  { name: 'Seguridad', desc: 'Qué dato, qué credencial', href: '/soluciones/#seguridad', icon: 'shield' },
+  { name: 'Finanzas', desc: 'Cierres sin copiar cifras', href: '/soluciones/#finanzas', icon: 'tag' },
+  { name: 'Personas', desc: 'Altas y documentos que faltan', href: '/soluciones/#personas', icon: 'mail' },
+  { name: 'RevOps', desc: 'Estados que el CRM no obliga', href: '/soluciones/#revops', icon: 'sliders' },
+  { name: 'Legal', desc: 'Plazos, versiones y aceptaciones', href: '/soluciones/#legal', icon: 'key' },
+];
+
+const resources = [
+  { name: 'Precios', desc: 'Cómo se escribe un presupuesto', href: '/precios/', icon: 'tag' },
+  { name: 'Cómo trabajamos', desc: 'Construir, desplegar, operar', href: '/#proceso', icon: 'compass' },
+  { name: 'Preguntas frecuentes', desc: 'Lo que nos preguntan siempre', href: '/#preguntas', icon: 'search' },
+  { name: 'Contacto', desc: 'El siguiente paso, por correo', href: '/contacto/', icon: 'mail' },
+];
+
+const tintBg: Record<string, string> = {
+  mint: 'bg-mint',
+  sky: 'bg-sky',
+  butter: 'bg-butter',
+  blush: 'bg-blush',
+  lilac: 'bg-lilac',
+  paper: 'bg-paper-2',
+};
+---
+
+<header class="site-header" data-nav data-tone={tone}>
+  <div class="wrap flex h-[68px] items-center gap-2">
+    <a href="/" class="mr-3 shrink-0" aria-label="Veodar, inicio">
+      <Logo />
+    </a>
+
+    <nav class="hidden items-center lg:flex" aria-label="Principal">
+      <ul class="flex items-center">
+        <li>
+          <button type="button" class="nav-trigger" data-trigger="servicios" aria-expanded="false" aria-controls="panel-servicios">
+            Servicios <Icon name="chevron" size={14} class="chev" />
+          </button>
+        </li>
+        <li>
+          <button type="button" class="nav-trigger" data-trigger="soluciones" aria-expanded="false" aria-controls="panel-soluciones">
+            Soluciones <Icon name="chevron" size={14} class="chev" />
+          </button>
+        </li>
+        <li>
+          <button type="button" class="nav-trigger" data-trigger="recursos" aria-expanded="false" aria-controls="panel-recursos">
+            Recursos <Icon name="chevron" size={14} class="chev" />
+          </button>
+        </li>
+        <li><a href="/precios/" class="nav-trigger">Precios</a></li>
+      </ul>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-2">
+      <a href="/contacto/" class="nav-trigger hidden md:inline-flex">Contacto</a>
+      <a href="/contacto/" class="btn btn-primary hidden !min-h-[40px] !px-4 !text-[14px] sm:inline-flex">
+        Cuéntanos tu proyecto <Icon name="arrow" size={16} class="arrow" />
+      </a>
+      <button type="button" class="nav-burger lg:hidden" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-movil" data-burger>
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Desktop mega menu: one morphing surface, three panels -->
+  <div class="mega" data-mega hidden>
+    <div class="mega-surface" data-surface>
+      <div class="mega-panel" id="panel-servicios" data-panel="servicios" role="region" aria-label="Servicios">
+        <div class="grid w-[1080px] grid-cols-[300px_1fr_1.35fr] gap-2 p-2">
+          <a href={serviceHref(featured.slug)} class="feature-card spot bg-ink text-paper">
+            <span class="chip !bg-white/10 !text-paper !shadow-none">Lo más pedido</span>
+            <span class="mt-auto">
+              <span class="block font-display text-[30px] leading-[0.98] tracking-[-0.03em]">{featured.name}</span>
+              <span class="mt-2 block text-[14px] leading-snug text-paper/75">{featured.menu}</span>
+              <span class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-medium text-accent">
+                Ver el servicio <Icon name="arrow" size={15} />
+              </span>
+            </span>
+            <span class="feature-art"><ServiceGlyph slug={featured.slug} /></span>
+          </a>
+
+          <div class="mega-col">
+            <p class="mega-label">Ingeniería</p>
+            <ul class="grid gap-0.5">
+              {
+                engineeringRest.map((service) => (
+                  <li>
+                    <a href={serviceHref(service.slug)} class="mega-link">
+                      <span class:list={['mega-ico', tintBg[service.tint]]}>
+                        <Icon name={service.icon} size={19} />
+                      </span>
+                      <span>
+                        <span class="mega-name">{service.name}</span>
+                        <span class="mega-desc">{service.menu}</span>
+                      </span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+            <a href="/servicios/" class="mega-foot">
+              Todos los servicios <Icon name="arrow" size={15} />
+            </a>
+          </div>
+
+          <div class="mega-col">
+            <p class="mega-label">Estudio</p>
+            <ul class="grid grid-cols-2 gap-0.5">
+              {
+                studio.map((service) => (
+                  <li>
+                    <a href={serviceHref(service.slug)} class="mega-link mega-link--compact">
+                      <span class:list={['mega-ico mega-ico--sm', tintBg[service.tint]]}>
+                        <Icon name={service.icon} size={16} />
+                      </span>
+                      <span>
+                        <span class="mega-name">{service.name}</span>
+                      </span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+            <div class="mega-note">
+              <Icon name="spark" size={16} class="text-accent-ink" />
+              <span>¿No sabes qué formato necesitas? Cuéntanos el problema y lo proponemos nosotros.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mega-panel" id="panel-soluciones" data-panel="soluciones" role="region" aria-label="Soluciones">
+        <div class="grid w-[820px] grid-cols-[1fr_260px] gap-2 p-2">
+          <div class="mega-col">
+            <p class="mega-label">Por área de la empresa</p>
+            <ul class="grid grid-cols-2 gap-0.5">
+              {
+                areas.map((area) => (
+                  <li>
+                    <a href={area.href} class="mega-link">
+                      <span class="mega-ico bg-paper-2">
+                        <Icon name={area.icon} size={18} />
+                      </span>
+                      <span>
+                        <span class="mega-name">{area.name}</span>
+                        <span class="mega-desc">{area.desc}</span>
+                      </span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+          <a href="/soluciones/" class="feature-card spot bg-mint text-ink">
+            <span class="chip">Un equipo primero</span>
+            <span class="mt-auto">
+              <span class="block font-display text-[26px] leading-[1] tracking-[-0.03em]">Cada área encarga lo suyo. La lista de producción es una.</span>
+              <span class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-medium">Ver soluciones <Icon name="arrow" size={15} /></span>
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <div class="mega-panel" id="panel-recursos" data-panel="recursos" role="region" aria-label="Recursos">
+        <div class="grid w-[760px] grid-cols-[1fr_280px] gap-2 p-2">
+          <div class="mega-col">
+            <p class="mega-label">Veodar</p>
+            <ul class="grid gap-0.5">
+              {
+                resources.map((item) => (
+                  <li>
+                    <a href={item.href} class="mega-link">
+                      <span class="mega-ico bg-paper-2">
+                        <Icon name={item.icon} size={18} />
+                      </span>
+                      <span>
+                        <span class="mega-name">{item.name}</span>
+                        <span class="mega-desc">{item.desc}</span>
+                      </span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+          <div class="feature-card bg-lilac text-ink">
+            <span class="chip">Pregúntale a una IA</span>
+            <span class="mt-auto block font-display text-[24px] leading-[1.02] tracking-[-0.03em]">¿Quién es Veodar? Que te lo cuente tu asistente.</span>
+            <span class="mt-4 flex flex-wrap gap-1.5">
+              {
+                askAi.map((ai) => (
+                  <a href={ai.href} target="_blank" rel="noopener" class="chip hover:!bg-white">
+                    {ai.name}
+                  </a>
+                ))
+              }
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div class="mobile-sheet lg:hidden" id="menu-movil" data-sheet hidden>
+    <div class="wrap pb-10">
+      <details class="m-group" open>
+        <summary>Servicios <Icon name="chevron" size={18} /></summary>
+        <p class="mega-label mt-2">Ingeniería</p>
+        <ul>
+          {
+            engineering.map((service) => (
+              <li>
+                <a href={serviceHref(service.slug)} class="m-link">
+                  <span class:list={['mega-ico mega-ico--sm', tintBg[service.tint]]}>
+                    <Icon name={service.icon} size={16} />
+                  </span>
+                  {service.name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="mega-label mt-4">Estudio</p>
+        <ul>
+          {
+            studio.map((service) => (
+              <li>
+                <a href={serviceHref(service.slug)} class="m-link">
+                  <span class:list={['mega-ico mega-ico--sm', tintBg[service.tint]]}>
+                    <Icon name={service.icon} size={16} />
+                  </span>
+                  {service.name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </details>
+      <details class="m-group">
+        <summary>Soluciones <Icon name="chevron" size={18} /></summary>
+        <ul>
+          {areas.map((area) => (
+            <li><a href={area.href} class="m-link">{area.name}</a></li>
+          ))}
+        </ul>
+      </details>
+      <details class="m-group">
+        <summary>Recursos <Icon name="chevron" size={18} /></summary>
+        <ul>
+          {resources.map((item) => (
+            <li><a href={item.href} class="m-link">{item.name}</a></li>
+          ))}
+        </ul>
+      </details>
+      <a href="/precios/" class="m-group m-plain">Precios</a>
+      <a href="/contacto/" class="btn btn-primary mt-6 w-full">Cuéntanos tu proyecto <Icon name="arrow" size={16} class="arrow" /></a>
+    </div>
+  </div>
+</header>
+<div class="mega-scrim" data-scrim hidden></div>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    color: var(--color-ink);
+    background: color-mix(in srgb, var(--color-paper) 0%, transparent);
+    transition:
+      background-color 0.3s,
+      color 0.3s,
+      box-shadow 0.3s;
+  }
+  /* Over a dark hero, before scrolling: light text and a light call to action. */
+  .site-header[data-tone='dark']:not([data-scrolled]):not([data-open]) {
+    color: var(--color-paper);
+  }
+  .site-header[data-tone='dark']:not([data-scrolled]):not([data-open]) .nav-trigger:hover {
+    background: rgb(244 240 230 / 0.1);
+  }
+  .site-header[data-tone='dark']:not([data-scrolled]):not([data-open]) :global(.btn-primary) {
+    background: var(--color-accent);
+    color: #1a0a03;
+  }
+  .site-header[data-tone='dark']:not([data-scrolled]):not([data-open]) .nav-burger {
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.3);
+  }
+  .site-header[data-scrolled],
+  .site-header[data-open] {
+    background: color-mix(in srgb, var(--color-paper) 86%, transparent);
+    backdrop-filter: saturate(1.4) blur(14px);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    box-shadow: 0 1px 0 var(--color-line);
+  }
+
+  .nav-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 38px;
+    padding: 0 13px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 500;
+    color: inherit;
+    transition: background-color 0.2s;
+    cursor: pointer;
+  }
+  .nav-trigger:hover,
+  .nav-trigger[aria-expanded='true'] {
+    background: rgb(22 20 44 / 0.06);
+  }
+  .nav-trigger :global(.chev) {
+    opacity: 0.6;
+    transition: transform 0.35s var(--ease-spring);
+  }
+  .nav-trigger[aria-expanded='true'] :global(.chev) {
+    transform: rotate(180deg);
+  }
+
+  .mega[hidden] {
+    display: none;
+  }
+  .mega {
+    z-index: 2;
+    color: var(--color-ink);
+    position: absolute;
+    top: 62px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .mega-surface {
+    position: relative;
+    overflow: hidden;
+    pointer-events: auto;
+    border-radius: 26px;
+    background: var(--color-card);
+    box-shadow:
+      0 0 0 1px var(--color-line),
+      0 2px 4px rgb(22 20 44 / 0.04),
+      0 24px 60px -16px rgb(22 20 44 / 0.28);
+    transform-origin: 50% 0;
+    transition:
+      width 0.42s var(--ease-spring),
+      height 0.42s var(--ease-spring),
+      transform 0.42s var(--ease-spring),
+      opacity 0.25s;
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  .mega[data-shown] .mega-surface {
+    opacity: 1;
+    transform: none;
+  }
+  .mega-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.25s,
+      transform 0.42s var(--ease-spring),
+      visibility 0s 0.25s;
+  }
+  .mega-panel[data-active] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 0.3s 0.06s,
+      transform 0.42s var(--ease-spring);
+  }
+  .mega-panel[data-from='left'] {
+    transform: translateX(-28px);
+  }
+  .mega-panel[data-from='right'] {
+    transform: translateX(28px);
+  }
+
+  .mega-col {
+    display: flex;
+    flex-direction: column;
+    padding: 14px 10px 10px;
+  }
+  .mega-label {
+    padding: 0 10px 8px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 560;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .mega-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 14px;
+    transition: background-color 0.2s;
+  }
+  .mega-link:hover {
+    background: rgb(22 20 44 / 0.045);
+  }
+  .mega-link--compact {
+    align-items: center;
+    padding: 8px 10px;
+  }
+  .mega-ico {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    color: var(--color-ink);
+    box-shadow: inset 0 0 0 1px rgb(22 20 44 / 0.07);
+    transition: transform 0.35s var(--ease-spring);
+  }
+  .mega-ico--sm {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+  .mega-link:hover .mega-ico {
+    transform: translateY(-1px) rotate(-4deg);
+  }
+  .mega-name {
+    display: block;
+    font-size: 15px;
+    font-weight: 560;
+    line-height: 1.25;
+    color: var(--color-ink);
+  }
+  .mega-desc {
+    display: block;
+    margin-top: 2px;
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: var(--color-muted);
+  }
+  .mega-foot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: auto 10px 2px;
+    padding-top: 14px;
+    font-size: 14px;
+    font-weight: 560;
+  }
+  .mega-note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: auto 6px 0;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--color-paper);
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: var(--color-ink-2);
+  }
+  .feature-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow: hidden;
+    min-height: 300px;
+    padding: 20px;
+    border-radius: 20px;
+    isolation: isolate;
+  }
+  .feature-art {
+    position: absolute;
+    top: 58px;
+    left: 20px;
+    right: 20px;
+    height: 120px;
+    z-index: -1;
+    transition: transform 0.6s var(--ease-spring);
+    --glyph-paper: #16142c;
+  }
+  .feature-art :global(.glyph) {
+    color: var(--color-paper);
+  }
+  .feature-card:hover .feature-art {
+    transform: translateY(-4px) scale(1.03);
+  }
+
+  .mega-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgb(22 20 44 / 0.16);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .mega-scrim[data-shown] {
+    opacity: 1;
+  }
+
+  .nav-burger {
+    display: inline-grid;
+  }
+  @media (min-width: 1024px) {
+    .nav-burger {
+      display: none;
+    }
+  }
+  .nav-burger {
+    place-content: center;
+    gap: 6px;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  }
+  .nav-burger span {
+    display: block;
+    width: 18px;
+    height: 1.6px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 0.35s var(--ease-spring);
+  }
+  .nav-burger[aria-expanded='true'] span:first-child {
+    transform: translateY(3.8px) rotate(45deg);
+  }
+  .nav-burger[aria-expanded='true'] span:last-child {
+    transform: translateY(-3.8px) rotate(-45deg);
+  }
+
+  .mobile-sheet {
+    z-index: 2;
+    color: var(--color-ink);
+    position: fixed;
+    inset: 68px 0 0;
+    overflow-y: auto;
+    background: var(--color-paper);
+    border-top: 1px solid var(--color-line);
+    animation: sheet-in 0.4s var(--ease-spring);
+  }
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+  .m-group {
+    display: block;
+    border-bottom: 1px solid var(--color-line);
+    padding: 6px 0 12px;
+  }
+  .m-group summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 6px;
+    font-family: var(--font-display);
+    font-size: 30px;
+    letter-spacing: -0.03em;
+    cursor: pointer;
+    list-style: none;
+  }
+  .m-group summary::-webkit-details-marker {
+    display: none;
+  }
+  .m-group[open] summary :global(svg) {
+    transform: rotate(180deg);
+  }
+  .m-plain {
+    padding: 18px 0;
+    font-family: var(--font-display);
+    font-size: 30px;
+    letter-spacing: -0.03em;
+  }
+  .m-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 0;
+    font-size: 17px;
+    font-weight: 500;
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-nav]')!;
+  const mega = header.querySelector<HTMLElement>('[data-mega]')!;
+  const surface = mega.querySelector<HTMLElement>('[data-surface]')!;
+  const scrim = document.querySelector<HTMLElement>('[data-scrim]')!;
+  const triggers = [...header.querySelectorAll<HTMLButtonElement>('[data-trigger]')];
+  const panels = new Map([...mega.querySelectorAll<HTMLElement>('[data-panel]')].map((p) => [p.dataset.panel!, p]));
+  const order = triggers.map((t) => t.dataset.trigger!);
+  const fine = matchMedia('(hover: hover) and (pointer: fine)');
+
+  let current: string | null = null;
+  let closeTimer = 0;
+  let openTimer = 0;
+
+  const onScroll = () => header.toggleAttribute('data-scrolled', scrollY > 8);
+  onScroll();
+  addEventListener('scroll', onScroll, { passive: true });
+
+  function size(panel: HTMLElement) {
+    const box = panel.firstElementChild as HTMLElement;
+    surface.style.width = `${box.offsetWidth}px`;
+    surface.style.height = `${box.offsetHeight}px`;
+  }
+
+  function open(id: string) {
+    clearTimeout(closeTimer);
+    if (current === id) return;
+    const panel = panels.get(id);
+    if (!panel) return;
+    const prev = current;
+    current = id;
+    triggers.forEach((t) => t.setAttribute('aria-expanded', String(t.dataset.trigger === id)));
+    mega.hidden = false;
+    scrim.hidden = false;
+    header.setAttribute('data-open', '');
+    panels.forEach((p, key) => {
+      if (key === id) return;
+      if (p.hasAttribute('data-active')) {
+        p.dataset.from = order.indexOf(key) < order.indexOf(id) ? 'left' : 'right';
+      }
+      p.removeAttribute('data-active');
+    });
+    if (prev) panel.dataset.from = order.indexOf(prev) < order.indexOf(id) ? 'right' : 'left';
+    else delete panel.dataset.from;
+    // Centre the surface under its trigger, kept inside the viewport.
+    size(panel);
+    requestAnimationFrame(() => {
+      panel.setAttribute('data-active', '');
+      mega.setAttribute('data-shown', '');
+      scrim.setAttribute('data-shown', '');
+    });
+  }
+
+  function close() {
+    if (!current) return;
+    current = null;
+    triggers.forEach((t) => t.setAttribute('aria-expanded', 'false'));
+    mega.removeAttribute('data-shown');
+    scrim.removeAttribute('data-shown');
+    header.removeAttribute('data-open');
+    panels.forEach((p) => p.removeAttribute('data-active'));
+    setTimeout(() => {
+      if (current) return;
+      mega.hidden = true;
+      scrim.hidden = true;
+    }, 300);
+  }
+
+  triggers.forEach((trigger) => {
+    const id = trigger.dataset.trigger!;
+    trigger.addEventListener('click', () => (current === id ? close() : open(id)));
+    trigger.addEventListener('pointerenter', () => {
+      if (!fine.matches) return;
+      clearTimeout(openTimer);
+      openTimer = window.setTimeout(() => open(id), current ? 0 : 90);
+    });
+    trigger.addEventListener('pointerleave', () => clearTimeout(openTimer));
+    trigger.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        open(id);
+        panels.get(id)?.querySelector<HTMLElement>('a')?.focus();
+      }
+    });
+  });
+
+  header.addEventListener('pointerleave', () => {
+    if (!fine.matches) return;
+    clearTimeout(openTimer);
+    closeTimer = window.setTimeout(close, 220);
+  });
+  header.addEventListener('pointerenter', () => clearTimeout(closeTimer));
+  scrim.addEventListener('click', close);
+  header.querySelectorAll<HTMLElement>('nav a:not([data-trigger])').forEach((link) =>
+    link.addEventListener('pointerenter', () => fine.matches && close()),
+  );
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const was = current;
+    close();
+    if (was) triggers.find((t) => t.dataset.trigger === was)?.focus();
+    if (!sheet.hidden) toggleSheet(false);
+  });
+  mega.addEventListener('focusout', (event) => {
+    const next = event.relatedTarget as Node | null;
+    if (next && !header.contains(next)) close();
+  });
+  addEventListener('resize', () => current && size(panels.get(current)!));
+
+  // Mobile sheet
+  const burger = header.querySelector<HTMLButtonElement>('[data-burger]')!;
+  const sheet = header.querySelector<HTMLElement>('[data-sheet]')!;
+  function toggleSheet(force?: boolean) {
+    const show = force ?? sheet.hidden;
+    sheet.hidden = !show;
+    burger.setAttribute('aria-expanded', String(show));
+    burger.setAttribute('aria-label', show ? 'Cerrar menú' : 'Abrir menú');
+    header.toggleAttribute('data-open', show);
+    document.documentElement.style.overflow = show ? 'hidden' : '';
+  }
+  burger.addEventListener('click', () => toggleSheet());
+  sheet.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => toggleSheet(false)));
+</script>

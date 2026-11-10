@@ -1,0 +1,584 @@
+---
+// One animated line illustration per service, drawn on a 120×90 grid.
+// Classes: g-s stroke, g-d dim stroke, g-a accent stroke, g-f fill, g-fd dim
+// fill, g-fa accent fill, g-fp paper fill. Motion is CSS only.
+interface Props {
+  slug: string;
+  class?: string;
+}
+const { slug, class: className } = Astro.props;
+
+const glyphs: Record<string, string> = {
+  // Documents converge on a model, a checked result comes out.
+  'automatizaciones-ia': `
+    <rect class="g-s" x="6" y="12" width="20" height="14" rx="3"/><rect class="g-s" x="6" y="38" width="20" height="14" rx="3"/><rect class="g-s" x="6" y="64" width="20" height="14" rx="3"/>
+    <path class="g-d" d="M10 17h9M10 21h6M10 43h9M10 47h6M10 69h9M10 73h6"/>
+    <path class="g-d" d="M26 19C40 19 38 45 48 45M26 45h22M26 71C40 71 38 45 48 45M76 45h14"/>
+    <path class="g-a g-flow" d="M26 19C40 19 38 45 48 45"/><path class="g-a g-flow" style="--gd:.5s" d="M26 45h22"/><path class="g-a g-flow" style="--gd:1s" d="M26 71C40 71 38 45 48 45"/>
+    <path class="g-s g-fp g-beat" d="M62 31l14 14-14 14-14-14z"/><path class="g-a g-beat" d="M62 39.5v11M56.5 45h11"/>
+    <path class="g-a g-flow" style="--gd:1.5s" d="M76 45h14"/>
+    <rect class="g-s" x="90" y="33" width="24" height="24" rx="6"/><path class="g-a g-tick" d="M96.5 45l4.4 4.4 7.6-8.8"/>`,
+  // A page assembles itself in a browser and a cursor clicks the button.
+  'desarrollo-web': `
+    <rect class="g-s" x="10" y="10" width="100" height="70" rx="7"/><path class="g-s" d="M10 24h100"/>
+    <circle class="g-fa" cx="19" cy="17" r="2"/><circle class="g-fd" cx="26" cy="17" r="2"/><circle class="g-fd" cx="33" cy="17" r="2"/><rect class="g-d" x="44" y="14" width="46" height="6" rx="3"/>
+    <rect class="g-f g-build" style="--gd:0s" x="18" y="32" width="46" height="7" rx="2"/>
+    <rect class="g-fd g-build" style="--gd:.2s" x="18" y="43" width="34" height="4" rx="2"/>
+    <rect class="g-fa g-build" style="--gd:.4s" x="18" y="52" width="22" height="9" rx="4.5"/>
+    <g class="g-build" style="--gd:.6s"><rect class="g-s" x="72" y="32" width="30" height="29" rx="4"/><path class="g-d" d="M73 55l8-8 7 6 5-4 8 7"/></g>
+    <path class="g-d g-build" style="--gd:.8s" d="M18 70h84"/>
+    <path class="g-f g-cursor" d="M84 66v11l3-2.6 2.2 4.8 2-.9-2.2-4.8 4-.3z"/>`,
+  // A phone: a notification drops in, the signal pulses, reports queue beside it.
+  'aplicaciones-moviles': `
+    <rect class="g-s g-fp" x="40" y="6" width="40" height="78" rx="8"/><path class="g-s" d="M54 12h12"/>
+    <g class="g-drop"><rect class="g-fa" x="45" y="18" width="30" height="11" rx="4"/><path d="M49 23.5h14" stroke="#1a0a03" stroke-width="1.6"/></g>
+    <rect class="g-fd" x="45" y="34" width="30" height="8" rx="3"/><rect class="g-fd" x="45" y="46" width="30" height="8" rx="3"/><rect class="g-fd" x="45" y="58" width="30" height="8" rx="3"/>
+    <circle class="g-s" cx="60" cy="75" r="3"/><circle class="g-a g-ripple" cx="60" cy="50" r="6"/>
+    <path class="g-a g-wave" style="--gd:0s" d="M88 22a8 8 0 0 1 0 12"/><path class="g-a g-wave" style="--gd:.25s" d="M93 17a15 15 0 0 1 0 22"/><path class="g-a g-wave" style="--gd:.5s" d="M98 12a22 22 0 0 1 0 32"/>
+    <rect class="g-s g-queue" style="--gd:0s" x="12" y="38" width="18" height="12" rx="3"/><rect class="g-s g-queue" style="--gd:.5s" x="16" y="54" width="18" height="12" rx="3"/>`,
+  // A desktop window draws a part and saves it to the local disk.
+  'aplicaciones-escritorio': `
+    <rect class="g-s" x="8" y="8" width="76" height="56" rx="6"/><path class="g-s" d="M34 80h24M46 64v16"/>
+    <rect class="g-s" x="15" y="15" width="62" height="42" rx="4"/><path class="g-s" d="M15 24h62M31 24v33"/>
+    <circle class="g-fa" cx="20" cy="19.5" r="1.6"/><circle class="g-fd" cx="25" cy="19.5" r="1.6"/>
+    <path class="g-d" d="M19 30h8M19 35h8M19 40h8M19 45h8"/>
+    <path class="g-s g-trace" pathLength="100" d="M38 50V34h9v-5h14v8h8v13z"/>
+    <ellipse class="g-s g-fp" cx="101" cy="30" rx="10" ry="4"/><path class="g-s" d="M91 30v24c0 2.2 4.5 4 10 4s10-1.8 10-4V30"/><path class="g-d" d="M91 42c0 2.2 4.5 4 10 4s10-1.8 10-4"/>
+    <path class="g-a g-flow" style="--gl:5;--gg:18" d="M77 44h14"/><circle class="g-fa g-blink" cx="101" cy="52" r="2"/>`,
+  // A mark is constructed on its grid; colour and type tokens follow.
+  'identidad-de-marca': `
+    <circle class="g-d g-turn" cx="44" cy="44" r="32" stroke-dasharray="3 5"/><path class="g-d" d="M44 8v72M8 44h72"/><circle class="g-d" cx="44" cy="44" r="18"/>
+    <path class="g-a g-trace" pathLength="100" style="stroke-width:5.5" d="M24 28l20 34 20-34"/><path class="g-s g-trace" pathLength="100" style="--gd:.5s;stroke-width:2.4" d="M35 28l9 15 9-15"/>
+    <rect class="g-f g-build" style="--gd:1.2s" x="90" y="10" width="20" height="14" rx="4"/><rect class="g-fa g-build" style="--gd:1.4s" x="90" y="28" width="20" height="14" rx="4"/><rect class="g-s g-build" style="--gd:1.6s" x="90" y="46" width="20" height="14" rx="4"/>
+    <text class="g-f g-build" style="--gd:1.8s;font-family:Georgia,serif" x="88" y="82" font-size="17">Aa</text>`,
+  // A block is selected on a column grid and resized by its handle.
+  'diseno-web': `
+    <rect class="g-s" x="10" y="10" width="100" height="70" rx="6"/><path class="g-d" stroke-dasharray="2 4" d="M30 10v70M50 10v70M70 10v70M90 10v70"/>
+    <rect class="g-fd" x="18" y="18" width="46" height="7" rx="2"/><rect class="g-fd" x="18" y="29" width="30" height="4" rx="2"/><rect class="g-s" x="74" y="42" width="28" height="26" rx="4"/>
+    <g class="g-stretch"><rect class="g-fa" x="18" y="42" width="32" height="26" rx="3"/><rect class="g-s" x="16" y="40" width="36" height="30"/><rect class="g-s g-fp" x="14" y="38" width="4" height="4"/><rect class="g-s g-fp" x="50" y="38" width="4" height="4"/><rect class="g-s g-fp" x="14" y="68" width="4" height="4"/><rect class="g-s g-fp" x="50" y="68" width="4" height="4"/></g>
+    <path class="g-f g-pull" d="M53 70v11l3-2.6 2.2 4.8 2-.9-2.2-4.8 4-.3z"/>`,
+  // A ball rides an easing curve while its handles breathe.
+  'desarrollo-creativo': `
+    <path class="g-d" d="M12 76h98M12 76V12"/><path class="g-s" style="stroke-width:2.2" d="M14 74C46 74 40 18 106 18"/>
+    <g class="g-sway" style="transform-origin:14px 74px"><path class="g-a" d="M14 74h32"/><rect class="g-fa" x="43.5" y="71.5" width="5" height="5" rx="1"/></g>
+    <g class="g-sway" style="transform-origin:106px 18px;--gd:-1.6s"><path class="g-a" d="M106 18H68"/><rect class="g-fa" x="65.5" y="15.5" width="5" height="5" rx="1"/></g>
+    <circle class="g-s g-fp" cx="14" cy="74" r="3.2"/><circle class="g-s g-fp" cx="106" cy="18" r="3.2"/>
+    <circle class="g-f" r="5"><animateMotion dur="6.4s" repeatCount="indefinite" calcMode="spline" keyPoints="0;1;0" keyTimes="0;0.5;1" keySplines="0.6 0 0.2 1;0.6 0 0.2 1" path="M14 74C46 74 40 18 106 18"/></circle>
+    <path class="g-fa g-twinkle" d="M92 50l1.8 4.2 4.2 1.8-4.2 1.8-1.8 4.2-1.8-4.2-4.2-1.8 4.2-1.8z"/><path class="g-fa g-twinkle" style="--gd:.9s" d="M26 26l1.1 2.7 2.7 1.1-2.7 1.1-1.1 2.7-1.1-2.7-2.7-1.1 2.7-1.1z"/>`,
+  // A cube opens along its three axes while a point orbits it.
+  'web-3d-interactiva': `
+    <ellipse class="g-d" cx="60" cy="49" rx="50" ry="17" stroke-dasharray="3 5"/>
+    <g class="g-explode" style="--gx:0px;--gy:-7px"><path class="g-s g-fp" d="M60 24l22 11-22 11-22-11z"/></g>
+    <g class="g-explode" style="--gx:-6px;--gy:3.5px"><path class="g-s g-fp" d="M38 35l22 11v24L38 59z"/></g>
+    <g class="g-explode" style="--gx:6px;--gy:3.5px"><path class="g-fa" d="M60 46l22-11v24L60 70z"/><path class="g-s" d="M60 46l22-11v24L60 70z"/></g>
+    <circle class="g-f" r="3.2"><animateMotion dur="5s" repeatCount="indefinite" path="M10 49a50 17 0 1 0 100 0a50 17 0 1 0 -100 0"/></circle>`,
+  // Three sliders: each adds a module, the last one changes the finish.
+  'configuradores-3d': `
+    <rect class="g-s g-fp" x="12" y="56" width="42" height="20" rx="3"/><rect class="g-s g-fp g-opt1" x="12" y="34" width="42" height="20" rx="3"/><rect class="g-s g-fp g-opt2" x="12" y="12" width="42" height="20" rx="3"/>
+    <g class="g-opt3"><rect class="g-fa" x="16" y="60" width="34" height="12" rx="2"/><rect class="g-fa" x="16" y="38" width="34" height="12" rx="2"/><rect class="g-fa" x="16" y="16" width="34" height="12" rx="2"/></g>
+    <path class="g-d" d="M70 22h40M70 45h40M70 68h40"/>
+    <circle class="g-s g-fp g-knob1" cx="77" cy="22" r="5.5"/><circle class="g-s g-fp g-knob2" cx="77" cy="45" r="5.5"/><circle class="g-fa g-knob3" cx="77" cy="68" r="5.5"/>`,
+  // A player with a timeline: the playhead crosses three clips.
+  'videos-de-lanzamiento': `
+    <rect class="g-s" x="10" y="8" width="100" height="50" rx="6"/><path class="g-fa g-beat" d="M52 22v20l18-10z"/>
+    <path class="g-d" d="M18 50h84"/><path class="g-a g-trace g-lin" pathLength="100" d="M18 50h84"/>
+    <rect class="g-f" x="12" y="68" width="30" height="11" rx="3"/><rect class="g-fd" x="45" y="68" width="38" height="11" rx="3"/><rect class="g-fd" x="86" y="68" width="22" height="11" rx="3"/>
+    <g class="g-scrub"><path class="g-a" style="stroke-width:2.2" d="M12 64v20"/><path class="g-fa" d="M8 61h8l-4 4.6z"/></g>`,
+  // An old site hands every address over to the new one.
+  'rediseno-web': `
+    <rect class="g-d" x="6" y="18" width="42" height="56" rx="5"/><path class="g-d" d="M6 28h42"/><rect class="g-fd" x="11" y="33" width="14" height="10" rx="1"/><rect class="g-fd" x="28" y="33" width="15" height="4" rx="1"/><rect class="g-fd" x="11" y="47" width="32" height="3" rx="1"/><rect class="g-fd" x="11" y="53" width="24" height="3" rx="1"/><rect class="g-fd" x="11" y="61" width="10" height="7" rx="1"/>
+    <path class="g-d" d="M50 35h20M50 46h20M50 57h20"/><path class="g-a g-flow" style="--gl:6;--gg:22" d="M50 35h20"/><path class="g-a g-flow" style="--gl:6;--gg:22;--gd:.4s" d="M50 46h20"/><path class="g-a g-flow" style="--gl:6;--gg:22;--gd:.8s" d="M50 57h20"/>
+    <rect class="g-s g-fp" x="72" y="12" width="42" height="66" rx="6"/><path class="g-s" d="M72 23h42"/>
+    <rect class="g-f g-build" style="--gd:.2s" x="78" y="30" width="30" height="8" rx="2"/><rect class="g-fd g-build" style="--gd:.4s" x="78" y="42" width="22" height="4" rx="2"/><rect class="g-fa g-build" style="--gd:.6s" x="78" y="51" width="18" height="9" rx="4.5"/><rect class="g-fd g-build" style="--gd:.8s" x="78" y="65" width="30" height="5" rx="2"/>`,
+  // A query is typed and one result climbs from third to first.
+  'seo-y-visibilidad': `
+    <rect class="g-s" x="10" y="8" width="100" height="18" rx="9"/><circle class="g-s" cx="22" cy="17" r="4"/><path class="g-s" d="M25 20l3.4 3.4"/><path class="g-d g-trace g-lin" pathLength="100" style="stroke-width:2" d="M36 17h44"/>
+    <g class="g-rank" style="--gy1:0px;--gy2:17px"><rect class="g-d" x="10" y="34" width="100" height="13" rx="4"/><path class="g-d" d="M18 40.5h40"/></g>
+    <g class="g-rank" style="--gy1:17px;--gy2:17px"><rect class="g-d" x="10" y="51" width="100" height="13" rx="4"/><path class="g-d" d="M18 57.5h52"/></g>
+    <g class="g-rank" style="--gy1:-17px;--gy2:-34px"><rect class="g-fa" x="10" y="68" width="100" height="13" rx="4"/><path d="M18 74.5h34" stroke="#1a0a03" stroke-width="1.7"/><path d="M96 74.5l3 3 5-6" stroke="#1a0a03" stroke-width="1.7"/></g>`,
+};
+---
+
+<svg class:list={['glyph', className]} viewBox="0 0 120 90" aria-hidden="true" set:html={glyphs[slug] ?? glyphs['desarrollo-web']} />
+
+<script>
+  // SMIL motion (the dots that ride a path) ignores the CSS reduced-motion rule: pause it here.
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll<SVGSVGElement>('svg.glyph').forEach((svg) => svg.pauseAnimations());
+  }
+</script>
+
+<style is:global>
+  .glyph {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    color: var(--color-ink);
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .glyph * {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .glyph .g-s {
+    stroke: currentColor;
+    stroke-width: 1.7;
+  }
+  .glyph .g-d {
+    stroke: currentColor;
+    stroke-opacity: 0.3;
+    stroke-width: 1.5;
+  }
+  .glyph .g-a {
+    stroke: var(--color-accent);
+    stroke-width: 2.1;
+  }
+  .glyph .g-f {
+    fill: currentColor;
+    stroke: none;
+  }
+  .glyph .g-fd {
+    fill: currentColor;
+    fill-opacity: 0.16;
+    stroke: none;
+  }
+  .glyph .g-fa {
+    fill: var(--color-accent);
+    stroke: none;
+  }
+  .glyph .g-fp {
+    fill: var(--glyph-paper, var(--color-card));
+  }
+
+  /* A short dash that runs the length of a line. */
+  .glyph .g-flow {
+    stroke-dasharray: var(--gl, 8) var(--gg, 64);
+    animation: g-flow 2.4s linear infinite;
+    animation-delay: var(--gd, 0s);
+  }
+  @keyframes g-flow {
+    from {
+      stroke-dashoffset: calc(var(--gl, 8) * 1px);
+    }
+    to {
+      stroke-dashoffset: calc((var(--gl, 8) + var(--gg, 64)) * -1px);
+    }
+  }
+  .glyph .g-beat {
+    animation: g-beat 2.4s var(--ease-out-soft) infinite;
+  }
+  @keyframes g-beat {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.12);
+    }
+  }
+  /* Draw a path, hold it, let it go. */
+  .glyph .g-trace {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: g-trace 5.5s var(--ease-out-soft) infinite;
+    animation-delay: var(--gd, 0s);
+  }
+  .glyph .g-trace.g-lin {
+    animation-timing-function: linear;
+    animation-duration: 6s;
+  }
+  @keyframes g-trace {
+    0% {
+      stroke-dashoffset: 100;
+    }
+    45%,
+    88% {
+      stroke-dashoffset: 0;
+      opacity: 1;
+    }
+    100% {
+      stroke-dashoffset: 0;
+      opacity: 0;
+    }
+  }
+  .glyph .g-trace.g-lin {
+    animation-name: g-trace-lin;
+  }
+  @keyframes g-trace-lin {
+    0% {
+      stroke-dashoffset: 100;
+    }
+    92% {
+      stroke-dashoffset: 0;
+      opacity: 1;
+    }
+    100% {
+      stroke-dashoffset: 0;
+      opacity: 0;
+    }
+  }
+  .glyph .g-tick {
+    stroke-dasharray: 20;
+    animation: g-tick 2.4s var(--ease-out-soft) infinite;
+  }
+  @keyframes g-tick {
+    0%,
+    55% {
+      stroke-dashoffset: 20;
+    }
+    80%,
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+  /* Blocks that rise into place one after another. */
+  .glyph .g-build {
+    animation: g-build 6s var(--ease-out-soft) infinite;
+    animation-delay: var(--gd, 0s);
+    opacity: 0;
+  }
+  @keyframes g-build {
+    0% {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    10%,
+    82% {
+      opacity: 1;
+      transform: none;
+    }
+    92%,
+    100% {
+      opacity: 0;
+      transform: none;
+    }
+  }
+  .glyph .g-cursor {
+    animation: g-cursor 6s var(--ease-out-soft) infinite;
+  }
+  @keyframes g-cursor {
+    0%,
+    18% {
+      transform: translate(8px, 4px);
+      opacity: 0;
+    }
+    28% {
+      opacity: 1;
+    }
+    46% {
+      transform: translate(-56px, -11px);
+    }
+    50% {
+      transform: translate(-56px, -11px) scale(0.84);
+    }
+    54%,
+    84% {
+      transform: translate(-56px, -11px);
+      opacity: 1;
+    }
+    94%,
+    100% {
+      transform: translate(-56px, -11px);
+      opacity: 0;
+    }
+  }
+  .glyph .g-drop {
+    animation: g-drop 4.6s var(--ease-out-soft) infinite;
+  }
+  @keyframes g-drop {
+    0%,
+    12% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    24%,
+    78% {
+      opacity: 1;
+      transform: none;
+    }
+    90%,
+    100% {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+  .glyph .g-ripple {
+    animation: g-ripple 2.3s ease-out infinite;
+  }
+  @keyframes g-ripple {
+    0% {
+      transform: scale(0.3);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+  .glyph .g-wave {
+    animation: g-wave 2.3s ease-in-out infinite;
+    animation-delay: var(--gd, 0s);
+  }
+  @keyframes g-wave {
+    0%,
+    100% {
+      opacity: 0.15;
+    }
+    35% {
+      opacity: 1;
+    }
+  }
+  .glyph .g-queue {
+    animation: g-queue 4.6s var(--ease-out-soft) infinite;
+    animation-delay: var(--gd, 0s);
+  }
+  @keyframes g-queue {
+    0%,
+    20% {
+      opacity: 0;
+      transform: translateX(22px);
+    }
+    34%,
+    70% {
+      opacity: 1;
+      transform: none;
+    }
+    84%,
+    100% {
+      opacity: 0;
+      transform: translateX(70px);
+    }
+  }
+  .glyph .g-blink {
+    animation: g-wave 1.2s steps(2, jump-none) infinite;
+  }
+  .glyph .g-turn {
+    animation: g-turn 26s linear infinite;
+  }
+  @keyframes g-turn {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .glyph .g-stretch {
+    transform-origin: left center;
+    animation: g-stretch 5s var(--ease-spring) infinite;
+  }
+  @keyframes g-stretch {
+    0%,
+    18%,
+    100% {
+      transform: scaleX(1);
+    }
+    42%,
+    78% {
+      transform: scaleX(1.46);
+    }
+  }
+  .glyph .g-pull {
+    animation: g-pull 5s var(--ease-spring) infinite;
+  }
+  @keyframes g-pull {
+    0%,
+    18%,
+    100% {
+      transform: none;
+    }
+    42%,
+    78% {
+      transform: translateX(17px);
+    }
+  }
+  .glyph .g-sway {
+    transform-box: view-box;
+    animation: g-sway 3.2s ease-in-out infinite alternate;
+    animation-delay: var(--gd, 0s);
+  }
+  @keyframes g-sway {
+    from {
+      transform: rotate(-9deg);
+    }
+    to {
+      transform: rotate(9deg);
+    }
+  }
+  .glyph .g-twinkle {
+    animation: g-twinkle 1.8s ease-in-out infinite;
+    animation-delay: var(--gd, 0s);
+  }
+  @keyframes g-twinkle {
+    0%,
+    100% {
+      transform: scale(0.4);
+      opacity: 0.2;
+    }
+    50% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  .glyph .g-explode {
+    animation: g-explode 4.4s var(--ease-spring) infinite;
+  }
+  @keyframes g-explode {
+    0%,
+    20%,
+    100% {
+      transform: none;
+    }
+    45%,
+    75% {
+      transform: translate(var(--gx), var(--gy));
+    }
+  }
+  /* Options switch on one after another over an 8 s loop and reset together. */
+  .glyph .g-opt1 {
+    animation: g-opt1 8s var(--ease-out-soft) infinite;
+  }
+  @keyframes g-opt1 {
+    0%,
+    12% {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    20%,
+    90% {
+      opacity: 1;
+      transform: none;
+    }
+    97%,
+    100% {
+      opacity: 0;
+      transform: none;
+    }
+  }
+  .glyph .g-knob1 {
+    animation: g-knob1 8s var(--ease-spring) infinite;
+  }
+  @keyframes g-knob1 {
+    0%,
+    8% {
+      transform: none;
+    }
+    18%,
+    90% {
+      transform: translateX(26px);
+    }
+    97%,
+    100% {
+      transform: none;
+    }
+  }
+  .glyph .g-opt2 {
+    animation: g-opt2 8s var(--ease-out-soft) infinite;
+  }
+  @keyframes g-opt2 {
+    0%,
+    34% {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    42%,
+    90% {
+      opacity: 1;
+      transform: none;
+    }
+    97%,
+    100% {
+      opacity: 0;
+      transform: none;
+    }
+  }
+  .glyph .g-knob2 {
+    animation: g-knob2 8s var(--ease-spring) infinite;
+  }
+  @keyframes g-knob2 {
+    0%,
+    30% {
+      transform: none;
+    }
+    40%,
+    90% {
+      transform: translateX(26px);
+    }
+    97%,
+    100% {
+      transform: none;
+    }
+  }
+  .glyph .g-opt3 {
+    animation: g-opt3 8s var(--ease-out-soft) infinite;
+  }
+  @keyframes g-opt3 {
+    0%,
+    58% {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    66%,
+    90% {
+      opacity: 1;
+      transform: none;
+    }
+    97%,
+    100% {
+      opacity: 0;
+      transform: none;
+    }
+  }
+  .glyph .g-knob3 {
+    animation: g-knob3 8s var(--ease-spring) infinite;
+  }
+  @keyframes g-knob3 {
+    0%,
+    54% {
+      transform: none;
+    }
+    64%,
+    90% {
+      transform: translateX(26px);
+    }
+    97%,
+    100% {
+      transform: none;
+    }
+  }
+  .glyph .g-scrub {
+    animation: g-scrub 6s linear infinite;
+  }
+  @keyframes g-scrub {
+    0% {
+      transform: none;
+      opacity: 1;
+    }
+    92% {
+      transform: translateX(96px);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(96px);
+      opacity: 0;
+    }
+  }
+  .glyph .g-rank {
+    animation: g-rank 7s var(--ease-spring) infinite;
+  }
+  @keyframes g-rank {
+    0%,
+    22%,
+    100% {
+      transform: none;
+    }
+    34%,
+    46% {
+      transform: translateY(var(--gy1));
+    }
+    58%,
+    90% {
+      transform: translateY(var(--gy2));
+    }
+  }
+</style>

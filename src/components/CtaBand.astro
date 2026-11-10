@@ -1,0 +1,37 @@
+---
+import Icon from './Icon.astro';
+import Figure from './iso/Figure.astro';
+
+interface Props {
+  title?: string;
+  text?: string;
+  href?: string;
+  label?: string;
+}
+
+const {
+  title = '¿Qué se sigue haciendo a mano en tu empresa?',
+  text = 'Mándanos el ejemplo de esta semana: el correo, el parte o la hoja de cálculo. Te decimos si es web, móvil, escritorio o una automatización con IA, y si encaja.',
+  href = '/contacto/',
+  label = 'Cuéntanos tu proyecto',
+} = Astro.props;
+---
+
+<section class="px-3 pb-3 md:px-5 md:pb-5" data-spine="0.544" aria-labelledby="cta-title">
+  <div class="cta overflow-hidden rounded-[32px] bg-blush">
+    <div class="wrap grid items-center gap-10 py-16 md:py-20 lg:grid-cols-[1.2fr_1fr]">
+      <div data-reveal>
+        <p class="eyebrow !text-ink-2">Empezar</p>
+        <h2 id="cta-title" class="display h-xl mt-5 max-w-[15ch]">{title}</h2>
+        <p class="lead mt-6 max-w-[48ch]">{text}</p>
+        <div class="mt-9 flex flex-wrap gap-3">
+          <a href={href} class="btn btn-primary">{label} <Icon name="arrow" size={17} class="arrow" /></a>
+          <a href="mailto:hola@veodar.com" class="btn btn-ghost">hola@veodar.com</a>
+        </div>
+      </div>
+      <div data-reveal style="--d:120ms">
+        <Figure name="telegraph" fig="Fig. 07" title="Manipulador Morse" hint="H · O · L · A" bare />
+      </div>
+    </div>
+  </div>
+</section>

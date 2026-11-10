@@ -1,0 +1,32 @@
+---
+import ServiceCard from './ServiceCard.astro';
+import { services, serviceGroups } from '../data/services';
+
+interface Props {
+  headingLevel?: 'h2' | 'h3';
+}
+const { headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+---
+
+{
+  serviceGroups.map((group) => {
+    const list = services.filter((service) => service.group === group.id);
+    const big = group.id === 'ingenieria';
+    return (
+      <div class="mt-14 first:mt-0">
+        <div class="flex items-baseline justify-between gap-4 border-b border-line pb-4">
+          <Heading class="font-mono text-[12px] font-semibold tracking-[0.14em] uppercase">{group.label}</Heading>
+          <p class="text-[14px] text-muted">{group.blurb}</p>
+        </div>
+        <ul class:list={['mt-5 grid gap-4', big ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-4']}>
+          {list.map((service, index) => (
+            <li data-reveal style={`--d:${(index % 4) * 70}ms`}>
+              <ServiceCard service={service} big={big} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  })
+}

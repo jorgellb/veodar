@@ -1,0 +1,105 @@
+---
+import '../../styles/anatomy-iso.css';
+
+const svgs = import.meta.glob<string>('../../generated/*.svg', { query: '?raw', import: 'default', eager: true });
+
+interface Props {
+  name: string;
+  fig: string;
+  title: string;
+  hint?: string;
+  caption?: string;
+  compact?: boolean;
+  bare?: boolean;
+  readout?: boolean;
+  node?: boolean;
+}
+
+const { name, fig, title, hint = 'En bucle', caption, compact = false, bare = false, readout = true, node = !bare } = Astro.props;
+const svg = svgs[`../../generated/${name}.svg`];
+if (!svg) throw new Error(`Figura sin generar: ${name}`);
+---
+
+<figure class:list={['veo-fig iso', compact && 'veo-fig--compact', bare && 'veo-fig--bare']} data-theme="light" data-figure={name}>
+  <div class="veo-plate" data-node={node ? '' : undefined}>
+    <span class="veo-corner" data-corner="fig">{fig}</span>
+    <span class="veo-corner" data-corner="title">{title}</span>
+    <Fragment set:html={svg} />
+    <span class="veo-corner" data-corner="hint">{hint}</span>
+    {
+      readout ? (
+        <strong class="veo-corner" data-corner="readout" data-status aria-live="polite" />
+      ) : (
+        <strong class="sr-only" data-status aria-hidden="true" />
+      )
+    }
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+  import { drive, type Factory } from '../../iso/live/runtime';
+
+  const lives = import.meta.glob<{ default: Factory }>('../../iso/live/fig-*.ts');
+  const motions = import.meta.glob<{ default: unknown }>('../../generated/*.json');
+
+  async function mount(root: HTMLElement) {
+    if (root.dataset.ready) return;
+    root.dataset.ready = '1';
+    const name = root.dataset.figure!;
+    const live = lives[`../../iso/live/fig-${name}.ts`];
+    const motion = motions[`../../generated/${name}.json`];
+    if (!live || !motion) return;
+    const [{ default: create }, { default: M }] = await Promise.all([live(), motion()]);
+    drive(root, create(root, M));
+  }
+
+  // Load each figure's code only when it comes near the viewport.
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        io.unobserve(entry.target);
+        mount(entry.target as HTMLElement);
+      }
+    },
+    { rootMargin: '400px' },
+  );
+  document.querySelectorAll<HTMLElement>('[data-figure]').forEach((el) => io.observe(el));
+</script>
+
+<style>
+  .veo-fig {
+    margin: 0;
+  }
+  .veo-fig :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .veo-fig--compact :global(svg) {
+    height: clamp(220px, 24vw, 300px);
+  }
+  .veo-fig :global(.veo-lamp[data-on] .iso-fill),
+  .veo-fig :global(.veo-lamp[data-on] .iso-top),
+  .veo-fig :global(.veo-lamp[data-on] .iso-shade) {
+    fill: #ff5a1f;
+  }
+  .veo-fig :global(.veo-lamp[data-on] .iso-edge) {
+    stroke: #a8350b;
+  }
+  .veo-fig :global(.veo-lamp[data-err] .iso-fill),
+  .veo-fig :global(.veo-lamp[data-err] .iso-top),
+  .veo-fig :global(.veo-lamp[data-err] .iso-shade) {
+    fill: #e5484d;
+  }
+  .veo-fig :global(.veo-bead) {
+    fill: #ff5a1f;
+    stroke: #fff;
+    stroke-width: 0.8;
+    filter: drop-shadow(0 0 2.5px rgb(255 90 31 / 0.8));
+  }
+  .veo-fig :global(.veo-glow) {
+    filter: drop-shadow(0 0 3px rgb(255 90 31 / 0.65));
+  }
+</style>
