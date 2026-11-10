@@ -33,6 +33,8 @@ interface Props {
   sceneTitle?: string;
   sceneCaption?: string;
   stack?: string[];
+  /** Label for the stack chips (defaults to "Technologies"). */
+  stackLabel?: string;
   tint?: Tint;
   extraLd?: Record<string, unknown>[];
   /** schema.org type of the page (WebPage, ContactPage, CollectionPage…). */
@@ -136,11 +138,14 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
           }
           {
             p.stack && (
-              <ul class="mt-10 flex flex-wrap gap-1.5" aria-label={T.tech} data-reveal style="--d:240ms">
-                {p.stack.map((tech) => (
-                  <li class="chip">{tech}</li>
-                ))}
-              </ul>
+              <div class="mt-10" data-reveal style="--d:240ms">
+                {p.stackLabel && <p class="mb-3 font-mono text-[11px] tracking-[0.12em] text-muted uppercase">{p.stackLabel}</p>}
+                <ul class="flex flex-wrap gap-1.5" aria-label={p.stackLabel ?? T.tech}>
+                  {p.stack.map((tech) => (
+                    <li class="chip">{tech}</li>
+                  ))}
+                </ul>
+              </div>
             )
           }
         </div>
@@ -167,7 +172,7 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
   <section id="detalle" class="border-t border-line py-20 md:py-28" data-spine="0.226">
     <div class="wrap grid gap-12 lg:grid-cols-[240px_1fr] lg:gap-20">
       <aside class="hidden lg:block">
-        <nav class="sticky top-28" aria-label="En esta página">
+        <nav class="sticky top-28" aria-label={T.onPage}>
           <p class="font-mono text-[11.5px] tracking-[0.12em] text-muted uppercase">{T.onPage}</p>
           <ul class="mt-4 grid gap-1 border-l border-line" data-toc>
             {

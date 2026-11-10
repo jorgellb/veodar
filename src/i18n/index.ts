@@ -32,6 +32,20 @@ export const SERVICE_SLUGS: Record<string, string> = {
 };
 const SERVICE_IDS = Object.fromEntries(Object.entries(SERVICE_SLUGS).map(([id, en]) => [en, id]));
 
+/** English slug of each sector page, keyed by its Spanish slug (the internal id). Grows by phase. */
+export const SECTOR_SLUGS: Record<string, string> = {
+  industria: 'manufacturing',
+  logistica: 'logistics',
+  'retail-ecommerce': 'retail-ecommerce',
+  salud: 'healthcare',
+  seguros: 'insurance',
+  'banca-fintech': 'banking-fintech',
+  'inmobiliaria-construccion': 'real-estate-construction',
+  energia: 'energy',
+};
+const SECTOR_IDS = Object.fromEntries(Object.entries(SECTOR_SLUGS).map(([id, en]) => [en, id]));
+export const sectorIdOf = (slug: string, lang: Lang) => (lang === 'en' ? SECTOR_IDS[slug] : slug);
+
 /** Service id (Spanish slug) for a slug in either language. */
 export const serviceIdOf = (slug: string, lang: Lang) => (lang === 'en' ? SERVICE_IDS[slug] : slug);
 
@@ -39,6 +53,7 @@ export const PAGES = {
   home: { es: '/', en: '/en/' },
   servicios: { es: '/servicios/', en: '/en/services/' },
   soluciones: { es: '/soluciones/', en: '/en/solutions/' },
+  sectores: { es: '/sectores/', en: '/en/industries/' },
   precios: { es: '/precios/', en: '/en/pricing/' },
   contacto: { es: '/contacto/', en: '/en/contact/' },
 } as const;
@@ -51,6 +66,10 @@ export const pathTo = (key: PageKey, lang: Lang, hash = '') => `${PAGES[key][lan
 export const serviceHref = (id: string, lang: Lang = 'es') =>
   lang === 'en' ? `/en/services/${SERVICE_SLUGS[id]}/` : `/servicios/${id}/`;
 
+/** Path of a sector page in a language. */
+export const sectorHref = (id: string, lang: Lang = 'es') =>
+  lang === 'en' ? `/en/industries/${SECTOR_SLUGS[id]}/` : `/sectores/${id}/`;
+
 /** The same page in both languages, or null for a path with no counterpart (404). */
 export function alternatesOf(pathname: string): Record<Lang, string> | null {
   const path = pathname.endsWith('/') ? pathname : `${pathname}/`;
@@ -61,5 +80,9 @@ export function alternatesOf(pathname: string): Record<Lang, string> | null {
   if (es && SERVICE_SLUGS[es[1]]) return { es: path, en: serviceHref(es[1], 'en') };
   const en = path.match(/^\/en\/services\/([^/]+)\/$/);
   if (en && SERVICE_IDS[en[1]]) return { es: serviceHref(SERVICE_IDS[en[1]], 'es'), en: path };
+  const sEs = path.match(/^\/sectores\/([^/]+)\/$/);
+  if (sEs && SECTOR_SLUGS[sEs[1]]) return { es: path, en: sectorHref(sEs[1], 'en') };
+  const sEn = path.match(/^\/en\/industries\/([^/]+)\/$/);
+  if (sEn && SECTOR_IDS[sEn[1]]) return { es: sectorHref(SECTOR_IDS[sEn[1]], 'es'), en: path };
   return null;
 }

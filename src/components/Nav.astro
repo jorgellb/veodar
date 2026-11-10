@@ -4,8 +4,9 @@ import Icon from './Icon.astro';
 import ServiceGlyph from './ServiceGlyph.astro';
 import LangSwitch from './LangSwitch.astro';
 import { servicesFor, serviceHref } from '../data/services';
+import { sectorsFor } from '../data/sectors';
 import { askAiFor } from '../data/site';
-import { langOf, pathTo } from '../i18n';
+import { langOf, pathTo, sectorHref } from '../i18n';
 
 interface Props {
   tone?: 'light' | 'dark';
@@ -15,6 +16,7 @@ const lang = langOf(Astro.url);
 const services = servicesFor(lang);
 const href = (id: string) => serviceHref(id, lang);
 const askAi = askAiFor(lang);
+const sectors = sectorsFor(lang);
 
 const engineering = services.filter((service) => service.group === 'ingenieria');
 const studio = services.filter((service) => service.group === 'estudio');
@@ -27,6 +29,7 @@ const T = {
     main: 'Principal',
     services: 'Servicios',
     solutions: 'Soluciones',
+    sectors: 'Sectores',
     resources: 'Recursos',
     pricing: 'Precios',
     contact: 'Contacto',
@@ -48,6 +51,11 @@ const T = {
     askAiText: '¿Quién es Veodar? Que te lo cuente tu asistente.',
     rowsServices: `Ingeniería y estudio · ${services.length}`,
     rowsSolutions: 'Por área de la empresa · 6',
+    rowsSectors: `Por sector · ${sectors.length}`,
+    bySector: 'Por sector',
+    sectorsLine: 'El oficio es el mismo. El problema, no.',
+    seeSectors: 'Ver todos los sectores',
+    sectorsChip: 'Sectores',
     rowsResources: 'Proceso, preguntas y contacto',
     rowsPricing: 'Cómo se escribe un presupuesto',
     resourcesCap: 'Proceso, preguntas y contacto · 4',
@@ -57,6 +65,7 @@ const T = {
     main: 'Main',
     services: 'Services',
     solutions: 'Solutions',
+    sectors: 'Industries',
     resources: 'Resources',
     pricing: 'Pricing',
     contact: 'Contact',
@@ -78,6 +87,11 @@ const T = {
     askAiText: 'Who is Veodar? Let your assistant tell you.',
     rowsServices: `Engineering & studio · ${services.length}`,
     rowsSolutions: 'By department · 6',
+    rowsSectors: `By industry · ${sectors.length}`,
+    bySector: 'By industry',
+    sectorsLine: 'Same craft. Different problem.',
+    seeSectors: 'See all industries',
+    sectorsChip: 'Industries',
     rowsResources: 'Process, questions and contact',
     rowsPricing: 'How a quote gets written',
     resourcesCap: 'Process, questions and contact · 4',
@@ -135,11 +149,13 @@ const path = Astro.url.pathname;
 const here =
   /^\/(en\/services|servicios)\//.test(path) ? 'servicios'
   : /^\/(en\/solutions|soluciones)\//.test(path) ? 'soluciones'
+  : /^\/(en\/industries|sectores)\//.test(path) ? 'sectores'
   : /^\/(en\/pricing|precios)\//.test(path) ? 'precios'
   : '';
 const rows = [
   { id: 'servicios', name: T.services, cap: T.rowsServices },
   { id: 'soluciones', name: T.solutions, cap: T.rowsSolutions },
+  { id: 'sectores', name: T.sectors, cap: T.rowsSectors },
   { id: 'recursos', name: T.resources, cap: T.rowsResources },
   { id: 'precios', name: T.pricing, cap: T.rowsPricing, href: pathTo('precios', lang) },
 ];
@@ -205,6 +221,11 @@ const tintBg: Record<string, string> = {
         <li>
           <button type="button" class="nav-trigger" data-trigger="soluciones" aria-expanded="false" aria-controls="panel-soluciones">
             {T.solutions} <Icon name="chevron" size={14} class="chev" />
+          </button>
+        </li>
+        <li>
+          <button type="button" class="nav-trigger" data-trigger="sectores" aria-expanded="false" aria-controls="panel-sectores">
+            {T.sectors} <Icon name="chevron" size={14} class="chev" />
           </button>
         </li>
         <li>
@@ -322,6 +343,42 @@ const tintBg: Record<string, string> = {
             <span class="mt-auto">
               <span class="block font-display text-[26px] leading-[1] tracking-[-0.03em]">{T.teamFirstText}</span>
               <span class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-medium">{T.seeSolutions} <Icon name="arrow" size={15} /></span>
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <div class="mega-panel" id="panel-sectores" data-panel="sectores" role="region" aria-label={T.sectors}>
+        <div class="grid w-[880px] grid-cols-[1fr_270px] gap-2 p-2">
+          <div class="mega-col">
+            <p class="mega-label">{T.bySector} · {sectors.length}</p>
+            <ul class="grid grid-cols-2 gap-0.5">
+              {
+                sectors.map((sector) => (
+                  <li>
+                    <a href={sectorHref(sector.id, lang)} class="mega-link">
+                      <span class:list={['mega-ico', tintBg[sector.tint]]}>
+                        <Icon name={sector.icon} size={18} />
+                      </span>
+                      <span>
+                        <span class="mega-name">{sector.name}</span>
+                        <span class="mega-desc">{sector.menu}</span>
+                      </span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+            <a href={pathTo('sectores', lang)} class="mega-foot">
+              {T.seeSectors} <Icon name="arrow" size={15} />
+            </a>
+          </div>
+          <a href={pathTo('sectores', lang)} class="feature-card spot bg-butter text-ink">
+            <span class="chip">{T.sectorsChip}</span>
+            <span class="feature-art feature-art--sector"><ServiceGlyph slug="industria" /></span>
+            <span class="mt-auto">
+              <span class="block font-display text-[22px] leading-[1.02] tracking-[-0.03em]">{T.sectorsLine}</span>
+              <span class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-medium">{T.seeSectors} <Icon name="arrow" size={15} /></span>
             </span>
           </a>
         </div>
@@ -491,6 +548,32 @@ const tintBg: Record<string, string> = {
           <span class="ms-card-text">{T.teamFirstText}</span>
           <span class="ms-card-link">{T.seeSolutions} <Icon name="arrow" size={15} /></span>
         </a>
+      </div>
+    </section>
+
+    <section class="ms-level" id="ms-sectores" data-level="sectores" aria-label={T.sectors} inert>
+      <div class="ms-bar">
+        <div class="wrap"><button type="button" class="ms-back" data-back><Icon name="chevron" size={17} class="ms-chev-back" /> {T.menu}</button></div>
+      </div>
+      <div class="wrap">
+        <h2 class="ms-head"><span>{T.sectors}</span></h2>
+        <p class="ms-head-cap">{T.rowsSectors}</p>
+        <ul class="ms-tiles">
+          {
+            sectors.map((sector, i) => (
+              <li class="ms-tile" style={`--i:${i};--tint:${tintVar[sector.tint]}`}>
+                <a href={sectorHref(sector.id, lang)} aria-current={path.startsWith(sectorHref(sector.id, lang)) ? 'page' : undefined}>
+                  <span class="ms-art"><ServiceGlyph slug={sector.id} /></span>
+                  <span class="ms-tile-text">
+                    <span class="ms-tile-name">{sector.name}</span>
+                    <span class="ms-tile-desc">{sector.menu}</span>
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <a href={pathTo('sectores', lang)} class="ms-all">{T.seeSectors} <Icon name="arrow" size={16} /></a>
       </div>
     </section>
 
@@ -769,6 +852,15 @@ const tintBg: Record<string, string> = {
   .feature-art :global(.glyph) {
     color: var(--color-paper);
   }
+  /* On the light sector card the drawing stays ink, on a paper fill. */
+  .feature-art--sector {
+    top: 50px;
+    height: 88px;
+    --glyph-paper: rgb(255 255 255 / 0.7);
+  }
+  .feature-art--sector :global(.glyph) {
+    color: var(--color-ink);
+  }
   .feature-card:hover .feature-art {
     transform: translateY(-4px) scale(1.03);
   }
@@ -793,6 +885,12 @@ const tintBg: Record<string, string> = {
   @media (min-width: 768px) {
     .nav-contact {
       display: inline-flex;
+    }
+  }
+  /* With five menus the bar is full on small laptops; the button beside it goes to the same page. */
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .nav-contact {
+      display: none;
     }
   }
   .nav-burger {
@@ -986,6 +1084,7 @@ const tintBg: Record<string, string> = {
   }
   .msheet[data-view='servicios'] .ms-level[data-level='servicios'],
   .msheet[data-view='soluciones'] .ms-level[data-level='soluciones'],
+  .msheet[data-view='sectores'] .ms-level[data-level='sectores'],
   .msheet[data-view='recursos'] .ms-level[data-level='recursos'],
   .msheet[data-view='root'] .ms-level[data-level='root'] {
     transform: none;
@@ -1328,10 +1427,10 @@ const tintBg: Record<string, string> = {
   .ms-head-cap--sub {
     margin-top: 26px;
   }
-  .msheet:is([data-view='servicios'], [data-view='soluciones'], [data-view='recursos']) .ms-level:not([data-level='root']):not([inert]) .ms-head > span {
+  .msheet:is([data-view='servicios'], [data-view='soluciones'], [data-view='sectores'], [data-view='recursos']) .ms-level:not([data-level='root']):not([inert]) .ms-head > span {
     animation: ms-rise 0.8s var(--ease-out-soft) 0.12s both;
   }
-  .msheet:is([data-view='servicios'], [data-view='soluciones'], [data-view='recursos']) .ms-level:not([inert]) :is(.ms-tile, .ms-row, .ms-card, .ms-head-cap) {
+  .msheet:is([data-view='servicios'], [data-view='soluciones'], [data-view='sectores'], [data-view='recursos']) .ms-level:not([inert]) :is(.ms-tile, .ms-row, .ms-card, .ms-head-cap) {
     animation: ms-tile 0.6s var(--ease-out-soft) both;
     animation-delay: calc(0.18s + var(--i, 0) * 0.04s);
   }

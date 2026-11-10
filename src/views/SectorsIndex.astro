@@ -1,0 +1,123 @@
+---
+// /sectores/ and /en/industries/: what Veodar builds in each industry.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectorCard from '../components/SectorCard.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import { sectorsFor } from '../data/sectors';
+import { breadcrumbLd, site } from '../data/site';
+import { langOf, pathTo, sectorHref } from '../i18n';
+
+const lang = langOf(Astro.url);
+const sectors = sectorsFor(lang);
+const T = {
+  es: {
+    home: 'Inicio',
+    sectors: 'Sectores',
+    title: 'Sectores: software e IA para cada industria',
+    description:
+      'Software a medida e IA para industria, logística, retail, salud, seguros, banca, inmobiliaria y energía: qué construimos en cada sector y por dónde empezar.',
+    catalog: 'Sectores en los que trabaja Veodar',
+    lead: 'Una fábrica, una aseguradora, una obra y una clínica no se parecen en nada salvo en una cosa: el mismo dato se copia a mano entre sistemas que no se hablan. Esto es lo que construimos en cada sector y por dónde solemos empezar.',
+    list: 'Lista de sectores',
+    principles: 'En todos los sectores',
+    rules: [
+      ['Sobre lo que ya tenéis', 'ERP, SGA, TPV o programa de gestión: los ampliamos por su API en lugar de sustituirlos.'],
+      ['Un papel primero', 'Empezamos por el documento que más horas cuesta y medimos el antes y el después.'],
+      ['La IA propone, una persona confirma', 'Ningún pedido, abono o cita se cierra sin una regla escrita o una persona.'],
+    ],
+    missing: '¿No ves tu sector?',
+    missingText: 'Trabajamos con más sectores de los que caben en esta página. Cuéntanos el problema y te decimos si encaja.',
+    missingCta: 'Cuéntanos el problema',
+  },
+  en: {
+    home: 'Home',
+    sectors: 'Industries',
+    title: 'Industries: Software and AI for Every Sector',
+    description:
+      'Custom software and AI for manufacturing, logistics, retail, healthcare, insurance, banking, real estate and energy: what we build and where to start.',
+    catalog: 'Industries Veodar works with',
+    lead: 'A factory, an insurer, a job site and a clinic have nothing in common except one thing: the same data gets copied by hand between systems that do not talk to each other. This is what we build in each industry and where we usually start.',
+    list: 'List of industries',
+    principles: 'In every industry',
+    rules: [
+      ['On top of what you have', 'ERP, WMS, POS or practice software: we extend it through its API instead of replacing it.'],
+      ['One document first', 'We start with the paperwork that costs the most hours and measure before and after.'],
+      ['AI proposes, a person confirms', 'No order, refund or appointment closes without a written rule or a person.'],
+    ],
+    missing: 'Don’t see your industry?',
+    missingText: 'We work with more industries than fit on this page. Tell us the problem and we’ll tell you whether it fits.',
+    missingCta: 'Tell us the problem',
+  },
+}[lang];
+
+const ld = [
+  breadcrumbLd([
+    { name: T.home, path: pathTo('home', lang) },
+    { name: T.sectors, path: pathTo('sectores', lang) },
+  ]),
+  {
+    '@type': 'ItemList',
+    name: T.catalog,
+    itemListElement: sectors.map((sector, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: sector.name,
+      url: new URL(sectorHref(sector.id, lang), site.url).href,
+    })),
+  },
+];
+---
+
+<BaseLayout title={T.title} description={T.description} jsonLd={ld} pageType="CollectionPage">
+  <section class="pt-14 pb-10 md:pt-20" data-trunk-start="0.5">
+    <div class="wrap">
+      <p class="eyebrow" data-reveal>{T.sectors}</p>
+      <h1 class="display h-hero mt-6 max-w-[13ch]" data-reveal style="--d:60ms">
+        {lang === 'en' ? <>Same craft. <em>Different</em> problem.</> : <>El oficio es el mismo. El <em>problema</em>, no.</>}
+      </h1>
+      <p class="lead mt-7 max-w-[58ch]" data-reveal style="--d:120ms">{T.lead}</p>
+    </div>
+  </section>
+
+  <section class="pb-16 md:pb-20" data-spine="0.5" aria-label={T.list}>
+    <div class="wrap">
+      <ul class="grid gap-4 md:grid-cols-2">
+        {
+          sectors.map((sector, index) => (
+            <li data-reveal style={`--d:${(index % 2) * 80}ms`}>
+              <SectorCard sector={sector} />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="border-t border-line py-16 md:py-24" data-spine="0.331" aria-labelledby="sec-rules">
+    <div class="wrap grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-16">
+      <h2 id="sec-rules" class="display h-lg max-w-[12ch]">{T.principles}</h2>
+      <div>
+        <ol class="grid gap-px overflow-hidden rounded-[24px] bg-line sm:grid-cols-3">
+          {
+            T.rules.map(([name, text]) => (
+              <li class="bg-card p-6 md:p-7" data-reveal>
+                <span class="block font-display text-[1.35rem] leading-[1.05] tracking-[-0.02em]">{name}</span>
+                <span class="mt-3 block text-[14.5px] leading-relaxed text-muted">{text}</span>
+              </li>
+            ))
+          }
+        </ol>
+        <a href={pathTo('contacto', lang)} class="sec-missing mt-4 flex flex-wrap items-center justify-between gap-4 rounded-[24px] bg-paper-2 p-6 md:p-7" data-reveal>
+          <span>
+            <span class="block font-display text-[1.35rem] tracking-[-0.02em]">{T.missing}</span>
+            <span class="mt-2 block max-w-[52ch] text-[14.5px] leading-relaxed text-muted">{T.missingText}</span>
+          </span>
+          <span class="link-arrow">{T.missingCta} <Icon name="arrow" size={16} /></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
