@@ -1,14 +1,12 @@
-// Fibre network behind the whole page: a jittered mesh of nodes, a trunk of
-// fibre that threads every [data-node] card from top to bottom, and packets of
-// data that run the trunk and hop across the mesh. Geometry lives in document
+// Fibre behind the whole page: a trunk that threads every [data-node] card from
+// top to bottom, the fibres from the hero chips into its scene, and packets of
+// data running along them. (There used to be a mesh of nodes behind it all; it
+// was removed to keep the background calm.) Geometry lives in document
 // coordinates; one fixed canvas draws the visible slice each frame.
 
 type Pt = { x: number; y: number };
-type Node = Pt & { hub: boolean; flash: number; layer: 0 | 1 };
-type Edge = { a: number; b: number; layer: 0 | 1 };
 type Path = { pts: Pt[]; acc: number[]; len: number; width: number };
 type Packet = { path: number; s: number; speed: number; life: number; trail: number; bright?: boolean };
-type Hopper = { from: number; to: number; s: number; len: number; speed: number; hops: number };
 type Rect = { x: number; y: number; w: number; h: number };
 
 const ACCENT = '255, 90, 31';
@@ -18,26 +16,18 @@ const CREAM = '244, 240, 230';
 export function startNetwork(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext('2d', { alpha: true })!;
   const still = matchMedia('(prefers-reduced-motion: reduce)');
-  const fine = matchMedia('(hover: hover) and (pointer: fine)');
   let dpr = 1;
   let vw = 0;
   let vh = 0;
   let docH = 0;
-  let nodes: Node[] = [];
-  let edges: Edge[] = [];
-  let adj: number[][] = [];
-  let rows: Map<number, number[]> = new Map();
   let paths: Path[] = [];
   let ports: { p: Pt; dark: boolean }[] = [];
   let packets: Packet[] = [];
-  let hoppers: Hopper[] = [];
   let darks: Rect[] = [];
   let hubFrom = 0;
   let hubTo = 0;
   let sockets: Pt[] = [];
   const hubPath = new Map<string, number>();
-  const ROW = 160;
-  let pointer: Pt | null = null;
   let frame = 0;
   let last = 0;
 
@@ -74,20 +64,6 @@ export function startNetwork(canvas: HTMLCanvasElement) {
   };
   const inside = (p: Pt, r: Rect, pad = 0) => p.x > r.x - pad && p.x < r.x + r.w + pad && p.y > r.y - pad && p.y < r.y + r.h + pad;
 
-  function sample(p0: Pt, c0: Pt, c1: Pt, p1: Pt, step = 8): Pt[] {
-    const approx = Math.hypot(p1.x - p0.x, p1.y - p0.y) + 1;
-    const n = Math.max(4, Math.ceil(approx / step));
-    const out: Pt[] = [];
-    for (let i = 0; i <= n; i++) {
-      const t = i / n;
-      const u = 1 - t;
-      out.push({
-        x: u * u * u * p0.x + 3 * u * u * t * c0.x + 3 * u * t * t * c1.x + t * t * t * p1.x,
-        y: u * u * u * p0.y + 3 * u * u * t * c0.y + 3 * u * t * t * c1.y + t * t * t * p1.y,
-      });
-    }
-    return out;
-  }
   // No gap longer than `step`, so a long straight run still draws when its ends are off screen.
   const densify = (pts: Pt[], step = 22): Pt[] => {
     const out: Pt[] = [pts[0]];
@@ -140,64 +116,20 @@ export function startNetwork(canvas: HTMLCanvasElement) {
 
   function build() {
     seed = 7;
-    vw = innerWidth;
-    vh = innerHeight;
+    // The canvas covers the viewport minus any classic scrollbar, so size it from
+    // clientWidth: innerWidth includes the scrollbar, and the browser would squeeze
+    // the drawing by that much (fibres drifting left toward the right edge).
+    vw = document.documentElement.clientWidth;
+    vh = document.documentElement.clientHeight;
     dpr = Math.min(1.5, devicePixelRatio || 1);
     canvas.width = Math.round(vw * dpr);
     canvas.height = Math.round(vh * dpr);
     docH = document.documentElement.scrollHeight;
     darks = [...document.querySelectorAll('[data-dark]')].map(docRect);
-    // Scenes drawn straight on the page keep the near mesh out from under them.
-    const quiet = [...document.querySelectorAll('[data-quiet]')].map(docRect);
     const anchors = [...document.querySelectorAll('main [data-node], footer [data-node]')]
       .map(docRect)
       .filter((r) => r.w > 40 && r.h > 40)
       .sort((a, b) => a.y - b.y || a.x - b.x);
-
-    // Mesh: a jittered grid, denser inside dark sections, empty under cards.
-    nodes = [];
-    edges = [];
-    const grids: { cell: number; area: Rect; layer: 0 | 1 }[] = [{ cell: vw < 700 ? 96 : 128, area: { x: 0, y: 0, w: vw, h: docH }, layer: 1 }];
-    grids.push({ cell: vw < 700 ? 150 : 190, area: { x: 0, y: 0, w: vw, h: docH }, layer: 0 });
-    for (const d of darks) grids.push({ cell: vw < 700 ? 70 : 84, area: d, layer: 1 });
-    for (const { cell, area, layer } of grids) {
-      const cols = Math.ceil(area.w / cell) + 1;
-      const rowsN = Math.ceil(area.h / cell) + 1;
-      const index: number[][] = [];
-      for (let gy = 0; gy < rowsN; gy++) {
-        index.push([]);
-        for (let gx = 0; gx < cols; gx++) {
-          const p = {
-            x: area.x + (gx + 0.5 + (rand() - 0.5) * 0.7) * cell,
-            y: area.y + (gy + 0.5 + (rand() - 0.5) * 0.7) * cell,
-          };
-          const skip =
-            rand() < 0.16 ||
-            (layer === 1 && (anchors.some((r) => inside(p, r, 14)) || quiet.some((r) => inside(p, r, 6)))) ||
-            (cell < 100 && !inside(p, area));
-          if (skip) {
-            index[gy].push(-1);
-            continue;
-          }
-          index[gy].push(nodes.length);
-          nodes.push({ ...p, hub: rand() < 0.07, flash: 0, layer });
-        }
-      }
-      const link = (a: number, b: number) => {
-        if (a < 0 || b < 0) return;
-        if (Math.hypot(nodes[a].x - nodes[b].x, nodes[a].y - nodes[b].y) > cell * 1.75) return;
-        edges.push({ a, b, layer });
-      };
-      for (let gy = 0; gy < rowsN; gy++)
-        for (let gx = 0; gx < cols; gx++) {
-          const i = index[gy][gx];
-          if (i < 0) continue;
-          if (gx + 1 < cols && rand() < 0.62) link(i, index[gy][gx + 1]);
-          if (gy + 1 < rowsN && rand() < 0.62) link(i, index[gy + 1][gx]);
-          if (gy + 1 < rowsN && gx + 1 < cols && rand() < 0.22) link(i, index[gy + 1][gx + 1]);
-          if (gy + 1 < rowsN && gx > 0 && rand() < 0.16) link(i, index[gy + 1][gx - 1]);
-        }
-    }
 
     // Spine: one trunk straight down the free channel of each section (the gap
     // between its columns, or the page gutter on narrow screens), with
@@ -310,39 +242,6 @@ export function startNetwork(canvas: HTMLCanvasElement) {
     }
     hubTo = paths.length;
 
-    // Feeders: every port plugs into the nearest mesh node.
-    for (const { p } of ports) {
-      let best = -1;
-      let bd = 240;
-      nodes.forEach((n, i) => {
-        if (n.layer !== 1) return;
-        const d = Math.hypot(n.x - p.x, n.y - p.y);
-        if (d < bd && Math.abs(n.y - p.y) < 180) {
-          bd = d;
-          best = i;
-        }
-      });
-      if (best >= 0) {
-        const n = nodes[best];
-        paths.push(makePath(sample(p, { x: p.x, y: p.y + (n.y > p.y ? 30 : -30) }, { x: n.x, y: n.y }, n, 6), 0.8));
-      }
-    }
-
-    adj = nodes.map(() => []);
-    edges.forEach((e, i) => {
-      adj[e.a].push(i);
-      adj[e.b].push(i);
-    });
-    rows = new Map();
-    edges.forEach((e, i) => {
-      const y0 = Math.min(nodes[e.a].y, nodes[e.b].y);
-      const y1 = Math.max(nodes[e.a].y, nodes[e.b].y);
-      for (let r = Math.floor(y0 / ROW); r <= Math.floor(y1 / ROW); r++) {
-        if (!rows.has(r)) rows.set(r, []);
-        rows.get(r)!.push(i);
-      }
-    });
-
     // Trunk packets spaced along each fibre of the bundle.
     packets = [];
     paths.forEach((path, i) => {
@@ -352,24 +251,10 @@ export function startNetwork(canvas: HTMLCanvasElement) {
         packets.push({ path: i, s, speed: i === 0 ? 170 : hub ? 130 + rand() * 50 : i < 3 ? 120 + rand() * 60 : 70 + rand() * 40, life: 1, trail: i === 0 ? 46 : hub ? 40 : 28 });
       }
     });
-    hoppers = [];
-  }
-
-  function spawnHopper(sy: number) {
-    const lo = Math.floor((sy - 100) / ROW);
-    const hi = Math.floor((sy + vh + 100) / ROW);
-    const r = lo + Math.floor(rand() * (hi - lo + 1));
-    const list = rows.get(r);
-    if (!list?.length) return;
-    const e = edges[list[Math.floor(rand() * list.length)]];
-    if (e.layer !== 1) return;
-    const [from, to] = rand() < 0.5 ? [e.a, e.b] : [e.b, e.a];
-    hoppers.push({ from, to, s: 0, len: Math.hypot(nodes[to].x - nodes[from].x, nodes[to].y - nodes[from].y), speed: 90 + rand() * 90, hops: 3 + Math.floor(rand() * 5) });
   }
 
   function draw(dt: number) {
     const sy = scrollY;
-    const far = 0.55;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, vw, vh);
     const visibleDarks = darks.filter((d) => d.y < sy + vh && d.y + d.h > sy);
@@ -377,61 +262,7 @@ export function startNetwork(canvas: HTMLCanvasElement) {
     const pass = (dark: boolean) => {
       const line = dark ? CREAM : INK;
       const k = dark ? 1.25 : 1;
-      // Far layer (parallax), then near mesh.
-      for (const layer of [0, 1] as const) {
-        const off = layer === 0 ? sy * far : sy;
-        const top = layer === 0 ? sy * far - 40 : sy - 40;
-        const lo = Math.floor(top / ROW);
-        const hi = Math.floor((top + vh + 80) / ROW);
-        const seen = new Set<number>();
-        ctx.beginPath();
-        for (let r = lo; r <= hi; r++)
-          for (const i of rows.get(r) ?? []) {
-            if (seen.has(i)) continue;
-            seen.add(i);
-            const e = edges[i];
-            if (e.layer !== layer) continue;
-            const a = nodes[e.a];
-            const b = nodes[e.b];
-            ctx.moveTo(a.x, a.y - off);
-            ctx.lineTo(b.x, b.y - off);
-          }
-        ctx.strokeStyle = `rgba(${line}, ${(layer === 0 ? 0.035 : 0.07) * k})`;
-        ctx.lineWidth = layer === 0 ? 0.6 : 0.8;
-        ctx.stroke();
-      }
-      // Nodes of the near layer within view.
-      for (const n of nodes) {
-        const y = n.y - (n.layer === 0 ? sy * far : sy);
-        if (y < -10 || y > vh + 10) continue;
-        const near = n.layer === 1;
-        let boost = n.flash;
-        if (pointer && near) {
-          const d = Math.hypot(n.x - pointer.x, n.y - pointer.y);
-          if (d < 170) {
-            boost = Math.max(boost, 1 - d / 170);
-            ctx.beginPath();
-            ctx.moveTo(n.x, y);
-            ctx.lineTo(pointer.x, pointer.y - sy);
-            ctx.strokeStyle = `rgba(${ACCENT}, ${(1 - d / 170) * 0.35})`;
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-          }
-        }
-        const r = (near ? (n.hub ? 2.4 : 1.5) : 1) + boost * 1.6;
-        ctx.beginPath();
-        ctx.arc(n.x, y, r, 0, Math.PI * 2);
-        ctx.fillStyle = boost > 0.05 ? `rgba(${ACCENT}, ${0.35 + boost * 0.6})` : `rgba(${line}, ${(near ? (n.hub ? 0.32 : 0.2) : 0.1) * k})`;
-        ctx.fill();
-        if (near && n.hub) {
-          ctx.beginPath();
-          ctx.arc(n.x, y, 5.5 + boost * 3, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(${line}, ${0.12 * k})`;
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-        }
-      }
-      // Trunk, branches and feeders.
+      // Trunk, branches and the hero fibres.
       paths.forEach((path, i) => {
         const first = path.pts[0];
         const lastP = path.pts[path.pts.length - 1];
@@ -501,31 +332,6 @@ export function startNetwork(canvas: HTMLCanvasElement) {
         const y = p.y - sy;
         if (y > -20 && y < vh + 20) glow(p.x, y, 16);
       }
-      for (const hp of hoppers) {
-        const a = nodes[hp.from];
-        const b = nodes[hp.to];
-        const t = hp.s / hp.len;
-        const x = a.x + (b.x - a.x) * t;
-        const y = a.y + (b.y - a.y) * t - sy;
-        const t0 = Math.max(0, t - 26 / hp.len);
-        const tx = a.x + (b.x - a.x) * t0;
-        const ty = a.y + (b.y - a.y) * t0 - sy;
-        // Quieter on paper, where they cross body text; full glow on the dark bands.
-        const grad = ctx.createLinearGradient(x, y, tx, ty);
-        grad.addColorStop(0, `rgba(${ACCENT}, ${dark ? 0.8 : 0.42})`);
-        grad.addColorStop(1, `rgba(${ACCENT}, 0)`);
-        ctx.beginPath();
-        ctx.moveTo(tx, ty);
-        ctx.lineTo(x, y);
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = dark ? 1.2 : 1;
-        ctx.stroke();
-        if (dark) glow(x, y, 14);
-        ctx.beginPath();
-        ctx.arc(x, y, dark ? 1.2 : 1, 0, Math.PI * 2);
-        ctx.fillStyle = dark ? '#fff4ec' : `rgba(${ACCENT}, 0.7)`;
-        ctx.fill();
-      }
     };
 
     if (!visibleDarks.length) pass(false);
@@ -554,27 +360,6 @@ export function startNetwork(canvas: HTMLCanvasElement) {
       if (pk.bright) packets.splice(i, 1);
       else pk.s = 0;
     }
-    for (const n of nodes) if (n.flash > 0) n.flash = Math.max(0, n.flash - dt * 1.6);
-    for (let i = hoppers.length - 1; i >= 0; i--) {
-      const hp = hoppers[i];
-      hp.s += hp.speed * dt;
-      if (hp.s < hp.len) continue;
-      nodes[hp.to].flash = 1;
-      hp.hops -= 1;
-      const options = adj[hp.to].map((e) => edges[e]).filter((e) => e.layer === 1 && (e.a === hp.from || e.b === hp.from) === false);
-      if (hp.hops <= 0 || !options.length) {
-        hoppers.splice(i, 1);
-        continue;
-      }
-      const e = options[Math.floor(rand() * options.length)];
-      const next = e.a === hp.to ? e.b : e.a;
-      hp.from = hp.to;
-      hp.to = next;
-      hp.s = 0;
-      hp.len = Math.hypot(nodes[next].x - nodes[hp.from].x, nodes[next].y - nodes[hp.from].y);
-    }
-    const want = Math.round((vw * vh) / 52000);
-    if (hoppers.length < want && rand() < dt * 6) spawnHopper(sy);
   }
 
   const loop = (now: number) => {
@@ -609,14 +394,13 @@ export function startNetwork(canvas: HTMLCanvasElement) {
     if (index === undefined || still.matches) return;
     packets.push({ path: index, s: 0, speed: paths[index].len / dur, life: 1, trail: 110, bright: true });
   });
+  // Content growing changes the height; a scrollbar appearing changes the width
+  // without any window resize event.
   new ResizeObserver(() => {
-    if (Math.abs(document.documentElement.scrollHeight - docH) > 4) rebuild();
+    const root = document.documentElement;
+    if (Math.abs(root.scrollHeight - docH) > 4 || root.clientWidth !== vw) rebuild();
   }).observe(document.body);
   addEventListener('scroll', () => !frame && draw(0), { passive: true });
   document.addEventListener('visibilitychange', run);
   still.addEventListener('change', () => (still.matches ? draw(0) : run()));
-  if (fine.matches) {
-    addEventListener('pointermove', (e) => (pointer = { x: e.clientX, y: e.clientY + scrollY }), { passive: true });
-    document.documentElement.addEventListener('pointerleave', () => (pointer = null));
-  }
 }
