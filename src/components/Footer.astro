@@ -1,38 +1,59 @@
 ---
 import Logo from './Logo.astro';
 import Icon from './Icon.astro';
-import { services, serviceHref } from '../data/services';
-import { askAi, site } from '../data/site';
+import LangSwitch from './LangSwitch.astro';
+import { servicesFor, serviceHref } from '../data/services';
+import { askAiFor, site } from '../data/site';
+import { langOf, pathTo } from '../i18n';
+
+const lang = langOf(Astro.url);
+const services = servicesFor(lang);
+const askAi = askAiFor(lang);
+const T = {
+  es: {
+    blurb: 'Estudio de ingeniería y diseño. Automatizaciones con IA, software a medida y webs que se recuerdan. El código y las cuentas, siempre a vuestro nombre.',
+    ask: 'Pregunta a una IA por Veodar',
+    nav: 'Pie de página',
+    cols: ['Ingeniería', 'Estudio', 'Soluciones', 'Veodar'],
+    areas: ['TI', 'Seguridad', 'Finanzas', 'Personas', 'RevOps', 'Legal'],
+    more: ['Todos los servicios', 'Cómo trabajamos', 'Precios', 'Preguntas frecuentes', 'Contacto'],
+    made: 'Hecho a medida, como todo lo demás.',
+    tech: 'Astro · 0 cookies de seguimiento · AA',
+  },
+  en: {
+    blurb: 'Engineering and design studio. AI automation, custom software and websites people remember. Code and accounts, always in your name.',
+    ask: 'Ask an AI about Veodar',
+    nav: 'Footer',
+    cols: ['Engineering', 'Studio', 'Solutions', 'Veodar'],
+    areas: ['IT', 'Security', 'Finance', 'People', 'RevOps', 'Legal'],
+    more: ['All services', 'How we work', 'Pricing', 'FAQ', 'Contact'],
+    made: 'Custom-made, like everything else.',
+    tech: 'Astro · 0 tracking cookies · AA',
+  },
+}[lang];
 
 const columns = [
   {
-    title: 'Ingeniería',
-    links: services.filter((s) => s.group === 'ingenieria').map((s) => ({ label: s.name, href: serviceHref(s.slug) })),
+    title: T.cols[0],
+    links: services.filter((s) => s.group === 'ingenieria').map((s) => ({ label: s.name, href: serviceHref(s.slug, lang) })),
   },
   {
-    title: 'Estudio',
-    links: services.filter((s) => s.group === 'estudio').map((s) => ({ label: s.name, href: serviceHref(s.slug) })),
+    title: T.cols[1],
+    links: services.filter((s) => s.group === 'estudio').map((s) => ({ label: s.name, href: serviceHref(s.slug, lang) })),
   },
   {
-    title: 'Soluciones',
+    title: T.cols[2],
+    links: ['ti', 'seguridad', 'finanzas', 'personas', 'revops', 'legal'].map((id, i) => ({ label: T.areas[i], href: pathTo('soluciones', lang, id) })),
+  },
+  {
+    title: T.cols[3],
     links: [
-      { label: 'TI', href: '/soluciones/#ti' },
-      { label: 'Seguridad', href: '/soluciones/#seguridad' },
-      { label: 'Finanzas', href: '/soluciones/#finanzas' },
-      { label: 'Personas', href: '/soluciones/#personas' },
-      { label: 'RevOps', href: '/soluciones/#revops' },
-      { label: 'Legal', href: '/soluciones/#legal' },
-    ],
-  },
-  {
-    title: 'Veodar',
-    links: [
-      { label: 'Todos los servicios', href: '/servicios/' },
-      { label: 'Cómo trabajamos', href: '/#proceso' },
-      { label: 'Precios', href: '/precios/' },
-      { label: 'Preguntas frecuentes', href: '/#preguntas' },
-      { label: 'Contacto', href: '/contacto/' },
-    ],
+      pathTo('servicios', lang),
+      pathTo('home', lang, 'proceso'),
+      pathTo('precios', lang),
+      pathTo('home', lang, 'preguntas'),
+      pathTo('contacto', lang),
+    ].map((href, i) => ({ label: T.more[i], href })),
   },
 ];
 const year = new Date().getFullYear();
@@ -44,13 +65,13 @@ const year = new Date().getFullYear();
       <div>
         <Logo inverted class="text-paper" />
         <p class="mt-6 max-w-[34ch] text-[15px] leading-relaxed text-paper/70">
-          Estudio de ingeniería y diseño. Automatizaciones con IA, software a medida y webs que se recuerdan. El código y las cuentas, siempre a vuestro nombre.
+          {T.blurb}
         </p>
         <a href={`mailto:${site.email}`} class="mt-6 inline-flex items-center gap-2 font-display text-[28px] tracking-[-0.03em] text-paper hover:text-accent">
           {site.email} <Icon name="arrow" size={22} />
         </a>
         <div class="mt-8">
-          <p class="font-mono text-[11.5px] tracking-[0.12em] text-paper/50 uppercase">Pregunta a una IA por Veodar</p>
+          <p class="font-mono text-[11.5px] tracking-[0.12em] text-paper/50 uppercase">{T.ask}</p>
           <div class="mt-3 flex flex-wrap gap-2">
             {
               askAi.map((ai) => (
@@ -63,7 +84,7 @@ const year = new Date().getFullYear();
         </div>
       </div>
 
-      <nav class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4" aria-label="Pie de página">
+      <nav class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4" aria-label={T.nav}>
         {
           columns.map((column) => (
             <div>
@@ -86,13 +107,21 @@ const year = new Date().getFullYear();
     <p class="footer-word" aria-hidden="true">veodar</p>
 
     <div class="flex flex-col gap-3 border-t border-paper/15 pt-6 text-[13px] text-paper/55 sm:flex-row sm:items-center sm:justify-between">
-      <p>© {year} Veodar. Hecho a medida, como todo lo demás.</p>
-      <p class="font-mono text-[12px]">Astro · 0 cookies de seguimiento · AA</p>
+      <p>© {year} Veodar. {T.made}</p>
+      <div class="flex items-center gap-5">
+        <p class="font-mono text-[12px]">{T.tech}</p>
+        <div class="footer-lang"><LangSwitch variant="bar" /></div>
+      </div>
     </div>
   </div>
 </footer>
 
 <style>
+  .footer-lang :global(.ls) {
+    display: inline-grid;
+    color: var(--color-paper);
+    --ls-on: var(--color-night);
+  }
   .footer-word {
     margin: 4.5rem 0 1.5rem;
     font-family: var(--font-display);

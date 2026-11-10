@@ -1,12 +1,12 @@
 import { lineOnTop } from '../iso-kit.mjs';
-import { clamp01, ease, helpers, polar, span, type Factory, type Proj } from './runtime';
+import { tr, clamp01, ease, helpers, polar, span, type Factory, type Proj } from './runtime';
 
 const PLAY = 9.4;
 const CYCLE = 11;
 const SCENES = [
-  { name: 'Escena 1 · el dolor', caption: 'Cada lunes, doscientos correos.' },
-  { name: 'Escena 2 · el momento', caption: 'Un clic. La IA los ordena.' },
-  { name: 'Escena 3 · la promesa', caption: 'Y tu equipo, a lo importante.' },
+  { name: tr('Escena 1 · el dolor', 'Scene 1 · the pain'), caption: tr('Cada lunes, doscientos correos.', 'Every Monday, two hundred emails.') },
+  { name: tr('Escena 2 · el momento', 'Scene 2 · the moment'), caption: tr('Un clic. La IA los ordena.', 'One click. The AI sorts them.') },
+  { name: tr('Escena 3 · la promesa', 'Scene 3 · the promise'), caption: tr('Y tu equipo, a lo importante.', 'And your team, on what matters.') },
 ];
 
 const create: Factory = (root, M) => {
@@ -111,7 +111,7 @@ const create: Factory = (root, M) => {
     const J = M.jog;
     jog.innerHTML = `<path class="iso-line" data-tone="hi" style="stroke-width:1.5px" d="${lineOnTop(polar(J.x, J.y, 2, turn * 0.6), polar(J.x, J.y, J.r - 3.6, turn * 0.6), J.z, P)}"/>`;
     h.on(lamp, playing);
-    h.say(playing ? `${label.slice(0, 5)} · ${SCENES[idx].name}` : 'Rebobinando · listo para exportar en vertical');
+    h.say(playing ? `${label.slice(0, 5)} · ${SCENES[idx].name}` : tr('Rebobinando · listo para exportar en vertical', 'Rewinding · ready to export in vertical'));
   };
   return { apply, still: PLAY * 0.52 };
 };

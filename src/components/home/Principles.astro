@@ -1,8 +1,10 @@
 ---
 import Icon from '../Icon.astro';
 import Figure from '../iso/Figure.astro';
+import { langOf } from '../../i18n';
 
-const items = [
+const lang = langOf(Astro.url);
+const itemsEs = [
   {
     icon: 'key',
     h: 'El código es vuestro',
@@ -28,16 +30,29 @@ const items = [
     tint: 'bg-blush',
   },
 ];
+const itemsEn = [
+  { icon: 'key', h: 'The code is yours', p: 'Repository, domain, cloud and app store accounts in the company’s name. No Veodar console that Monday depends on.', tint: 'bg-butter' },
+  { icon: 'shield', h: "The credential doesn't live in the prompt", p: 'Every workflow uses minimal, named, revocable and logged access. Security sees it on the same list as everything else.', tint: 'bg-mint' },
+  { icon: 'bolt', h: 'Actually fast', p: "Core Web Vitals in the green, apps that open instantly and animations that don't drain the phone. We measure on real devices.", tint: 'bg-sky' },
+  { icon: 'spark', h: 'The model can be swapped', p: 'Claude, GPT, Gemini or an open model: the task and the rules are yours. Changing provider doesn’t rebuild the business.', tint: 'bg-blush' },
+];
+const items = lang === 'en' ? itemsEn : itemsEs;
+const T = {
+  es: { eyebrow: 'Lo que no negociamos', figure: 'Cuadro de llaves', hint: 'Una llave, una puerta' },
+  en: { eyebrow: "What we don't negotiate", figure: 'Key cabinet', hint: 'One key, one door' },
+}[lang];
 ---
 
 <section class="py-24 md:py-36" data-spine="0.468" aria-labelledby="principles-title">
   <div class="wrap grid gap-14 lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-20">
     <div class="order-2 lg:order-1" data-reveal>
-      <Figure name="keys" fig="Fig. 06" title="Cuadro de llaves" hint="Una llave, una puerta" />
+      <Figure name="keys" fig="Fig. 06" title={T.figure} hint={T.hint} />
     </div>
     <div class="order-1 lg:order-2">
-      <p class="eyebrow" data-reveal>Lo que no negociamos</p>
-      <h2 id="principles-title" class="display h-xl mt-5 max-w-[13ch]" data-reveal>Las llaves se quedan en <em>casa</em>.</h2>
+      <p class="eyebrow" data-reveal>{T.eyebrow}</p>
+      <h2 id="principles-title" class="display h-xl mt-5 max-w-[13ch]" data-reveal>
+        {lang === 'en' ? <>The keys stay <em>home</em>.</> : <>Las llaves se quedan en <em>casa</em>.</>}
+      </h2>
       <ul class="mt-12 grid gap-4 sm:grid-cols-2">
         {
           items.map((item, index) => (

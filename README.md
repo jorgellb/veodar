@@ -27,6 +27,20 @@ Cada figura tiene dos mitades:
 
 Los SVG generados van en el repositorio, así que **compilar el sitio no necesita nada más**. Regenerarlos (`npm run figures`) sí requiere el skill anatomy instalado en `~/.claude/skills/anatomy` (de ahí se lee `lathe.mjs`).
 
+## Idiomas (español e inglés)
+
+El español vive en la raíz (sus URL no cambian nunca) y el inglés bajo `/en/`, con slugs traducidos (`/servicios/automatizaciones-ia/` ↔ `/en/services/ai-automation/`).
+
+- `src/i18n/index.ts` — idiomas, el mapa de rutas (`PAGES`, `SERVICE_SLUGS`), `langOf(url)`, `pathTo()`, `serviceHref(id, lang)` y `alternatesOf(path)`, que da la misma página en el otro idioma. Cada componente averigua su idioma con `langOf(Astro.url)`; no hace falta pasarlo como prop.
+- Contenido: el español sigue en `src/data/pages.ts` y `src/data/services.ts`; el inglés, en `src/data/en/` con los mismos ids. `servicesFor(lang)`, `pagesFor(lang)` y `extrasFor(lang)` devuelven el idioma pedido. Los textos de interfaz están en cada componente, en un objeto `{ es, en }`.
+- Páginas: las vistas compartidas están en `src/views/` (Home, ServicesIndex, ServicePage, InfoPage) y las rutas de cada idioma son envoltorios de una línea (`src/pages/…` y `src/pages/en/…`).
+- SEO: cada página lleva `hreflang` es/en/x-default (x-default = español), canonical propia, `og:locale` y `og:locale:alternate`, un nodo `WebPage` con `inLanguage` y `dateModified`, y el sitemap lista las dos versiones con sus alternativas. El 404 es bilingüe y `noindex`.
+- Figuras: los SVG se generan en español; `src/i18n/figures.ts` cambia la descripción accesible y los rótulos dibujados en las páginas en inglés, y los scripts en vivo usan `tr('es', 'en')` del runtime.
+- Selector de idioma: `src/components/LangSwitch.astro` (cabecera, pie y menú de móvil). Son enlaces reales a la página equivalente, sin redirecciones automáticas por idioma del navegador (los buscadores ven siempre las dos versiones).
+- Enlazado interno: `src/i18n/links.ts` enlaza en el texto corrido (bloques y respuestas de las FAQ) la primera mención de cada término clave hacia su servicio: una vez por destino, como mucho 6 por página, nunca a la propia página y solo con términos inequívocos.
+
+Para añadir una página: su ruta en `PAGES` (si es fija) o su slug en `SERVICE_SLUGS`, el contenido en los dos idiomas y la entrada del sitemap.
+
 ## Despliegue (Vercel)
 
 El sitio se despliega en Vercel (proyecto `veodar`, dominio `veodar.com`): cada push a `main` publica en producción.

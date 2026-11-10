@@ -2,7 +2,8 @@
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-import { site, organizationLd, websiteLd } from '../data/site';
+import { site, organizationLdFor, websiteLd } from '../data/site';
+import { alternatesOf, htmlLang, langOf, ogLocale, LANGS } from '../i18n';
 import Analytics from '@vercel/analytics/astro';
 import SpeedInsights from '@vercel/speed-insights/astro';
 
@@ -13,33 +14,60 @@ interface Props {
   ogImage?: string;
   noindex?: boolean;
   darkHero?: boolean;
+  /** schema.org type of the page itself: WebPage, CollectionPage, ContactPage, AboutPage… */
+  pageType?: string;
 }
 
-const { title, description, jsonLd = [], ogImage = '/og.png', noindex = false, darkHero = false } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url);
-const image = new URL(ogImage, Astro.site ?? site.url);
+const { title, description, jsonLd = [], ogImage = '/og.png', noindex = false, darkHero = false, pageType = 'WebPage' } = Astro.props;
+const lang = langOf(Astro.url);
+const origin = Astro.site ?? new URL(site.url);
+const canonical = new URL(Astro.url.pathname, origin);
+const image = new URL(ogImage, origin);
 const fullTitle = title.includes(site.name) ? title : `${title} | ${site.name}`;
+// The same page in the other language: hreflang pairs, plus x-default on the Spanish one.
+const alternates = noindex ? null : alternatesOf(Astro.url.pathname);
+const otherLang = LANGS.find((code) => code !== lang)!;
+const webPageLd = {
+  '@type': pageType,
+  '@id': `${canonical.href}#webpage`,
+  url: canonical.href,
+  name: fullTitle,
+  description,
+  inLanguage: htmlLang[lang],
+  isPartOf: { '@id': `${site.url}/#website` },
+  about: { '@id': `${site.url}/#organization` },
+  dateModified: new Date().toISOString().slice(0, 10),
+};
 const graph = {
   '@context': 'https://schema.org',
-  '@graph': [organizationLd, websiteLd, ...jsonLd],
+  '@graph': [organizationLdFor(lang), websiteLd, ...(noindex ? [] : [webPageLd]), ...jsonLd],
 };
+const skip = { es: 'Saltar al contenido', en: 'Skip to content' }[lang];
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={htmlLang[lang]}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical.href} />
-    <link rel="alternate" hreflang="es" href={canonical.href} />
-    <link rel="alternate" hreflang="x-default" href={canonical.href} />
+    {
+      alternates && (
+        <>
+          <link rel="alternate" hreflang="es" href={new URL(alternates.es, origin).href} />
+          <link rel="alternate" hreflang="en" href={new URL(alternates.en, origin).href} />
+          <link rel="alternate" hreflang="x-default" href={new URL(alternates.es, origin).href} />
+        </>
+      )
+    }
     <meta name="robots" content={noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large,max-snippet:-1'} />
     <meta name="theme-color" content={darkHero ? '#121026' : '#f4f0e6'} />
     <meta name="color-scheme" content="light" />
     <meta property="og:type" content="website" />
-    <meta property="og:locale" content={site.locale} />
+    <meta property="og:locale" content={ogLocale[lang]} />
+    {alternates && <meta property="og:locale:alternate" content={ogLocale[otherLang]} />}
     <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
@@ -61,7 +89,7 @@ const graph = {
     <a
       href="#contenido"
       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"
-      >Saltar al contenido</a
+      >{skip}</a
     >
     <Nav tone={darkHero ? 'dark' : 'light'} />
     <main id="contenido">
@@ -100,13 +128,23 @@ const graph = {
         };
         const nodes = [...el.childNodes];
         el.textContent = '';
+        // Text glued to the previous word (the "." after an <em>) joins that word's
+        // mask, so a line can never break between a word and its punctuation.
+        let glued = false;
         for (const node of nodes) {
           const text = node.textContent ?? '';
           const holder = node.nodeType === Node.ELEMENT_NODE ? (node as Element) : undefined;
           text.split(/(\s+)/).forEach((part) => {
             if (!part) return;
-            if (/^\s+$/.test(part)) el.appendChild(document.createTextNode(' '));
+            if (/^\s+$/.test(part)) {
+              el.appendChild(document.createTextNode(' '));
+              glued = false;
+              return;
+            }
+            const last = el.lastElementChild;
+            if (glued && !holder && last?.classList.contains('w')) last.firstElementChild!.append(part);
             else el.appendChild(wrap(part, holder));
+            glued = true;
           });
         }
         el.setAttribute('aria-label', el.textContent ?? '');

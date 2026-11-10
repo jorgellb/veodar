@@ -1,7 +1,8 @@
 ---
 import Icon from './Icon.astro';
 import ServiceGlyph from './ServiceGlyph.astro';
-import { services, serviceHref, type Service } from '../data/services';
+import { servicesFor, serviceHref, type Service } from '../data/services';
+import { langOf } from '../i18n';
 
 interface Props {
   service: Service;
@@ -17,10 +18,11 @@ const tintBg: Record<string, string> = {
   lilac: 'bg-lilac',
   paper: 'bg-paper-2',
 };
-const number = String(services.indexOf(service) + 1).padStart(2, '0');
+const lang = langOf(Astro.url);
+const number = String(servicesFor(lang).findIndex((item) => item.slug === service.slug) + 1).padStart(2, '0');
 ---
 
-<a href={serviceHref(service.slug)} class:list={['svc-card spot group', big && 'svc-card--big']} data-node={big ? '' : undefined}>
+<a href={serviceHref(service.slug, lang)} class:list={['svc-card spot group', big && 'svc-card--big']} data-node={big ? '' : undefined}>
   <span class:list={['svc-stage', tintBg[service.tint]]}>
     <span class="svc-art">
       <ServiceGlyph slug={service.slug} />

@@ -1,8 +1,11 @@
 import { iso, pathOf } from '../iso-kit.mjs';
-import { helpers, type Factory, type Proj, type Vec3 } from './runtime';
+import { tr, helpers, type Factory, type Proj, type Vec3 } from './runtime';
 
 const CYCLE = 9.6;
-const STEPS = ['Un ejemplo real', 'Un alcance escrito', 'Un primer corte usable', 'Operar y medir'];
+const STEPS = () =>
+  tr('es', 'en') === 'en'
+    ? ['A real example', 'A written scope', 'A usable first release', 'Operate and measure']
+    : ['Un ejemplo real', 'Un alcance escrito', 'Un primer corte usable', 'Operar y medir'];
 const TRIGGER = (i: number) => 0.8 + i * 2.2;
 
 const create: Factory = (root, M) => {
@@ -90,7 +93,7 @@ const create: Factory = (root, M) => {
     }
     gearEl.innerHTML = `<path class="iso-line" data-tone="lo" d="${teeth.join('')}"/><path class="iso-line" data-tone="mid" d="${spokes.join('')}"/>`;
 
-    h.say(`Paso ${String(step + 1).padStart(2, '0')} · ${STEPS[step]}`);
+    h.say(tr(`Paso ${String(step + 1).padStart(2, '0')} · ${STEPS()[step]}`, `Step ${String(step + 1).padStart(2, '0')} · ${STEPS()[step]}`));
   };
   return { apply, still: TRIGGER(1) + 0.05 };
 };

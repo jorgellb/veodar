@@ -5,6 +5,78 @@
 // on this page (#enviado, #revisar, #no-enviado), shown with :target.
 import Icon from './Icon.astro';
 import { BUDGETS, LIMITS, NEEDS, TIMING, TURNSTILE_ACTION } from '../../api/_contact.js';
+import { langOf } from '../i18n';
+
+const lang = langOf(Astro.url);
+// Option keys travel to the server; the labels are the page's language.
+const options =
+  lang === 'en'
+    ? {
+        needs: { ia: 'AI automation', web: 'Web or platform', movil: 'Mobile app', escritorio: 'Desktop app', marca: 'Brand and web design', '3d': '3D and configurators', seo: 'SEO and AI visibility', otro: "Not sure yet" },
+        budgets: { 'menos-5k': 'Under €5,000', '5-15k': '€5,000 – 15,000', '15-40k': '€15,000 – 40,000', 'mas-40k': 'Over €40,000', hablar: "I'd rather discuss it" },
+        timing: { ya: 'As soon as possible', trimestre: 'In the next three months', 'sin-fecha': 'No set date' },
+      }
+    : { needs: NEEDS, budgets: BUDGETS, timing: TIMING };
+const T = {
+  es: {
+    sentOk: 'Mensaje enviado. Te responderemos por correo.',
+    check: 'Falta algún dato o no es válido. Revisa el formulario y vuelve a enviarlo.',
+    failed: 'No se ha podido enviar ahora mismo. Escríbenos a',
+    eyebrow: 'Formulario',
+    title: 'Cuéntanos el trámite',
+    sub: 'Lo lee una persona del equipo y te responde por correo.',
+    needs: '¿Qué necesitas?',
+    several: 'Puedes marcar varias',
+    name: 'Nombre',
+    email: 'Correo',
+    company: 'Empresa',
+    optional: 'Opcional',
+    budget: 'Presupuesto orientativo',
+    when: '¿Para cuándo?',
+    message: 'El trámite',
+    placeholder: 'Quién lo usa, qué se hace hoy a mano y qué sistema no se puede tocar. Contado en bruto vale.',
+    trap: 'No rellenes este campo',
+    consent: 'Acepto que Veodar use estos datos para responder a mi mensaje.',
+    legal:
+      'Responsable: Veodar. Finalidad: responder a tu mensaje y, si sigue adelante, preparar una propuesta. El mensaje nos llega por correo a través de Resend y no se cede a nadie más. Para frenar a los bots, Cloudflare Turnstile comprueba el envío. Para consultar o borrar tus datos, escribe a info@veodar.com.',
+    send: 'Enviar mensaje',
+    prefer: '¿Prefieres el correo?',
+    doneTitle: 'Mensaje enviado',
+    doneA: 'Lo hemos recibido. Te responderemos a',
+    doneB: ', con una pregunta concreta o una propuesta de llamada.',
+    yourEmail: 'tu correo',
+    again: 'Enviar otro mensaje',
+  },
+  en: {
+    sentOk: "Message sent. We'll reply by email.",
+    check: 'Something is missing or invalid. Check the form and send it again.',
+    failed: "It couldn't be sent right now. Write to us at",
+    eyebrow: 'Form',
+    title: 'Tell us about the process',
+    sub: 'A person on the team reads it and replies by email.',
+    needs: 'What do you need?',
+    several: 'Choose as many as apply',
+    name: 'Name',
+    email: 'Email',
+    company: 'Company',
+    optional: 'Optional',
+    budget: 'Approximate budget',
+    when: 'When do you need it?',
+    message: 'The process',
+    placeholder: "Who uses it, what's done by hand today and which system can't be touched. Rough is fine.",
+    trap: 'Leave this field empty',
+    consent: 'I agree that Veodar may use this data to reply to my message.',
+    legal:
+      'Controller: Veodar. Purpose: replying to your message and, if it moves forward, preparing a proposal. The message reaches us by email through Resend and is not shared with anyone else. To stop bots, Cloudflare Turnstile checks the submission. To see or delete your data, write to info@veodar.com.',
+    send: 'Send message',
+    prefer: 'Prefer email?',
+    doneTitle: 'Message sent',
+    doneA: "We've got it. We'll reply to",
+    doneB: ', with a specific question or a proposal for a call.',
+    yourEmail: 'your email',
+    again: 'Send another message',
+  },
+}[lang];
 
 // Turnstile site key (public; set PUBLIC_TURNSTILE_SITEKEY in Vercel). In development
 // without one, Cloudflare's test key renders a widget that always passes.
@@ -21,33 +93,36 @@ const needIcons: Record<string, string> = {
   seo: 'search',
   otro: 'compass',
 };
-// HOLA in Morse, for the confirmation: 1 = dot, 3 = dash, 0 = gap between letters.
-const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
+// HOLA / HELLO in Morse, for the confirmation: 1 = dot, 3 = dash, 0 = gap between letters.
+const morse =
+  lang === 'en'
+    ? [1, 1, 1, 1, 0, 1, 0, 1, 3, 1, 1, 0, 1, 3, 1, 1, 0, 3, 3, 3]
+    : [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
 ---
 
 <div class="cf-card" id="formulario" data-contact>
   <p class="cf-notice cf-notice--ok" id="enviado" tabindex="-1">
-    <Icon name="check" size={16} /> Mensaje enviado. Te responderemos por correo.
+    <Icon name="check" size={16} /> {T.sentOk}
   </p>
   <p class="cf-notice cf-notice--bad" id="revisar" tabindex="-1">
-    Falta algún dato o no es válido. Revisa el formulario y vuelve a enviarlo.
+    {T.check}
   </p>
   <p class="cf-notice cf-notice--bad" id="no-enviado" tabindex="-1">
-    No se ha podido enviar ahora mismo. Escríbenos a <a href="mailto:info@veodar.com">info@veodar.com</a>.
+    {T.failed} <a href="mailto:info@veodar.com">info@veodar.com</a>.
   </p>
 
   <form class="cf" action="/api/contacto/" method="post" novalidate aria-labelledby="cf-title">
     <header class="cf-head">
-      <p class="cf-eyebrow"><i></i>Formulario</p>
-      <h2 class="cf-title" id="cf-title">Cuéntanos el trámite</h2>
-      <p class="cf-sub">Lo lee una persona del equipo y te responde por correo.</p>
+      <p class="cf-eyebrow"><i></i>{T.eyebrow}</p>
+      <h2 class="cf-title" id="cf-title">{T.title}</h2>
+      <p class="cf-sub">{T.sub}</p>
     </header>
 
     <fieldset class="cf-group" data-field="needs" aria-describedby="err-needs">
-      <legend class="cf-label">¿Qué necesitas? <span>Puedes marcar varias</span></legend>
+      <legend class="cf-label">{T.needs} <span>{T.several}</span></legend>
       <div class="cf-chips">
         {
-          Object.entries(NEEDS).map(([value, label]) => (
+          Object.entries(options.needs).map(([value, label]) => (
             <label class="cf-chip">
               <input type="checkbox" name="needs" value={value} />
               <span class="cf-chip-ico">
@@ -66,28 +141,28 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
 
     <div class="cf-row">
       <div class="cf-field" data-field="name">
-        <label class="cf-label" for="cf-name">Nombre</label>
+        <label class="cf-label" for="cf-name">{T.name}</label>
         <input class="cf-input" id="cf-name" name="name" type="text" autocomplete="name" maxlength={LIMITS.name[1]} required aria-describedby="err-name" />
         <p class="cf-error" id="err-name"></p>
       </div>
       <div class="cf-field" data-field="email">
-        <label class="cf-label" for="cf-email">Correo</label>
+        <label class="cf-label" for="cf-email">{T.email}</label>
         <input class="cf-input" id="cf-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength={LIMITS.email} required aria-describedby="err-email" />
         <p class="cf-error" id="err-email"></p>
       </div>
     </div>
 
     <div class="cf-field" data-field="company">
-      <label class="cf-label" for="cf-company">Empresa <span>Opcional</span></label>
+      <label class="cf-label" for="cf-company">{T.company} <span>{T.optional}</span></label>
       <input class="cf-input" id="cf-company" name="company" type="text" autocomplete="organization" maxlength={LIMITS.company} aria-describedby="err-company" />
       <p class="cf-error" id="err-company"></p>
     </div>
 
     <fieldset class="cf-group" data-field="budget">
-      <legend class="cf-label">Presupuesto orientativo <span>Opcional</span></legend>
+      <legend class="cf-label">{T.budget} <span>{T.optional}</span></legend>
       <div class="cf-pills">
         {
-          Object.entries(BUDGETS).map(([value, label]) => (
+          Object.entries(options.budgets).map(([value, label]) => (
             <label class="cf-pill">
               <input type="radio" name="budget" value={value} />
               <span>{label}</span>
@@ -97,10 +172,10 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
       </div>
     </fieldset>
     <fieldset class="cf-group" data-field="timing">
-      <legend class="cf-label">¿Para cuándo? <span>Opcional</span></legend>
+      <legend class="cf-label">{T.when} <span>{T.optional}</span></legend>
       <div class="cf-pills">
         {
-          Object.entries(TIMING).map(([value, label]) => (
+          Object.entries(options.timing).map(([value, label]) => (
             <label class="cf-pill">
               <input type="radio" name="timing" value={value} />
               <span>{label}</span>
@@ -111,7 +186,7 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
     </fieldset>
 
     <div class="cf-field" data-field="message">
-      <label class="cf-label" for="cf-message">El trámite</label>
+      <label class="cf-label" for="cf-message">{T.message}</label>
       <textarea
         class="cf-input cf-textarea"
         id="cf-message"
@@ -120,7 +195,7 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
         maxlength={LIMITS.message[1]}
         required
         aria-describedby="cf-hint err-message"
-        placeholder="Quién lo usa, qué se hace hoy a mano y qué sistema no se puede tocar. Contado en bruto vale."></textarea>
+        placeholder={T.placeholder}></textarea>
       <div class="cf-under">
         <p class="cf-error" id="err-message"></p>
         <p class="cf-count" id="cf-hint" aria-live="off"><span data-count>0</span> / {LIMITS.message[1]}</p>
@@ -129,19 +204,20 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
 
     <!-- Spam traps: a field people never see, and the time the form was opened. -->
     <div class="cf-trap" aria-hidden="true">
-      <label>No rellenes este campo <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+      <label>{T.trap} <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
     </div>
     <input type="hidden" name="t" value="" data-started />
+    <input type="hidden" name="lang" value={lang} />
 
     <div class="cf-field" data-field="consent">
       <label class="cf-consent">
         <input type="checkbox" name="consent" required aria-describedby="err-consent cf-legal" />
         <span class="cf-box" aria-hidden="true"><Icon name="check" size={13} /></span>
-        <span>Acepto que Veodar use estos datos para responder a mi mensaje.</span>
+        <span>{T.consent}</span>
       </label>
       <p class="cf-error" id="err-consent"></p>
       <p class="cf-legal" id="cf-legal">
-        Responsable: Veodar. Finalidad: responder a tu mensaje y, si sigue adelante, preparar una propuesta. El mensaje nos llega por correo a través de Resend y no se cede a nadie más. Para frenar a los bots, Cloudflare Turnstile comprueba el envío. Para consultar o borrar tus datos, escribe a info@veodar.com.
+        {T.legal}
       </p>
     </div>
 
@@ -151,10 +227,10 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
     <div class="cf-foot">
       <button type="submit" class="btn btn-accent cf-submit">
         <span class="cf-spin" aria-hidden="true"></span>
-        <span data-submit-label>Enviar mensaje</span>
+        <span data-submit-label>{T.send}</span>
         <Icon name="arrow" size={17} class="arrow" />
       </button>
-      <p class="cf-alt">¿Prefieres el correo? <a href="mailto:info@veodar.com">info@veodar.com</a></p>
+      <p class="cf-alt">{T.prefer} <a href="mailto:info@veodar.com">info@veodar.com</a></p>
     </div>
     <p class="cf-status" role="alert" data-status></p>
   </form>
@@ -164,9 +240,9 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
       {morse.map((unit, i) => (unit === 0 ? <span class="cf-gap" /> : <span class:list={['cf-mark', unit === 3 && 'cf-mark--dash']} style={`--i:${i}`} />))}
       <span class="cf-arrive" style={`--i:${morse.length}`}><Icon name="check" size={18} /></span>
     </div>
-    <h2 class="cf-title" id="cf-done-title">Mensaje enviado</h2>
-    <p class="cf-sub">Lo hemos recibido. Te responderemos a <strong data-done-email>tu correo</strong>, con una pregunta concreta o una propuesta de llamada.</p>
-    <button type="button" class="btn btn-ghost cf-again" data-again>Enviar otro mensaje</button>
+    <h2 class="cf-title" id="cf-done-title">{T.doneTitle}</h2>
+    <p class="cf-sub">{T.doneA} <strong data-done-email>{T.yourEmail}</strong>{T.doneB}</p>
+    <button type="button" class="btn btn-ghost cf-again" data-again>{T.again}</button>
   </div>
 </div>
 
@@ -782,6 +858,36 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
           });
 
     const EMAIL = /^[^\s@<>()",;]+@[^\s@<>()",;]+\.[^\s@<>()",;]{2,}$/;
+    const EN = document.documentElement.lang === 'en';
+    const MSG: Required<Errors> & Record<string, string> = EN
+      ? {
+          name: 'Please write your name.',
+          email: 'Check the email address: we need it to reply.',
+          needs: 'Choose at least one option, even “Not sure yet”.',
+          message: 'Tell us a little more: two or three sentences are enough.',
+          consent: 'We need your permission to reply.',
+          company: 'The company name is too long.',
+          checking: 'Checking…',
+          sending: 'Sending…',
+          send: 'Send message',
+          robot: 'We couldn’t confirm you’re not a robot. Wait a few seconds and send it again, or write to <a href="mailto:info@veodar.com">info@veodar.com</a>.',
+          verify: 'We couldn’t verify the submission. Send it again in a few seconds.',
+          fallback: 'It couldn’t be sent right now. Write to <a href="mailto:info@veodar.com">info@veodar.com</a> and we’ll take it from there.',
+        }
+      : {
+          name: 'Escribe tu nombre.',
+          email: 'Revisa el correo: lo necesitamos para responderte.',
+          needs: 'Elige al menos una opción, aunque sea «Aún no lo sé».',
+          message: 'Cuéntanos un poco más: con dos o tres frases basta.',
+          consent: 'Necesitamos tu permiso para responderte.',
+          company: 'El nombre de la empresa es demasiado largo.',
+          checking: 'Comprobando…',
+          sending: 'Enviando…',
+          send: 'Enviar mensaje',
+          robot: 'No hemos podido comprobar que no eres un robot. Espera unos segundos y vuelve a enviarlo, o escríbenos a <a href="mailto:info@veodar.com">info@veodar.com</a>.',
+          verify: 'No hemos podido verificar el envío. Vuelve a enviarlo en unos segundos.',
+          fallback: 'No se ha podido enviar ahora mismo. Escríbenos a <a href="mailto:info@veodar.com">info@veodar.com</a> y lo vemos.',
+        };
     const fields = ['needs', 'name', 'email', 'company', 'message', 'consent'] as const;
     const read = () => {
       const data = new FormData(form);
@@ -797,16 +903,17 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
         website: String(data.get('website') ?? ''),
         t: Number(started.value),
         'cf-turnstile-response': token,
+        lang: EN ? 'en' : 'es',
       };
     };
     // The same rules as the server, so most mistakes are caught before sending.
     const check = (d: ReturnType<typeof read>): Errors => {
       const errors: Errors = {};
-      if (d.name.length < LIMITS.name[0]) errors.name = 'Escribe tu nombre.';
-      if (!EMAIL.test(d.email)) errors.email = 'Revisa el correo: lo necesitamos para responderte.';
-      if (d.needs.length === 0) errors.needs = 'Elige al menos una opción, aunque sea «Aún no lo sé».';
-      if (d.message.length < LIMITS.message[0]) errors.message = 'Cuéntanos un poco más: con dos o tres frases basta.';
-      if (!d.consent) errors.consent = 'Necesitamos tu permiso para responderte.';
+      if (d.name.length < LIMITS.name[0]) errors.name = MSG.name;
+      if (!EMAIL.test(d.email)) errors.email = MSG.email;
+      if (d.needs.length === 0) errors.needs = MSG.needs;
+      if (d.message.length < LIMITS.message[0]) errors.message = MSG.message;
+      if (!d.consent) errors.consent = MSG.consent;
       return errors;
     };
     const show = (errors: Errors) => {
@@ -851,7 +958,7 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
     const fail = (html: string) => {
       status.innerHTML = html;
     };
-    const FALLBACK = 'No se ha podido enviar ahora mismo. Escríbenos a <a href="mailto:info@veodar.com">info@veodar.com</a> y lo vemos.';
+    const FALLBACK = MSG.fallback;
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -863,14 +970,14 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
       show({});
 
       form.setAttribute('data-sending', '');
-      label.textContent = 'Comprobando…';
+      label.textContent = MSG.checking;
       try {
         data['cf-turnstile-response'] = await tokenSoon();
         if (!data['cf-turnstile-response']) {
-          fail('No hemos podido comprobar que no eres un robot. Espera unos segundos y vuelve a enviarlo, o escríbenos a <a href="mailto:info@veodar.com">info@veodar.com</a>.');
+          fail(MSG.robot);
           return;
         }
-        label.textContent = 'Enviando…';
+        label.textContent = MSG.sending;
         const response = await fetch('/api/contacto/', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
@@ -885,9 +992,10 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
           card.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
           document.dispatchEvent(new CustomEvent('veo:sent'));
         } else if (response.status === 400 && body.errors) {
-          show(body.errors as Errors);
+          // The server names the fields; the words are this page's.
+          show(Object.fromEntries(Object.keys(body.errors).map((key) => [key, MSG[key] ?? body.errors[key]])) as Errors);
         } else if (response.status === 403 && body.error === 'turnstile') {
-          fail('No hemos podido verificar el envío. Vuelve a enviarlo en unos segundos.');
+          fail(MSG.verify);
         } else {
           fail(FALLBACK);
         }
@@ -897,7 +1005,7 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
         // The token has been used (or refused): get a fresh one for the next attempt.
         resetTurnstile();
         form.removeAttribute('data-sending');
-        label.textContent = 'Enviar mensaje';
+        label.textContent = MSG.send;
       }
     });
 

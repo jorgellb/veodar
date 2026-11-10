@@ -16,7 +16,12 @@ export const span = (u: number, a: number, b: number) => clamp01((u - a) / (b - 
 /** Bump: 0 → 1 → 0 over [a, b] with eased edges of width `edge`. */
 export const pulse = (u: number, a: number, b: number, edge = 0.15) =>
   Math.min(ease((u - a) / edge), ease((b - u) / edge));
-export const fmt = (v: number, digits = 2) => v.toFixed(digits).replace('.', ',');
+/** True on English pages (<html lang="en">). */
+export const isEn = () => typeof document !== 'undefined' && document.documentElement.lang === 'en';
+/** Pick the Spanish or English string for the page. */
+export const tr = (es: string, en: string) => (isEn() ? en : es);
+/** A number with the page's decimal separator: 0,80 in Spanish, 0.80 in English. */
+export const fmt = (v: number, digits = 2) => (isEn() ? v.toFixed(digits) : v.toFixed(digits).replace('.', ','));
 export const polar = (cx: number, cy: number, r: number, a: number): [number, number] => [cx + Math.sin(a) * r, cy - Math.cos(a) * r];
 
 export function coilZ(z0: number, z1: number, cx: number, cy: number, radius: number, turns: number, P: Proj) {

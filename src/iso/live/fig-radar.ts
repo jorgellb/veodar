@@ -1,13 +1,13 @@
 import { extrude, iso, lineOnTop, ring, ringOf, solidSvg } from '../iso-kit.mjs';
-import { helpers, polar, type Factory, type Proj } from './runtime';
+import { tr, helpers, polar, type Factory, type Proj } from './runtime';
 
 const SWEEP = 3.2; // seconds per turn
 const QUERIES = [
-  { q: 'automatizar facturas con IA', pos: 7 },
-  { q: 'agencia agentes IA España', pos: 5 },
-  { q: 'conectar ERP con IA', pos: 3 },
-  { q: 'desarrollo app móvil empresa', pos: 2 },
-  { q: 'automatizaciones con IA', pos: 1 },
+  { q: tr('automatizar facturas con IA', 'automate invoices with AI'), pos: 7 },
+  { q: tr('agencia agentes IA España', 'AI agents agency Spain'), pos: 5 },
+  { q: tr('conectar ERP con IA', 'connect ERP to AI'), pos: 3 },
+  { q: tr('desarrollo app móvil empresa', 'business mobile app development'), pos: 2 },
+  { q: tr('automatizaciones con IA', 'AI automation'), pos: 1 },
 ];
 // Other sites' echoes: [ring position, bearing].
 const ECHOES: [number, number][] = [
@@ -92,7 +92,7 @@ const create: Factory = (root, M) => {
     antenna.innerHTML = solidSvg(horn, { tone: 'mid' }) + solidSvg(bar, { tone: 'hi', crease: 'lo' });
 
     const deg = Math.round((theta * 180) / Math.PI);
-    h.say(`Barrido ${String(deg).padStart(3, '0')}° · “${query.q}” · posición ${pos}`);
+    h.say(tr(`Barrido ${String(deg).padStart(3, '0')}° · “${query.q}” · posición ${pos}`, `Sweep ${String(deg).padStart(3, '0')}° · “${query.q}” · position ${pos}`));
   };
   return { apply, still: SWEEP * 4 + 1.3 };
 };

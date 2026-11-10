@@ -1,52 +1,106 @@
 ---
 import Figure from '../iso/Figure.astro';
+import Icon from '../Icon.astro';
+import { servicesFor, serviceHref } from '../../data/services';
+import { langOf } from '../../i18n';
 
-const pillars = [
-  {
-    figure: 'relays',
-    fig: 'Fig. 02',
-    title: 'Relés del agente',
-    name: 'Automatizar',
-    lead: 'La IA hace el trabajo repetido. Una persona decide lo importante.',
-    items: [
-      { h: 'Agentes con permisos', p: 'Leen correos, documentos y tickets con un acceso mínimo, revocable y con registro.' },
-      { h: 'Humano en el bucle', p: 'Si la confianza no llega al umbral, el caso va a revisión. Nada caro se publica solo.' },
-    ],
-  },
-  {
-    figure: 'pneumatic',
-    fig: 'Fig. 03',
-    title: 'Correo neumático',
-    name: 'Construir',
-    lead: 'Web, móvil y escritorio, cada formato donde de verdad se trabaja.',
-    items: [
-      { h: 'Diseño y código, un equipo', p: 'Cada pantalla se dibuja sabiendo qué dato existe y qué error hay que enseñar.' },
-      { h: 'Tecnología actual', p: 'Astro, Next.js, Expo, SwiftUI, Tauri y Rust, elegidos por el problema y no por moda.' },
-    ],
-  },
-  {
-    figure: 'radar',
-    fig: 'Fig. 04',
-    title: 'Radar de búsquedas',
-    name: 'Hacer que se vea',
-    lead: 'Marca, 3D y SEO para que lo que construimos se encuentre y se recuerde.',
-    items: [
-      { h: 'Experiencias que se recuerdan', p: 'Desarrollo creativo, 3D en tiempo real y vídeos de lanzamiento con el producto real.' },
-      { h: 'Visibles en Google y en IA', p: 'SEO técnico y contenido que ChatGPT, Perplexity y Gemini pueden citar.' },
-    ],
-  },
+const lang = langOf(Astro.url);
+const pillarText = {
+  es: [
+    {
+      title: 'Relés del agente',
+      name: 'Automatizar',
+      lead: 'La IA hace el trabajo repetido. Una persona decide lo importante.',
+      items: [
+        { h: 'Agentes con permisos', p: 'Leen correos, documentos y tickets con un acceso mínimo, revocable y con registro.' },
+        { h: 'Humano en el bucle', p: 'Si la confianza no llega al umbral, el caso va a revisión. Nada caro se publica solo.' },
+      ],
+    },
+    {
+      title: 'Correo neumático',
+      name: 'Construir',
+      lead: 'Web, móvil y escritorio, cada formato donde de verdad se trabaja.',
+      items: [
+        { h: 'Diseño y código, un equipo', p: 'Cada pantalla se dibuja sabiendo qué dato existe y qué error hay que enseñar.' },
+        { h: 'Tecnología actual', p: 'Astro, Next.js, Expo, SwiftUI, Tauri y Rust, elegidos por el problema y no por moda.' },
+      ],
+    },
+    {
+      title: 'Radar de búsquedas',
+      name: 'Hacer que se vea',
+      lead: 'Marca, 3D y SEO para que lo que construimos se encuentre y se recuerde.',
+      items: [
+        { h: 'Experiencias que se recuerdan', p: 'Desarrollo creativo, 3D en tiempo real y vídeos de lanzamiento con el producto real.' },
+        { h: 'Visibles en Google y en IA', p: 'SEO técnico y contenido que ChatGPT, Perplexity y Gemini pueden citar.' },
+      ],
+    },
+  ],
+  en: [
+    {
+      title: 'Agent relays',
+      name: 'Automate',
+      lead: 'AI does the repetitive work. A person decides what matters.',
+      items: [
+        { h: 'Agents with permissions', p: 'They read emails, documents and tickets with minimal, revocable, logged access.' },
+        { h: 'Human in the loop', p: 'If confidence falls short of the threshold, the case goes to review. Nothing expensive is published on its own.' },
+      ],
+    },
+    {
+      title: 'Pneumatic tube',
+      name: 'Build',
+      lead: 'Web, mobile and desktop, each format where the work really happens.',
+      items: [
+        { h: 'Design and code, one team', p: 'Every screen is drawn knowing what data exists and which error has to be shown.' },
+        { h: 'Current technology', p: 'Astro, Next.js, Expo, SwiftUI, Tauri and Rust, chosen for the problem, not for fashion.' },
+      ],
+    },
+    {
+      title: 'Search radar',
+      name: 'Make it seen',
+      lead: 'Brand, 3D and SEO so what we build gets found and remembered.',
+      items: [
+        { h: 'Experiences people remember', p: 'Creative development, real-time 3D and launch videos with the real product.' },
+        { h: 'Visible on Google and in AI', p: 'Technical SEO and content that ChatGPT, Perplexity and Gemini can cite.' },
+      ],
+    },
+  ],
+}[lang];
+// Each pillar links to the services it stands for, with their names as anchors.
+const pillarServices = [
+  ['automatizaciones-ia'],
+  ['desarrollo-web', 'aplicaciones-moviles', 'aplicaciones-escritorio'],
+  ['seo-y-visibilidad', 'web-3d-interactiva', 'identidad-de-marca'],
 ];
+const services = servicesFor(lang);
+const pillars = ['relays', 'pneumatic', 'radar'].map((figure, i) => ({
+  figure,
+  fig: `Fig. 0${i + 2}`,
+  ...pillarText[i],
+  links: pillarServices[i].map((id) => ({ name: services.find((s) => s.slug === id)!.name, href: serviceHref(id, lang) })),
+}));
+const T = {
+  es: {
+    eyebrow: 'Lo que hacemos',
+    lead: 'Automatizamos con IA, construimos el software donde ocurre el trabajo y lo hacemos visible. Las tres cosas con el mismo método: un ejemplo real, un alcance escrito y un primer corte que alguien usa.',
+  },
+  en: {
+    eyebrow: 'What we do',
+    lead: 'We automate with AI, build software where the work happens and make it visible. All three with the same method: a real example, a written scope and a first release someone uses.',
+  },
+}[lang];
 ---
 
 <section class="py-24 md:py-36" data-spine="0.5" aria-labelledby="pillars-title">
   <div class="wrap">
     <div class="grid gap-8 md:grid-cols-[1.1fr_1fr] md:items-end">
       <div data-reveal>
-        <p class="eyebrow">Lo que hacemos</p>
-        <h2 id="pillars-title" class="display h-xl mt-5 max-w-[14ch]">Tres oficios, <em>un</em> mismo taller.</h2>
+        <p class="eyebrow">{T.eyebrow}</p>
+        <h2 id="pillars-title" class="display h-xl mt-5 max-w-[14ch]">
+          {lang === 'en' ? <>Three crafts, <em>one</em> workshop.</> : <>Tres oficios, <em>un</em> mismo taller.</>}
+        </h2>
       </div>
       <p class="lead max-w-[46ch]" data-reveal style="--d:100ms">
-        Automatizamos con IA, construimos el software donde ocurre el trabajo y lo hacemos visible. Las tres cosas con el mismo método: un ejemplo real, un alcance escrito y un primer corte que alguien usa.
+        {T.lead}
       </p>
     </div>
 
@@ -66,6 +120,15 @@ const pillars = [
                   </div>
                 ))}
               </dl>
+              <ul class="pillar-links mt-auto flex flex-wrap gap-x-4 gap-y-1.5 pt-6">
+                {pillar.links.map((link) => (
+                  <li>
+                    <a href={link.href} class="link-arrow text-[14px]">
+                      {link.name} <Icon name="arrow" size={14} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
           </article>
         ))

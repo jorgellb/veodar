@@ -1,5 +1,5 @@
 import { iso, lineOnTop, pathOf } from '../iso-kit.mjs';
-import { ease, helpers, lerp, polar, span, type Factory, type Proj, type Vec3 } from './runtime';
+import { tr, ease, helpers, lerp, polar, span, type Factory, type Proj, type Vec3 } from './runtime';
 
 const CYCLE = 12.6;
 const PLUG = (i: number): [number, number] => [0.6 + i * 1.05, 0.6 + i * 1.05 + 0.85];
@@ -81,7 +81,7 @@ const create: Factory = (root, M) => {
     const label = `301 · ${done}/${n}`;
     if (count.textContent !== label) count.textContent = label;
     const rest = n - done;
-    const note = rest ? `${rest} sin destino` : '0 enlaces rotos';
+    const note = rest ? tr(`${rest} sin destino`, `${rest} unmapped`) : tr('0 enlaces rotos', '0 broken links');
     if (broken.textContent !== note) broken.textContent = note;
     const launched = u >= LAUNCH && u < RESET;
     h.on(liveLamp, launched);
@@ -97,14 +97,14 @@ const create: Factory = (root, M) => {
 
     h.say(
       u >= RESET
-        ? 'Siguiente migración'
+        ? tr('Siguiente migración', 'Next migration')
         : launched
-          ? 'Lanzado · 6 de 6 redirigidas · el tráfico no cae'
+          ? tr('Lanzado · 6 de 6 redirigidas · el tráfico no cae', 'Launched · 6 of 6 redirected · traffic holds')
           : active >= 0
             ? `301 · ${OLD[active]} → ${NEW[active]}`
             : done === n
-              ? 'Mapa completo · 0 enlaces rotos · listo para lanzar'
-              : `${rest} URL antiguas sin destino: serían 404`,
+              ? tr('Mapa completo · 0 enlaces rotos · listo para lanzar', 'Map complete · 0 broken links · ready to launch')
+              : tr(`${rest} URL antiguas sin destino: serían 404`, `${rest} old URLs with no destination: they'd be 404s`),
     );
   };
   return { apply, still: 4.4 };

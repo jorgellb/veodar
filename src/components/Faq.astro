@@ -1,22 +1,36 @@
 ---
 import Icon from './Icon.astro';
 import type { Faq } from '../data/pages';
+import { langOf } from '../i18n';
+import { linkify } from '../i18n/links';
 
 interface Props {
   items: Faq[];
   title?: string;
   id?: string;
+  /** Turn key terms in the answers into links (on by default). */
+  links?: boolean;
 }
-const { items, title = 'Preguntas frecuentes', id = 'preguntas' } = Astro.props;
+const lang = langOf(Astro.url);
+const T = {
+  es: { title: 'Preguntas frecuentes', eyebrow: 'Preguntas', missing: '¿Falta la tuya? Escríbela a', reply: 'y te respondemos con una pregunta concreta, no con un dossier.' },
+  en: { title: 'Frequently asked questions', eyebrow: 'Questions', missing: 'Missing yours? Write it to', reply: "and we'll reply with a specific question, not a brochure." },
+}[lang];
+const { items, title = T.title, id = 'preguntas', links = true } = Astro.props;
+// Answers can carry contextual links to services (see src/i18n/links.ts).
+const answer = (text: string) => (links ? linkify(text, lang, Astro.url.pathname, 1) : escapeHtml(text));
+function escapeHtml(text: string) {
+  return text.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]!);
+}
 ---
 
 <section id={id} class="py-24 md:py-32" data-spine="0.404" aria-labelledby={`${id}-title`}>
   <div class="wrap grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
     <div>
-      <p class="eyebrow">Preguntas</p>
+      <p class="eyebrow">{T.eyebrow}</p>
       <h2 id={`${id}-title`} class="display h-lg mt-5 max-w-[12ch]">{title}</h2>
       <p class="mt-6 max-w-[34ch] text-[15px] leading-relaxed text-muted">
-        ¿Falta la tuya? Escríbela a <a class="link-arrow" href="mailto:info@veodar.com">info@veodar.com</a> y te respondemos con una pregunta concreta, no con un dossier.
+        {T.missing} <a class="link-arrow" href="mailto:info@veodar.com">info@veodar.com</a> {T.reply}
       </p>
     </div>
     <div class="border-t border-line">
@@ -30,7 +44,7 @@ const { items, title = 'Preguntas frecuentes', id = 'preguntas' } = Astro.props;
               </span>
             </summary>
             <div class="faq-body">
-              <p>{item.a}</p>
+              <p set:html={answer(item.a)} />
             </div>
           </details>
         ))

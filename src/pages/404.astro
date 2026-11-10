@@ -1,20 +1,30 @@
 ---
+// One 404 for both languages: Vercel serves it for any missing path.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
-import ServiceGrid from '../components/ServiceGrid.astro';
 ---
 
-<BaseLayout title="Página no encontrada" description="Esta página no existe. Vuelve al inicio o elige un servicio de Veodar." noindex>
+<BaseLayout title="Página no encontrada · Page not found" description="Esta página no existe. This page doesn't exist." noindex>
   <section class="py-20 md:py-28">
     <div class="wrap">
       <p class="eyebrow">Error 404</p>
       <h1 class="display h-hero mt-6 max-w-[12ch]">Esta pieza no está en la <em>línea</em>.</h1>
-      <p class="lead mt-6 max-w-[48ch]">Puede que la página haya cambiado de sitio con el rediseño. Los servicios están todos aquí abajo.</p>
+      <p class="lead mt-6 max-w-[48ch]">Puede que la página haya cambiado de sitio con el rediseño.</p>
       <div class="mt-9 flex flex-wrap gap-3">
         <a href="/" class="btn btn-primary">Volver al inicio <Icon name="arrow" size={17} class="arrow" /></a>
+        <a href="/servicios/" class="btn btn-ghost">Servicios</a>
         <a href="/contacto/" class="btn btn-ghost">Contacto</a>
       </div>
-      <div class="mt-20"><ServiceGrid headingLevel="h2" /></div>
+
+      <div class="mt-16 border-t border-line pt-12" lang="en">
+        <p class="text-[26px] font-display leading-tight tracking-[-0.02em]">This part isn’t on the line.</p>
+        <p class="mt-3 max-w-[48ch] text-[16px] text-muted">The page may have moved in the redesign.</p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="/en/" class="btn btn-primary">Back to the home page <Icon name="arrow" size={17} class="arrow" /></a>
+          <a href="/en/services/" class="btn btn-ghost">Services</a>
+          <a href="/en/contact/" class="btn btn-ghost">Contact</a>
+        </div>
+      </div>
     </div>
   </section>
 </BaseLayout>

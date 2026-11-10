@@ -1,5 +1,5 @@
 import { translateAlong } from '../iso-kit.mjs';
-import { clamp01, coilZ, ease, helpers, lerp, pulse, span, type Factory, type Proj, type Vec3 } from './runtime';
+import { tr, clamp01, coilZ, ease, helpers, lerp, pulse, span, type Factory, type Proj, type Vec3 } from './runtime';
 
 const CYCLE = 12.6;
 const OFFLINE: [number, number] = [3.5, 8.7];
@@ -51,8 +51,8 @@ const create: Factory = (root, M) => {
     });
 
     // Screen of the current report.
-    text(title, `Parte ${part.id}`);
-    text(net, online ? 'Avería · Almacén 2' : 'Sin cobertura · se guarda aquí');
+    text(title, tr(`Parte ${part.id}`, `Report ${part.id}`));
+    text(net, online ? tr('Avería · Almacén 2', 'Fault · Warehouse 2') : tr('Sin cobertura · se guarda aquí', 'No signal · saved here'));
     net.setAttribute('data-t', online ? 'dim' : 'acc');
     const filled = span(u, part.fill[0], part.fill[1]) * 3;
     fields.forEach((field, i) => field.setAttribute('width', (clamp01(filled - i) * Number(field.dataset.w)).toFixed(2)));
@@ -62,7 +62,7 @@ const create: Factory = (root, M) => {
     const sent = u >= part.tap;
     const delivered = sent && (!part.queued || ('sync' in part && u >= part.sync[1]));
     btn.setAttribute('data-t', ready && !sent ? 'acc' : delivered ? 'hi' : 'mid');
-    text(btnText, !sent ? 'ENVIAR' : delivered ? 'ENVIADO' : 'EN COLA');
+    text(btnText, !sent ? tr('ENVIAR', 'SEND') : delivered ? tr('ENVIADO', 'SENT') : tr('EN COLA', 'QUEUED'));
     btnText.setAttribute('fill', ready && !sent ? '#1a0a03' : delivered ? '#16142c' : '#f4f0e6');
 
     // Tapper.
@@ -114,16 +114,19 @@ const create: Factory = (root, M) => {
       const p = order[i];
       const when = p.queued && 'sync' in p ? p.sync[1] : p.fly[1];
       row.setAttribute('opacity', (ease(span(u, when - 0.1, when + 0.2)) * fadeAll).toFixed(2));
-      text(rowText[i], `${p.id} recibido`);
+      text(rowText[i], tr(`${p.id} recibido`, `${p.id} received`));
     });
     h.on(rx, PARTS.some((p) => Math.abs(u - (p.queued && 'sync' in p ? p.sync[1] : p.fly[1])) < 0.25));
 
     let say = '';
-    if (u < PARTS[0].tap) say = 'Cobertura 4/4 · rellenando el parte 0142';
-    else if (u < OFFLINE[0]) say = 'Parte 0142 enviado · recibido en oficina';
-    else if (u < OFFLINE[1]) say = queued ? `Sin cobertura · ${queued} ${queued === 1 ? 'parte' : 'partes'} en cola` : 'Sin cobertura · el parte se guarda en el teléfono';
-    else if (u < PARTS[2].sync![1]) say = 'Vuelve la cobertura · sincronizando la cola';
-    else say = 'Todo recibido en oficina · 3 de 3, ninguno perdido';
+    if (u < PARTS[0].tap) say = tr('Cobertura 4/4 · rellenando el parte 0142', 'Signal 4/4 · filling in report 0142');
+    else if (u < OFFLINE[0]) say = tr('Parte 0142 enviado · recibido en oficina', 'Report 0142 sent · received at the office');
+    else if (u < OFFLINE[1])
+      say = queued
+        ? tr(`Sin cobertura · ${queued} ${queued === 1 ? 'parte' : 'partes'} en cola`, `No signal · ${queued} ${queued === 1 ? 'report' : 'reports'} queued`)
+        : tr('Sin cobertura · el parte se guarda en el teléfono', 'No signal · the report is saved on the phone');
+    else if (u < PARTS[2].sync![1]) say = tr('Vuelve la cobertura · sincronizando la cola', 'Signal is back · syncing the queue');
+    else say = tr('Todo recibido en oficina · 3 de 3, ninguno perdido', 'All received at the office · 3 of 3, none lost');
     h.say(say);
     void arrived;
   };

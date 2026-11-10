@@ -1,5 +1,5 @@
 import { iso, lineOnTop } from '../iso-kit.mjs';
-import { ease, helpers, polar, span, type Factory, type Proj } from './runtime';
+import { tr, ease, helpers, polar, span, type Factory, type Proj } from './runtime';
 
 const CYCLE = 10.4;
 const SAVES = [3.0, 4.2, 5.4];
@@ -108,17 +108,19 @@ const create: Factory = (root, M) => {
     let line: string;
     let say: string;
     if (u < OPEN[0]) {
-      line = 'Al día';
-      say = 'Con red · todo sincronizado';
+      line = tr('Al día', 'Up to date');
+      say = tr('Con red · todo sincronizado', 'Online · everything synced');
     } else if (u < OPEN[1] + 0.5) {
-      line = saved ? `Local · ${saved} ${saved === 1 ? 'cambio' : 'cambios'}` : 'Sin red · sigue en local';
-      say = saved ? `Sin red · ${saved} ${saved === 1 ? 'cambio guardado' : 'cambios guardados'} en el disco` : 'Se cae la red · la aplicación sigue abierta';
+      line = saved ? tr(`Local · ${saved} ${saved === 1 ? 'cambio' : 'cambios'}`, `Local · ${saved} ${saved === 1 ? 'change' : 'changes'}`) : tr('Sin red · sigue en local', 'Offline · still local');
+      say = saved
+        ? tr(`Sin red · ${saved} ${saved === 1 ? 'cambio guardado' : 'cambios guardados'} en el disco`, `Offline · ${saved} ${saved === 1 ? 'change' : 'changes'} saved to disk`)
+        : tr('Se cae la red · la aplicación sigue abierta', 'The network drops · the app stays open');
     } else if (uploaded < 3) {
-      line = `Sincronizando ${uploaded}/3`;
-      say = `Vuelve la red · subiendo ${uploaded} de 3`;
+      line = tr(`Sincronizando ${uploaded}/3`, `Syncing ${uploaded}/3`);
+      say = tr(`Vuelve la red · subiendo ${uploaded} de 3`, `Network back · uploading ${uploaded} of 3`);
     } else {
-      line = 'Al día · 3 subidos';
-      say = 'Sincronizado · nada se perdió en el corte';
+      line = tr('Al día · 3 subidos', 'Up to date · 3 uploaded');
+      say = tr('Sincronizado · nada se perdió en el corte', 'Synced · nothing lost in the outage');
     }
     text(status, line);
     statusDot.setAttribute('fill-opacity', online ? '1' : '0.35');

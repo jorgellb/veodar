@@ -1,4 +1,6 @@
-import { pages, extras, type Block, type Faq } from './pages';
+import { pages, extras, pagesFor, extrasFor, type Block, type Faq } from './pages';
+import { servicesEn, serviceGroupsEn } from './en/services';
+import { serviceHref as hrefFor, type Lang } from '../i18n';
 
 export type Tint = 'mint' | 'sky' | 'butter' | 'blush' | 'lilac' | 'paper';
 export type ServiceGroup = 'ingenieria' | 'estudio';
@@ -110,7 +112,7 @@ const studio: Service[] = [
     sceneCaption: 'La misma marca estampada en una tarjeta, un papel de carta y un icono de app. Delante, los tokens de color y tipografía.',
     stack: ['Naming', 'Logotipo', 'Tipografía', 'Design tokens', 'Figma', 'Motion'],
     kicker: '05 · Marca',
-    title: 'Identidad de marca y sistema visual para empresas tecnológicas',
+    title: 'Identidad de marca para empresas tecnológicas',
     description:
       'Naming, logotipo, tipografía, color y movimiento entregados como un sistema: guía viva, tokens de diseño y componentes listos para web, app y producto.',
     h1: 'Identidad de marca que se puede programar',
@@ -186,7 +188,7 @@ const studio: Service[] = [
     kicker: '06 · Diseño',
     title: 'Diseño web UX/UI a medida para empresas y SaaS',
     description:
-      'Diseño web exclusivo con investigación, arquitectura de información, UI y design system en Figma, pensado para convertir, posicionar en buscadores y construirse sin traducciones.',
+      'Diseño web a medida: arquitectura de información, UI y design system en Figma, pensado para convertir, posicionar en buscadores y programarse sin traducciones.',
     h1: 'Diseño web exclusivo, pensado para construirse',
     lead: 'Una web memorable no sale de una plantilla con otro color. Sale de entender quién llega, qué busca y qué tiene que hacer antes de irse. Diseñamos cada pantalla con esa pregunta delante y con el equipo que la va a programar en la misma mesa.',
     blocks: [
@@ -258,7 +260,7 @@ const studio: Service[] = [
     sceneCaption: 'Doce fotogramas en el tambor y la curva que los mueve en la pantalla: aplastar, estirar y soltar.',
     stack: ['GSAP', 'WebGL', 'Shaders GLSL', 'Three.js', 'Canvas', 'SVG animado', 'View Transitions'],
     kicker: '07 · Creativo',
-    title: 'Desarrollo creativo: animación web, WebGL e interacción',
+    title: 'Desarrollo creativo: animación web y WebGL',
     description:
       'Experiencias web con animación, scroll narrativo, WebGL, shaders e ilustración isométrica interactiva. Impacto visual sin sacrificar rendimiento ni accesibilidad.',
     h1: 'Desarrollo creativo con impacto y sin tirones',
@@ -319,7 +321,7 @@ const studio: Service[] = [
     sceneCaption: 'El láser recorre la pieza que gira y el monitor la reconstruye como malla, cara a cara, lista para moverse a 60 fps.',
     stack: ['Three.js', 'React Three Fiber', 'WebGPU', 'Blender', 'glTF / Draco', 'KTX2'],
     kicker: '08 · 3D',
-    title: 'Webs 3D interactivas en tiempo real con Three.js y WebGPU',
+    title: 'Webs 3D interactivas con Three.js y WebGPU',
     description:
       'Sitios web 3D interactivos: producto, espacio o proceso en tiempo real en el navegador. Modelado optimizado, Three.js, React Three Fiber y WebGPU con carga rápida.',
     h1: 'Webs 3D interactivas que hacen tangible la idea',
@@ -380,9 +382,9 @@ const studio: Service[] = [
     sceneCaption: 'Cuatro mandos cambian el mueble y el precio se recalcula con las mismas reglas cada vez. Al final sale el presupuesto.',
     stack: ['Three.js', 'React', 'Reglas de compatibilidad', 'Precios en tiempo real', 'ERP / CRM', 'AR Quick Look'],
     kicker: '09 · Configurador',
-    title: 'Configuradores 3D de producto con presupuesto en tiempo real',
+    title: 'Configurador 3D de producto con precio al instante',
     description:
-      'Configuradores 3D web donde el cliente elige opciones, ve el producto en tiempo real, comprueba compatibilidades y recibe un presupuesto conectado a vuestro ERP o CRM.',
+      'Configuradores 3D web: el cliente elige opciones, ve el producto en tiempo real, comprueba compatibilidades y recibe un presupuesto conectado a tu ERP o CRM.',
     h1: 'Configuradores 3D que venden mientras dormís',
     lead: 'Si cada presupuesto exige una llamada y tres correos, el configurador es la herramienta comercial más rentable que podéis tener. El cliente elige, ve el resultado en 3D, el sistema comprueba qué combina con qué y el pedido llega limpio a quien lo fabrica.',
     blocks: [
@@ -443,7 +445,7 @@ const studio: Service[] = [
     kicker: '10 · Vídeo',
     title: 'Vídeos de lanzamiento de producto y demos animadas',
     description:
-      'Vídeos de lanzamiento de 30 a 90 segundos construidos con las pantallas reales de vuestro producto: guion, motion design, locución y versiones para web, redes y ventas.',
+      'Vídeos de lanzamiento de 30 a 90 segundos con las pantallas reales de tu producto: guion, motion design, locución y versiones para web, redes y ventas.',
     h1: 'Vídeos de lanzamiento con vuestro producto de verdad',
     lead: 'Un lanzamiento se entiende en treinta segundos o no se entiende. Hacemos vídeos cortos con las pantallas reales del producto, animadas con precisión, para que quien lo ve sepa qué hace y por qué le importa antes de que termine.',
     blocks: [
@@ -631,4 +633,38 @@ export const serviceGroups: { id: ServiceGroup; label: string; blurb: string }[]
 ];
 
 export const serviceBySlug = (slug: string) => services.find((service) => service.slug === slug);
-export const serviceHref = (slug: string) => `/servicios/${slug}/`;
+
+// ── English ───────────────────────────────────────────────────────────────
+// Same structure, English text: the engineering services take their long
+// content from the English pages, the studio services from ./en/services.ts.
+function toEnglish(service: Service): Service {
+  const text = servicesEn[service.slug];
+  if (!text) throw new Error(`Missing English text for ${service.slug}`);
+  const english = { ...service, ...text, stack: text.stack ?? service.stack };
+  if (service.group !== 'ingenieria') return english;
+  const page = pagesFor('en').find((item) => item.slug === service.slug);
+  const extra = extrasFor('en')[service.slug];
+  if (!page || !extra) throw new Error(`Missing English page for ${service.slug}`);
+  return {
+    ...english,
+    kicker: extra.kicker,
+    title: page.title,
+    description: page.description,
+    h1: page.h1,
+    lead: page.lead,
+    blocks: page.blocks,
+    faq: page.faq,
+    deliverablesTitle: extra.deliverablesTitle,
+    deliverables: extra.deliverables,
+    ctaTitle: extra.ctaTitle,
+    ctaText: extra.ctaText,
+  };
+}
+const servicesInEnglish = services.map(toEnglish);
+
+/** The twelve services in a language (same order and ids in both). */
+export const servicesFor = (lang: Lang) => (lang === 'en' ? servicesInEnglish : services);
+export const serviceGroupsFor = (lang: Lang) =>
+  lang === 'en' ? serviceGroups.map((group) => ({ ...group, ...serviceGroupsEn[group.id] })) : serviceGroups;
+/** Path of a service page; Spanish unless a language is given. */
+export const serviceHref = (slug: string, lang: Lang = 'es') => hrefFor(slug, lang);

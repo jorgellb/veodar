@@ -1,0 +1,56 @@
+---
+// One service page, in the language of its URL.
+import DocPage from '../components/DocPage.astro';
+import { serviceHref, type Service } from '../data/services';
+import { site } from '../data/site';
+import { langOf, pathTo } from '../i18n';
+
+interface Props {
+  service: Service;
+}
+const { service } = Astro.props;
+const lang = langOf(Astro.url);
+const url = new URL(serviceHref(service.slug, lang), site.url).href;
+const T = {
+  es: { home: 'Inicio', services: 'Servicios', areas: [{ '@type': 'Country', name: 'España' }, { '@type': 'Place', name: 'Latinoamérica' }, { '@type': 'Place', name: 'Europa' }] },
+  en: { home: 'Home', services: 'Services', areas: [{ '@type': 'Country', name: 'Spain' }, { '@type': 'Place', name: 'Latin America' }, { '@type': 'Place', name: 'Europe' }] },
+}[lang];
+const serviceLd = {
+  '@type': 'Service',
+  '@id': `${url}#service`,
+  name: service.name,
+  serviceType: service.name,
+  description: service.description,
+  url,
+  provider: { '@id': `${site.url}/#organization` },
+  areaServed: T.areas,
+  availableLanguage: ['Spanish', 'English'],
+  mainEntityOfPage: { '@id': `${url}#webpage` },
+};
+---
+
+<DocPage
+  title={service.title}
+  description={service.description}
+  kicker={service.kicker}
+  h1={service.h1}
+  lead={service.lead}
+  blocks={service.blocks}
+  faq={service.faq}
+  deliverablesTitle={service.deliverablesTitle}
+  deliverables={service.deliverables}
+  related={service.related}
+  ctaTitle={service.ctaTitle}
+  ctaText={service.ctaText}
+  crumbs={[
+    { name: T.home, path: pathTo('home', lang) },
+    { name: T.services, path: pathTo('servicios', lang) },
+    { name: service.name, path: serviceHref(service.slug, lang) },
+  ]}
+  figure={service.figure}
+  sceneTitle={service.name}
+  sceneCaption={service.sceneCaption}
+  stack={service.stack}
+  tint={service.tint}
+  extraLd={[serviceLd]}
+/>

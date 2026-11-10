@@ -1,7 +1,9 @@
 ---
 import Figure from '../iso/Figure.astro';
+import { langOf } from '../../i18n';
 
-const steps = [
+const lang = langOf(Astro.url);
+const stepsEs = [
   {
     n: '01',
     h: 'Un ejemplo real',
@@ -23,14 +25,25 @@ const steps = [
     p: 'Errores, uso real y coste vigilados. Si el equipo vuelve al método viejo, se ve. El código y las cuentas siguen a vuestro nombre.',
   },
 ];
+const stepsEn = [
+  { n: '01', h: 'A real example', p: "An email, a report, a screen from last week. Without an example, the conversation stays in adjectives; with one, we can write down what's in." },
+  { n: '02', h: 'A written scope', p: "What gets built, what's out, which system isn't touched and which credential is used. Security and IT read it before anything is switched on." },
+  { n: '03', h: 'A usable first release', p: 'The screen or workflow someone would miss tomorrow if it were gone. It’s shown early to the people who will use it, not on the last Friday.' },
+  { n: '04', h: 'Operate and measure', p: 'Errors, real use and cost are watched. If the team goes back to the old way, it shows. The code and accounts stay in your name.' },
+];
+const steps = lang === 'en' ? stepsEn : stepsEs;
+const T = {
+  es: { eyebrow: 'Cómo trabajamos', figure: 'Programador de levas', hint: 'Un pin por paso' },
+  en: { eyebrow: 'How we work', figure: 'Cam programmer', hint: 'One pin per step' },
+}[lang];
 ---
 
 <section id="proceso" class="bg-night py-24 text-paper md:py-36" data-dark data-spine="0.489" aria-labelledby="process-title">
   <div class="wrap grid gap-14 lg:grid-cols-[1fr_1.05fr] lg:gap-20">
     <div>
-      <p class="eyebrow !text-paper/60">Cómo trabajamos</p>
+      <p class="eyebrow !text-paper/60">{T.eyebrow}</p>
       <h2 id="process-title" class="display h-xl mt-5 max-w-[12ch] !text-paper" data-reveal>
-        Cuatro pasos. <em class="!text-accent">Ninguno</em> es una reunión eterna.
+        {lang === 'en' ? <>Four steps. <em class="!text-accent">None</em> of them is an endless meeting.</> : <>Cuatro pasos. <em class="!text-accent">Ninguno</em> es una reunión eterna.</>}
       </h2>
       <ol class="steps mt-14 grid" data-steps>
         {
@@ -47,7 +60,7 @@ const steps = [
       </ol>
     </div>
     <div data-reveal>
-      <Figure name="sequencer" fig="Fig. 05" title="Programador de levas" hint="Un pin por paso" />
+      <Figure name="sequencer" fig="Fig. 05" title={T.figure} hint={T.hint} />
     </div>
   </div>
 </section>

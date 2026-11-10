@@ -1,3 +1,5 @@
+import type { Lang } from '../i18n';
+
 export const site = {
   name: 'Veodar',
   url: 'https://veodar.com',
@@ -8,6 +10,16 @@ export const site = {
     'Estudio de ingeniería y diseño: automatizaciones con IA, desarrollo web, apps móviles y de escritorio, 3D interactivo y SEO. Código y cuentas a nombre de tu empresa.',
 };
 
+/** Tagline and description in each language (site.* keeps the Spanish ones). */
+export const siteText: Record<Lang, { tagline: string; description: string }> = {
+  es: { tagline: site.tagline, description: site.description },
+  en: {
+    tagline: 'AI automation and custom software',
+    description:
+      'Engineering and design studio: AI automation, web development, mobile and desktop apps, interactive 3D and SEO. Code and accounts in your company’s name.',
+  },
+};
+
 export const organizationLd = {
   '@type': 'Organization',
   '@id': `${site.url}/#organization`,
@@ -16,7 +28,13 @@ export const organizationLd = {
   email: site.email,
   logo: `${site.url}/favicon.svg`,
   description: site.description,
-  knowsLanguage: ['es'],
+  knowsLanguage: ['es', 'en'],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'sales',
+    email: site.email,
+    availableLanguage: ['Spanish', 'English'],
+  },
   areaServed: [
     { '@type': 'Country', name: 'España' },
     { '@type': 'Place', name: 'Latinoamérica' },
@@ -35,12 +53,15 @@ export const organizationLd = {
   ],
 };
 
+/** The organization, described in the page's language. */
+export const organizationLdFor = (lang: Lang) => ({ ...organizationLd, description: siteText[lang].description });
+
 export const websiteLd = {
   '@type': 'WebSite',
   '@id': `${site.url}/#website`,
   url: `${site.url}/`,
   name: site.name,
-  inLanguage: 'es',
+  inLanguage: ['es', 'en'],
   publisher: { '@id': `${site.url}/#organization` },
 };
 
@@ -67,13 +88,19 @@ export function faqLd(faq: { q: string; a: string }[]) {
   };
 }
 
-const askPrompt = encodeURIComponent(
-  '¿Qué hace Veodar (veodar.com) en automatizaciones con IA y desarrollo de software a medida, y para qué tipo de empresa encaja?',
-);
+const askPrompts: Record<Lang, string> = {
+  es: '¿Qué hace Veodar (veodar.com) en automatizaciones con IA y desarrollo de software a medida, y para qué tipo de empresa encaja?',
+  en: 'What does Veodar (veodar.com) do in AI automation and custom software development, and what kind of company is it a good fit for?',
+};
 
-export const askAi = [
-  { name: 'ChatGPT', href: `https://chatgpt.com/?q=${askPrompt}` },
-  { name: 'Claude', href: `https://claude.ai/new?q=${askPrompt}` },
-  { name: 'Perplexity', href: `https://www.perplexity.ai/search?q=${askPrompt}` },
-  { name: 'Gemini', href: `https://www.google.com/search?udm=50&q=${askPrompt}` },
-];
+/** "Ask an AI about Veodar" links, with the question in the page's language. */
+export const askAiFor = (lang: Lang) => {
+  const q = encodeURIComponent(askPrompts[lang]);
+  return [
+    { name: 'ChatGPT', href: `https://chatgpt.com/?q=${q}` },
+    { name: 'Claude', href: `https://claude.ai/new?q=${q}` },
+    { name: 'Perplexity', href: `https://www.perplexity.ai/search?q=${q}` },
+    { name: 'Gemini', href: `https://www.google.com/search?udm=50&q=${q}` },
+  ];
+};
+export const askAi = askAiFor('es');
