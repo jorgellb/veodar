@@ -699,4 +699,352 @@ export const sectorsEn: Record<string, SectorText> = {
     ctaText: 'With an alarm export or a sample bill we tell you what can be grouped and what checks itself. We reply by email.',
     ask: 'Who turns solar plant alarms into work orders and checks energy bills with AI?',
   },
+  educacion: {
+    name: 'Education and training',
+    short: 'Education',
+    menu: 'Enrollment, attendance and certificates without spreadsheets.',
+    sceneTitle: 'Attendance tracker',
+    sceneCaption:
+      'Each session, the reader passes over the cards and the tubes of the students who attended rise. Those above the minimum attendance get their certificate; anyone below it triggers an alert for the tutor.',
+    stack: ['Moodle', 'Google Classroom', 'Microsoft Teams', 'Canvas', 'Student information system', 'FUNDAE', 'Stripe', 'Zoom'],
+    kicker: 'Industry · Education',
+    title: 'Software and AI for Schools and Training Centers',
+    description:
+      'Online enrollment, attendance that records itself, automatic certificates and subsidized training without the paperwork. AI helps prepare; teachers decide.',
+    h1: 'Training centers with more time for training',
+    lead: 'An academy, a school or a corporate training center spends a huge part of the day on work that is not teaching: enrollment, attendance lists, receipts, notices to families, certificates and the paperwork for subsidized training. Veodar automates that work so the time goes back to the classroom.',
+    blocks: [
+      {
+        id: 'matricula',
+        nav: 'Enrollment',
+        heading: 'Enrollment that does not take three trips to the front office.',
+        paragraphs: [
+          'An online enrollment form with the documents each course requires, payment or direct debit and an e-signature. Missing items are requested automatically, and the office sees on one screen which files are complete.',
+          'The data flows into your learning platform or student information system without being typed again, and students get their logins the same day.',
+        ],
+      },
+      {
+        id: 'asistencia',
+        nav: 'Attendance',
+        heading: 'Attendance that records itself and warns in time.',
+        paragraphs: [
+          'With a QR code in the classroom, the online platform log or a mobile app for the teacher, attendance is recorded without paper. The system calculates each student’s percentage and alerts the tutor when someone is getting close to the required minimum, not after they have missed it.',
+          'For subsidized corporate training, those same records feed the attendance and assessment documentation that has to be justified.',
+        ],
+      },
+      {
+        id: 'familias',
+        nav: 'Families and students',
+        heading: 'The usual questions, answered at any hour.',
+        paragraphs: [
+          'Schedules, calendar, payment dates, how to excuse an absence. An AI assistant answers on the website or by message whatever has a written answer and passes the rest to the office with the full conversation.',
+          'Notices to families go out by course and group, and you know who has read them. With minors, consent and communication permissions are handled under data protection law.',
+        ],
+      },
+      {
+        id: 'docentes',
+        nav: 'Teachers',
+        heading: 'AI prepares materials. Grading stays with the teacher.',
+        paragraphs: [
+          'A teacher can ask the AI for a first draft of exercises, rubrics or summaries based on their syllabus and review it before using it. It saves hours of preparation without giving up pedagogical judgment.',
+          'AI does not grade or decide who passes. The EU AI Act treats systems that evaluate students or decide on admission as high-risk, and we design to that rule: it proposes, and the teacher decides.',
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: 'Do you integrate with Moodle or Google Classroom?',
+        a: 'Yes. Both have APIs, as do Microsoft Teams and Canvas. We sync students, groups, grades and attendance with the platform you already use.',
+      },
+      {
+        q: 'Can you handle subsidized training (FUNDAE in Spain)?',
+        a: 'Yes, on the management side: attendance records, assessments and the documentation that has to be kept and justified. Training actions are still reported from your own account, with the data ready.',
+      },
+      {
+        q: 'What about data on minors?',
+        a: 'It is handled with particular care: minimal access, servers in the European Union and consent from parents or guardians where required. In Spain, guardians give consent for children under 14.',
+      },
+      {
+        q: 'Does the AI grade exams?',
+        a: 'It does not assign grades. It can help the teacher review, for example by flagging answers that do not follow the rubric, but grades are always given by a person.',
+      },
+      {
+        q: 'Where do you start?',
+        a: 'With enrollment or attendance: they take the most hours in the front office and show results soonest.',
+      },
+    ],
+    deliverablesTitle: 'What we usually build for education.',
+    deliverables: [
+      'Online enrollment with documents, payment and signature',
+      'Attendance with QR, platform logs or an app',
+      'Tutor alerts before a student drops below the minimum',
+      'Certificates generated and sent automatically',
+      'Assistant for families and students',
+      'Paperwork for subsidized training',
+    ],
+    ctaTitle: 'Tell us how many hours go into front-office work.',
+    ctaText: 'With your enrollment or attendance process we tell you what to automate first. We reply by email.',
+    ask: 'Who automates enrollment, attendance and certificates with AI for academies and training centers?',
+  },
+  'despachos-profesionales': {
+    name: 'Law and accounting firms',
+    short: 'Professional firms',
+    menu: 'Lawyers, accountants and advisors with every deadline under control.',
+    sceneTitle: 'Deadline belt',
+    sceneCaption:
+      'Each notice comes in with its date and the deadline is calculated in business days. Case files move along the belt day by day; over the weekend the clock stops, and when they reach today they are filed.',
+    stack: ['LexNET', 'A3', 'Sage', 'Holded', 'Wolters Kluwer', 'Microsoft 365', 'DocuSign', 'Client portal'],
+    kicker: 'Industry · Professional firms',
+    title: 'Software and AI for Law Firms and Accountants',
+    description:
+      'Deadlines calculated as each court notice arrives, client documents that come in sorted, AI drafts reviewed by the professional, and a portal for every client.',
+    h1: 'Firms where no deadline depends on anyone’s memory',
+    lead: 'At a firm, the risk is not in the hard work. It is in the notice read too late, the document a client sent through the wrong channel and the hour nobody logged. Veodar automates that part so lawyers, accountants and advisors spend their time on what they bill for.',
+    blocks: [
+      {
+        id: 'plazos',
+        nav: 'Deadlines',
+        heading: 'The deadline is calculated when the notice arrives, not when someone reads it.',
+        paragraphs: [
+          'Court notices from LexNET, government e-offices or email are read on arrival: the proceeding, the type of decision and the date are identified, and the deadline is calculated in business days, excluding Saturdays, Sundays, public holidays and August where the rules say so.',
+          'The deadline appears in the calendar of the lawyer in charge and the team, with staged reminders. A person confirms the calculation before it is accepted; the system never decides on its own when something is due.',
+        ],
+      },
+      {
+        id: 'documentacion',
+        nav: 'Client documents',
+        heading: 'Client documents that arrive sorted.',
+        paragraphs: [
+          'For an accounting practice, tax season or a quarterly close is an avalanche of invoices, statements and certificates by email and WhatsApp. A client portal asks for exactly what is missing, and an AI workflow sorts each document by client, fiscal year and type before anyone opens it.',
+          'The data goes into your accounting or tax software, such as A3, Sage or Holded, through its API or an import, and anything uncertain is flagged for review.',
+        ],
+      },
+      {
+        id: 'borradores',
+        nav: 'Drafts',
+        heading: 'First drafts with AI, signed by the professional.',
+        paragraphs: [
+          'Contracts from your templates, procedural filings, requirement letters or answers to frequent questions: AI prepares the draft with the case data, and the professional reviews it, edits it and signs it.',
+          'The model works from your reference documents, not from what it remembers of the internet, and cites which clause or document each paragraph comes from.',
+        ],
+      },
+      {
+        id: 'confidencialidad',
+        nav: 'Confidentiality',
+        heading: 'Professional secrecy, in the software too.',
+        paragraphs: [
+          'Case files live on servers in the European Union, encrypted and in accounts in the firm’s name. Every access is logged and permissions are granted per client and per matter.',
+          'AI models are used under terms that prevent training on your data, or on your own infrastructure if the firm prefers.',
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: 'Do you connect with LexNET?',
+        a: 'We work with the notices the firm receives from LexNET and government e-offices: we read them wherever you download them, whether a folder, email or your practice management software. Certificate-based access stays with the professional.',
+      },
+      {
+        q: 'Do you work with accounting and tax practices?',
+        a: 'Yes. That is where document sorting and data entry into the accounting software make the biggest difference, especially at quarterly closes and in tax season.',
+      },
+      {
+        q: 'Can the AI file a document with the court?',
+        a: 'No. It prepares drafts and calculates deadlines for a person to review. Filing, signing and deciding strategy are always the professional’s job.',
+      },
+      {
+        q: 'How is confidentiality protected?',
+        a: 'With servers in the European Union, encryption, permissions per client and matter, access logs and AI models that do not train on your data.',
+      },
+      {
+        q: 'Where do you start?',
+        a: 'At a law firm, with deadlines. At an accounting practice, with collecting and sorting client documents.',
+      },
+    ],
+    deliverablesTitle: 'What we usually build for professional firms.',
+    deliverables: [
+      'Notice reading and deadlines in business days',
+      'Deadline calendar with staged reminders',
+      'Client portal that asks for what is missing',
+      'Document sorting by client and fiscal year',
+      'AI drafts from your own templates',
+      'Time tracking and billing preparation',
+    ],
+    ctaTitle: 'Tell us how you track deadlines today.',
+    ctaText: 'Spreadsheet, shared calendar or memory: from that we tell you what can be automated and how it gets reviewed. We reply by email.',
+    ask: 'Who automates deadline tracking and client document collection with AI for law firms and accounting practices?',
+  },
+  agroalimentacion: {
+    name: 'Agriculture and food',
+    short: 'Agrifood',
+    menu: 'From field to pallet, traceable lot by lot.',
+    sceneTitle: 'Fruit grader',
+    sceneCaption:
+      'Fruit from the grower comes in through the hopper and rolls between two rails that spread apart: each piece drops where the gap is wider than it is. The blemished one is blown off, and each crate carries its lot, grower and field.',
+    stack: ['ERP', 'WMS', 'GlobalG.A.P.', 'IFS', 'GS1-128', 'EDI', 'IoT sensors', 'Power BI'],
+    kicker: 'Industry · Agrifood',
+    title: 'Software and AI for Agriculture and Food Companies',
+    description:
+      'Traceability from field to pallet, grower intake and settlements, a digital field log, machine-vision quality control and a monitored cold chain.',
+    h1: 'Agrifood with every crate traced back to its field',
+    lead: 'A cooperative receives fruit from hundreds of growers, grades it, packs it and sells it to retailers who want to know where every crate comes from. The information exists, but it is spread across delivery notes, scales, spreadsheets and the foreman’s memory. Veodar ties it into a single thread, from field to customer.',
+    blocks: [
+      {
+        id: 'trazabilidad',
+        nav: 'Traceability',
+        heading: 'A lot you can follow backward and forward.',
+        paragraphs: [
+          'EU food safety law requires knowing who supplied each product and who it was delivered to. We connect the scale, grower intake, packing and shipping so every crate carries a GS1 label with its lot, and every lot points to its field, harvest date and treatments.',
+          'When an alert or a GlobalG.A.P. or IFS audit comes, full traceability takes minutes, not an afternoon of digging through paper.',
+        ],
+      },
+      {
+        id: 'socios',
+        nav: 'Growers and settlements',
+        heading: 'Grower intake and settlements without redoing the math.',
+        paragraphs: [
+          'Every grower delivery is recorded with weight, variety, quality and size grade, and the settlement is calculated with the cooperative’s rules: prices by category, deductions and advances. Growers see their deliveries and settlement in an app or a portal.',
+          'The usual questions, such as why one month paid less, are answered with the detail of every delivery.',
+        ],
+      },
+      {
+        id: 'calidad',
+        nav: 'Quality',
+        heading: 'Machine-vision quality control with a person at the end.',
+        paragraphs: [
+          'Cameras on the line measure size, color and defects and divert whatever fails. Every decision is logged with its photo, and the quality manager adjusts the thresholds with data from the season itself.',
+          'When the model is unsure, the piece or the lot goes to review. AI proposes the grade; in a claim, a person has the final word.',
+        ],
+      },
+      {
+        id: 'campo',
+        nav: 'Field and cold chain',
+        heading: 'From the field log to the cold room.',
+        paragraphs: [
+          'A digital field log on the phone to record treatments, irrigation and work per plot, even with no signal, with the data ready for audits and authorities.',
+          'Temperature and humidity sensors in cold rooms and trucks alert as soon as a value goes out of range, and the history stays linked to the lot.',
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: 'Do you work with cooperatives?',
+        a: 'Yes, and with fruit and vegetable packers, olive mills, wineries and processors. Traceability and grower settlements are almost always the starting point.',
+      },
+      {
+        q: 'Do you connect with scales and graders?',
+        a: 'With the ones that export data or have a connection, yes. Older ones can be read from the ticket or file they produce.',
+      },
+      {
+        q: 'Do the labels follow the GS1 standard?',
+        a: 'Yes. We generate GS1-128 labels with lot, date and whatever each customer requires, plus shipping notices over EDI when the retailer asks for them.',
+      },
+      {
+        q: 'Does the field log work offline?',
+        a: 'Yes. It records on the phone and syncs when the signal returns, which out in the field is no small detail.',
+      },
+      {
+        q: 'Where do you start?',
+        a: 'With traceability or with grower settlements, whichever weighs on you more. Both start from product intake, so one leads to the other.',
+      },
+    ],
+    deliverablesTitle: 'What we usually build for agrifood.',
+    deliverables: [
+      'Traceability from field to customer, lot by lot',
+      'GS1-128 labels and EDI shipping notices',
+      'Grower intake and settlements',
+      'Grower portal or app',
+      'Offline digital field log',
+      'Cold-chain alerts linked to the lot',
+    ],
+    ctaTitle: 'Tell us how long it takes you to trace a lot.',
+    ctaText: 'With one intake note and one outgoing label we tell you what is missing to join them. We reply by email.',
+    ask: 'Who builds traceability, grower settlement and AI quality-control software for agricultural cooperatives?',
+  },
+  'hosteleria-turismo': {
+    name: 'Hospitality and tourism',
+    short: 'Hospitality',
+    menu: 'Bookings, guests and rooms on a single inventory.',
+    sceneTitle: 'Hotel model',
+    sceneCaption:
+      'Bookings arrive through three channels and light up rooms from a single inventory: availability drops in all of them at once. A checkout goes to housekeeping and is back on sale as soon as it is marked clean.',
+    stack: ['PMS', 'Channel manager', 'Booking.com', 'Expedia', 'SES.HOSPEDAJES', 'POS', 'WhatsApp Business', 'Google Business Profile'],
+    kicker: 'Industry · Hospitality',
+    title: 'Software and AI for Hotels, Restaurants and Tourism',
+    description:
+      'Bookings from every channel on one inventory, online check-in with guest registration, a multilingual guest assistant and housekeeping on mobile.',
+    h1: 'Hotels with one inventory and guests answered in their own language',
+    lead: 'A hotel sells the same room on its website, on two online travel agencies and by phone, gets questions in five languages and has to report every guest’s details to the authorities. Veodar connects bookings, front desk, housekeeping and messaging so the team looks after people, not browser tabs.',
+    blocks: [
+      {
+        id: 'reservas',
+        nav: 'Bookings',
+        heading: 'One room, one inventory, every channel.',
+        paragraphs: [
+          'We connect your PMS with the channel manager, the website and online travel agencies so a booking on any channel takes the room off all of them instantly. Direct, commission-free bookings get a fast, clear booking engine on your website.',
+          'Rates and forecast occupancy appear on a dashboard, and the AI suggests price adjustments that the manager accepts or rejects.',
+        ],
+      },
+      {
+        id: 'huespedes',
+        nav: 'Guests',
+        heading: 'Guests ask in their language, and someone answers at three in the morning.',
+        paragraphs: [
+          'An AI assistant answers the usual questions on WhatsApp or the website, such as opening hours, parking, breakfast or directions, in the guest’s language and with the property’s real information. Whatever it does not know goes to the front desk with the full conversation.',
+          'Before arrival, guests check in online with their ID, and the guest registration data required by law is prepared for submission without retyping it at the desk.',
+        ],
+      },
+      {
+        id: 'operacion',
+        nav: 'Housekeeping and maintenance',
+        heading: 'Housekeeping and maintenance coordinated from a phone.',
+        paragraphs: [
+          'A mobile app for housekeeping with the day’s rooms, their status and any issues. When a room is marked clean, the front desk sees it instantly and can sell it again.',
+          'Faults are reported with a photo and reach the maintenance lead with their priority, with no paper in the back office.',
+        ],
+      },
+      {
+        id: 'restaurante',
+        nav: 'Restaurants',
+        heading: 'Restaurants with recipe costing, allergens and bookings up to date.',
+        paragraphs: [
+          'For restaurants: bookings with reminders, a digital menu with allergens, recipe costing that updates the cost of each dish when an ingredient’s price changes, and a POS connection to reconcile sales and stock.',
+          'Reviews on Google and booking platforms get an AI draft reply that someone on the team checks before publishing.',
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: 'Do you integrate with our PMS and channel manager?',
+        a: 'If they have an API, yes, and most do. We check with your vendors at the start to know what data can be read and written.',
+      },
+      {
+        q: 'Do you handle guest registration?',
+        a: 'We prepare the online check-in data in the format the official platform requires, so submitting it does not mean retyping it. Submission is done with the property’s own credentials.',
+      },
+      {
+        q: 'Does the assistant make up answers?',
+        a: 'It only answers with the information we give it about the property. If a question has no written answer, it goes to the front desk instead of improvising.',
+      },
+      {
+        q: 'Do you also work with restaurants?',
+        a: 'Yes: bookings, menus with allergens, recipe costing and POS integration.',
+      },
+      {
+        q: 'Where do you start?',
+        a: 'With the guest assistant or online check-in: the front desk notices them from the first week.',
+      },
+    ],
+    deliverablesTitle: 'What we usually build for hospitality.',
+    deliverables: [
+      'Single inventory across PMS, website and OTAs',
+      'Direct booking engine for the website',
+      'Multilingual guest assistant',
+      'Online check-in with guest registration data',
+      'Housekeeping and maintenance app',
+      'Recipe costing and allergens for restaurants',
+    ],
+    ctaTitle: 'Tell us how many messages your front desk gets a day.',
+    ctaText: 'With that and the PMS you use, we tell you what can be answered automatically and what to connect first. We reply by email.',
+    ask: 'Who builds AI guest assistants, online check-in and PMS and channel manager integrations for hotels?',
+  },
 };

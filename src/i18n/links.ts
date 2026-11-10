@@ -40,6 +40,10 @@ const rules = (lang: Lang): Rule[] =>
         { to: sectorHref('banca-fintech', lang), terms: ['banca y fintech', 'conciliación bancaria', 'fintech'] },
         { to: sectorHref('inmobiliaria-construccion', lang), terms: ['inmobiliarias y constructoras', 'promotoras', 'constructoras'] },
         { to: sectorHref('energia', lang), terms: ['empresas de energía', 'plantas fotovoltaicas', 'comercializadoras'] },
+        { to: sectorHref('educacion', lang), terms: ['centros de formación', 'centros educativos', 'academias'] },
+        { to: sectorHref('despachos-profesionales', lang), terms: ['despachos de abogados', 'asesorías', 'gestorías'] },
+        { to: sectorHref('agroalimentacion', lang), terms: ['cooperativas agroalimentarias', 'cooperativas', 'agroalimentaria'] },
+        { to: sectorHref('hosteleria-turismo', lang), terms: ['hoteles y restaurantes', 'hoteles', 'hostelería'] },
         { to: pathTo('sectores', lang), terms: ['cada sector', 'por sector'] },
       ]
     : [
@@ -65,6 +69,10 @@ const rules = (lang: Lang): Rule[] =>
         { to: sectorHref('banca-fintech', lang), terms: ['banking and fintech', 'bank reconciliation', 'fintech'] },
         { to: sectorHref('inmobiliaria-construccion', lang), terms: ['real estate agencies', 'construction companies', 'homebuilders'] },
         { to: sectorHref('energia', lang), terms: ['energy companies', 'solar plants', 'energy retailers'] },
+        { to: sectorHref('educacion', lang), terms: ['training centers', 'schools and academies', 'academies'] },
+        { to: sectorHref('despachos-profesionales', lang), terms: ['law firms', 'accounting practices'] },
+        { to: sectorHref('agroalimentacion', lang), terms: ['agricultural cooperatives', 'cooperatives', 'agrifood'] },
+        { to: sectorHref('hosteleria-turismo', lang), terms: ['hotels and restaurants', 'hotels', 'hospitality'] },
         { to: pathTo('sectores', lang), terms: ['every industry', 'by industry'] },
       ];
 

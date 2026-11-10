@@ -352,17 +352,16 @@ const tintBg: Record<string, string> = {
         <div class="grid w-[880px] grid-cols-[1fr_270px] gap-2 p-2">
           <div class="mega-col">
             <p class="mega-label">{T.bySector} · {sectors.length}</p>
-            <ul class="grid grid-cols-2 gap-0.5">
+            <ul class="grid grid-cols-3 gap-0.5">
               {
                 sectors.map((sector) => (
                   <li>
-                    <a href={sectorHref(sector.id, lang)} class="mega-link">
-                      <span class:list={['mega-ico', tintBg[sector.tint]]}>
-                        <Icon name={sector.icon} size={18} />
+                    <a href={sectorHref(sector.id, lang)} class="mega-link mega-link--compact" title={sector.menu}>
+                      <span class:list={['mega-ico mega-ico--sm', tintBg[sector.tint]]}>
+                        <Icon name={sector.icon} size={16} />
                       </span>
                       <span>
                         <span class="mega-name">{sector.name}</span>
-                        <span class="mega-desc">{sector.menu}</span>
                       </span>
                     </a>
                   </li>
