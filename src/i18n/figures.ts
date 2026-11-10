@@ -52,6 +52,54 @@ const en: Record<string, FigureText> = {
     label:
       'A stamping press: a business card, a letterhead and an app icon pass one after another under the piston and come out with the same mark at their size; in front, five color chips and a type plate are the brand tokens.',
   },
+  qcline: {
+    label:
+      'A production line on a plate: bushings drop from a hopper onto a belt, pass under a vision camera that measures their diameter, and a pneumatic pusher sends the one outside tolerance to the red bin; a signal tower and the shift panel keep count and OEE.',
+    texts: { 'LÍNEA 2 · TURNO': 'LINE 2 · SHIFT' },
+  },
+  sorter: {
+    label:
+      'A parcel sorter on a plate: boxes come through a strip curtain onto a roller conveyor, pass under an arch that reads their label, and a swing arm sends each one down a chute into the roll cage for its route; a board counts parcels per route and shows each departure time.',
+    texts: { RUTA: 'ROUTE', BULTOS: 'PARCELS', SALIDA: 'DEPARTS' },
+  },
+  shelf: {
+    label:
+      'A store shelf on a plate with eight units of the same product: a sale at the register and an online order take units from the same shelf; each sale travels along the sync line to the stock display, which drops once per sale, and at the minimum a printer issues the restock proposal.',
+    texts: {
+      'mín 3': 'min 3',
+      'TPV · CAJA 1': 'POS · TILL 1',
+      'Venta 0087': 'Sale 0087',
+      'TIENDA ONLINE': 'ONLINE STORE',
+      'Pedido —': 'Order —',
+      Pagar: 'Pay',
+      '4,90': '4.90',
+    },
+  },
+  frontdesk: {
+    label:
+      'A front-desk scheduling board on a plate: each row is a time with its card. When the 10:30 appointment is cancelled, its card leaves on the right, the slot is offered on the patient’s phone and, once confirmed, the first card of the waitlist, queued on the same rail, slides in. The consent form is signed on the phone and filed in a cabinet that only opens with a key and prints every access.',
+    texts: { AGENDA: 'SCHEDULE', 'LISTA DE ESPERA →': 'WAITLIST →', CLÍNICA: 'CLINIC', 'Sin avisos': 'No alerts' },
+  },
+  claims: {
+    label:
+      'A rotary policy card file on a plate: a claim comes out of the mail unit onto a reader, its policy number turns the drum to that policy’s card, a comparator lights its three checks —in force, cover and deductible— and the claim goes into the files folder, or to the review tray when a check fails.',
+    texts: { VIGENTE: 'IN FORCE', COBERTURA: 'COVER', FRANQUICIA: 'DEDUCTIBLE', 'PÓLIZA': 'POLICY', ENTRADA: 'INBOX', EXPEDIENTES: 'CLAIM FILES', 'REVISIÓN': 'REVIEW' },
+  },
+  balance: {
+    label:
+      'A reconciliation balance on a plate: a printer issues each bank transaction and its invoice comes off the tray; both are weighed on a beam balance. Equal amounts leave the beam level and the pair is posted to the ledger; a difference tips the beam and the pair goes to review.',
+    texts: { 'CONCILIACIÓN': 'RECONCILIATION', MOV: 'TXN', FRA: 'INV', DIF: 'DIFF', 'BANCO · API': 'BANK · API', FACTURAS: 'INVOICES', 'LIBRO MAYOR': 'LEDGER', 'REVISIÓN': 'REVIEW' },
+  },
+  crane: {
+    label:
+      'A tower crane on a plate lifts three slabs from a stack onto a building under construction; after each slab the next floor’s columns rise, and the site office screen adds up structural progress and the amount billed, and flags the buyer portal as updated.',
+    texts: { ESTRUCTURA: 'STRUCTURE', 'CERT.': 'BILLED', 'CASETA DE OBRA': 'SITE OFFICE', 'PROMOCIÓN': 'NEW HOMES', 'VENTA SOBRE PLANO': 'NOW SELLING OFF-PLAN' },
+  },
+  solar: {
+    label:
+      'A solar test bench on a plate: a lamp travels along an arc rail like the sun and four single-axis trackers turn to face it; each row reports its output to the inverter. When one row stops producing, the alarm lights, a work order prints and the dial shows total output dropping until the row is repaired.',
+    texts: { 'PLANTA · INVERSOR': 'PLANT · INVERTER' },
+  },
   radar: {
     label:
       "A radar on a plate: a console with a round screen, range rings and a rotating sweep, and a mast with a bar antenna turning in step; the echoes are the websites that answer a search, and Veodar's moves closer to the center with every sweep.",

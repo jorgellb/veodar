@@ -6,7 +6,7 @@
 // Rules keep it natural: one link per target per page, at most MAX_PER_PAGE links
 // per page, never a link to the page itself, and never inside headings.
 
-import { pathTo, serviceHref, type Lang } from './index';
+import { pathTo, sectorHref, serviceHref, type Lang } from './index';
 
 type Rule = { to: string; terms: string[] };
 
@@ -32,6 +32,15 @@ const rules = (lang: Lang): Rule[] =>
         { to: svc('web-3d-interactiva', lang), terms: ['webs 3D', 'web 3D', '3D en tiempo real', 'Three.js'] },
         { to: svc('configuradores-3d', lang), terms: ['configuradores 3D', 'configurador 3D', 'configurador'] },
         { to: svc('videos-de-lanzamiento', lang), terms: ['vídeos de lanzamiento', 'vídeo de lanzamiento', 'vídeo de producto'] },
+        { to: sectorHref('industria', lang), terms: ['industria y fabricación', 'sector industrial', 'planta de producción'] },
+        { to: sectorHref('logistica', lang), terms: ['logística y transporte', 'sistema de gestión de almacén', 'prueba de entrega'] },
+        { to: sectorHref('retail-ecommerce', lang), terms: ['retail y ecommerce', 'comercio electrónico', 'tienda online'] },
+        { to: sectorHref('salud', lang), terms: ['clínicas y centros de salud', 'centros de salud', 'clínicas'] },
+        { to: sectorHref('seguros', lang), terms: ['aseguradoras y corredurías', 'corredurías de seguros', 'aseguradoras'] },
+        { to: sectorHref('banca-fintech', lang), terms: ['banca y fintech', 'conciliación bancaria', 'fintech'] },
+        { to: sectorHref('inmobiliaria-construccion', lang), terms: ['inmobiliarias y constructoras', 'promotoras', 'constructoras'] },
+        { to: sectorHref('energia', lang), terms: ['empresas de energía', 'plantas fotovoltaicas', 'comercializadoras'] },
+        { to: pathTo('sectores', lang), terms: ['cada sector', 'por sector'] },
       ]
     : [
         { to: svc('automatizaciones-ia', lang), terms: ['AI automations', 'AI automation', 'AI agents', 'automation', 'the AI'] },
@@ -48,6 +57,15 @@ const rules = (lang: Lang): Rule[] =>
         { to: svc('web-3d-interactiva', lang), terms: ['3D websites', '3D website', 'real-time 3D', 'Three.js'] },
         { to: svc('configuradores-3d', lang), terms: ['3D configurators', '3D configurator', 'configurator'] },
         { to: svc('videos-de-lanzamiento', lang), terms: ['launch videos', 'launch video', 'product video'] },
+        { to: sectorHref('industria', lang), terms: ['manufacturing companies', 'manufacturers', 'shop floor'] },
+        { to: sectorHref('logistica', lang), terms: ['logistics and transportation', 'warehouse management system', 'proof of delivery'] },
+        { to: sectorHref('retail-ecommerce', lang), terms: ['retail and ecommerce', 'online store', 'ecommerce'] },
+        { to: sectorHref('salud', lang), terms: ['medical practices', 'clinics'] },
+        { to: sectorHref('seguros', lang), terms: ['insurers and insurance brokers', 'insurance brokers', 'insurers'] },
+        { to: sectorHref('banca-fintech', lang), terms: ['banking and fintech', 'bank reconciliation', 'fintech'] },
+        { to: sectorHref('inmobiliaria-construccion', lang), terms: ['real estate agencies', 'construction companies', 'homebuilders'] },
+        { to: sectorHref('energia', lang), terms: ['energy companies', 'solar plants', 'energy retailers'] },
+        { to: pathTo('sectores', lang), terms: ['every industry', 'by industry'] },
       ];
 
 const MAX_PER_PAGE = 6;

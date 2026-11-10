@@ -3,8 +3,9 @@ import Logo from './Logo.astro';
 import Icon from './Icon.astro';
 import LangSwitch from './LangSwitch.astro';
 import { servicesFor, serviceHref } from '../data/services';
+import { sectorsFor } from '../data/sectors';
 import { askAiFor, site } from '../data/site';
-import { langOf, pathTo } from '../i18n';
+import { langOf, pathTo, sectorHref } from '../i18n';
 
 const lang = langOf(Astro.url);
 const services = servicesFor(lang);
@@ -14,9 +15,10 @@ const T = {
     blurb: 'Estudio de ingeniería y diseño. Automatizaciones con IA, software a medida y webs que se recuerdan. El código y las cuentas, siempre a vuestro nombre.',
     ask: 'Pregunta a una IA por Veodar',
     nav: 'Pie de página',
-    cols: ['Ingeniería', 'Estudio', 'Soluciones', 'Veodar'],
+    cols: ['Ingeniería', 'Estudio', 'Soluciones', 'Sectores', 'Veodar'],
     areas: ['TI', 'Seguridad', 'Finanzas', 'Personas', 'RevOps', 'Legal'],
     more: ['Todos los servicios', 'Cómo trabajamos', 'Precios', 'Preguntas frecuentes', 'Contacto'],
+    allSectors: 'Todos los sectores',
     made: 'Hecho a medida, como todo lo demás.',
     tech: 'Astro · 0 cookies de seguimiento · AA',
   },
@@ -24,9 +26,10 @@ const T = {
     blurb: 'Engineering and design studio. AI automation, custom software and websites people remember. Code and accounts, always in your name.',
     ask: 'Ask an AI about Veodar',
     nav: 'Footer',
-    cols: ['Engineering', 'Studio', 'Solutions', 'Veodar'],
+    cols: ['Engineering', 'Studio', 'Solutions', 'Industries', 'Veodar'],
     areas: ['IT', 'Security', 'Finance', 'People', 'RevOps', 'Legal'],
     more: ['All services', 'How we work', 'Pricing', 'FAQ', 'Contact'],
+    allSectors: 'All industries',
     made: 'Custom-made, like everything else.',
     tech: 'Astro · 0 tracking cookies · AA',
   },
@@ -47,6 +50,13 @@ const columns = [
   },
   {
     title: T.cols[3],
+    links: [
+      ...sectorsFor(lang).map((sector) => ({ label: sector.name, href: sectorHref(sector.id, lang) })),
+      { label: T.allSectors, href: pathTo('sectores', lang) },
+    ],
+  },
+  {
+    title: T.cols[4],
     links: [
       pathTo('servicios', lang),
       pathTo('home', lang, 'proceso'),
@@ -84,7 +94,7 @@ const year = new Date().getFullYear();
         </div>
       </div>
 
-      <nav class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4" aria-label={T.nav}>
+      <nav class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-3 xl:grid-cols-5" aria-label={T.nav}>
         {
           columns.map((column) => (
             <div>

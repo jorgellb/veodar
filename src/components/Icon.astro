@@ -9,6 +9,15 @@ const { name, size = 20, class: className } = Astro.props;
 
 // 20×20 line icons, 1.5px stroke, drawn for this site.
 const paths: Record<string, string> = {
+  factory:
+    '<path d="M2.5 17.5V9.2l4.2 2.6V9.2l4.2 2.6V9.2l4.2 2.6V3.5h2.4v14z"/><path d="M2.5 17.5h15M5.5 14.6h1.6M9.2 14.6h1.6M12.9 14.6h1.6"/>',
+  truck:
+    '<path d="M2.5 5.5h9.2v8.6H2.5zM11.7 8.3h3.1l2.7 3v2.8h-5.8"/><circle cx="5.8" cy="14.6" r="1.7"/><circle cx="14.4" cy="14.6" r="1.7"/>',
+  bag: '<path d="M4.2 7.2h11.6l-.9 10.3H5.1z"/><path d="M7.4 9.6V5.9a2.6 2.6 0 0 1 5.2 0v3.7"/>',
+  bank: '<path d="M3 7.6 10 3.5l7 4.1M3.4 7.6h13.2M5.2 9.8v4.6M8.4 9.8v4.6M11.6 9.8v4.6M14.8 9.8v4.6M3 16.5h14"/>',
+  building:
+    '<path d="M4.5 17.5V3.5h7.6v14M12.1 8h3.4v9.5M3 17.5h14"/><path d="M6.8 6.4h1M9.6 6.4h1M6.8 9.4h1M9.6 9.4h1M6.8 12.4h1M9.6 12.4h1"/>',
+  cross: '<rect x="2.5" y="2.5" width="15" height="15" rx="4"/><path d="M10 6.2v7.6M6.2 10h7.6"/>',
   spark:
     '<path d="M10 2.5v3.2M10 14.3v3.2M2.5 10h3.2M14.3 10h3.2M4.7 4.7l2.2 2.2M13.1 13.1l2.2 2.2M4.7 15.3l2.2-2.2M13.1 6.9l2.2-2.2"/><circle cx="10" cy="10" r="2.2"/>',
   browser:

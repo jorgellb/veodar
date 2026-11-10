@@ -1,0 +1,83 @@
+---
+// One sector page, in the language of its URL.
+import DocPage from '../components/DocPage.astro';
+import type { Sector } from '../data/sectors';
+import { servicesFor, serviceHref } from '../data/services';
+import { site } from '../data/site';
+import { langOf, pathTo, sectorHref } from '../i18n';
+
+interface Props {
+  sector: Sector;
+}
+const { sector } = Astro.props;
+const lang = langOf(Astro.url);
+const url = new URL(sectorHref(sector.id, lang), site.url).href;
+const T = {
+  es: {
+    home: 'Inicio',
+    sectors: 'Sectores',
+    stack: 'Sistemas habituales en el sector',
+    type: 'Desarrollo de software e IA',
+    catalog: `Qué construimos para ${sector.short.toLowerCase()}`,
+    areas: [{ '@type': 'Country', name: 'España' }, { '@type': 'Place', name: 'Latinoamérica' }, { '@type': 'Place', name: 'Europa' }],
+  },
+  en: {
+    home: 'Home',
+    sectors: 'Industries',
+    stack: 'Systems common in this industry',
+    type: 'Software development and AI',
+    catalog: `What we build for ${sector.short.toLowerCase()}`,
+    areas: [{ '@type': 'Country', name: 'Spain' }, { '@type': 'Place', name: 'Latin America' }, { '@type': 'Place', name: 'Europe' }],
+  },
+}[lang];
+const services = servicesFor(lang);
+const serviceLd = {
+  '@type': 'Service',
+  '@id': `${url}#service`,
+  name: sector.title,
+  serviceType: T.type,
+  description: sector.description,
+  url,
+  provider: { '@id': `${site.url}/#organization` },
+  audience: { '@type': 'BusinessAudience', audienceType: sector.name },
+  areaServed: T.areas,
+  availableLanguage: ['Spanish', 'English'],
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog',
+    name: T.catalog,
+    itemListElement: sector.deliverables.map((name) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name } })),
+  },
+  isRelatedTo: sector.related
+    .map((id) => services.find((service) => service.slug === id))
+    .filter((service) => service !== undefined)
+    .map((service) => ({ '@type': 'Service', name: service.name, url: new URL(serviceHref(service.slug, lang), site.url).href })),
+  mainEntityOfPage: { '@id': `${url}#webpage` },
+};
+---
+
+<DocPage
+  title={sector.title}
+  description={sector.description}
+  kicker={sector.kicker}
+  h1={sector.h1}
+  lead={sector.lead}
+  blocks={sector.blocks}
+  faq={sector.faq}
+  deliverablesTitle={sector.deliverablesTitle}
+  deliverables={sector.deliverables}
+  related={sector.related}
+  ctaTitle={sector.ctaTitle}
+  ctaText={sector.ctaText}
+  crumbs={[
+    { name: T.home, path: pathTo('home', lang) },
+    { name: T.sectors, path: pathTo('sectores', lang) },
+    { name: sector.name, path: sectorHref(sector.id, lang) },
+  ]}
+  figure={sector.figure}
+  sceneTitle={sector.sceneTitle}
+  sceneCaption={sector.sceneCaption}
+  stack={sector.stack}
+  stackLabel={T.stack}
+  tint={sector.tint}
+  extraLd={[serviceLd]}
+/>

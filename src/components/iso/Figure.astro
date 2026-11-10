@@ -97,6 +97,20 @@ const svg = localizeSvg(raw, name, lang);
   .veo-fig :global(.veo-lamp[data-err] .iso-shade) {
     fill: #e5484d;
   }
+  /* Signal tower tiers and parts flagged by an inspection. */
+  .veo-fig :global(.veo-lamp[data-part='st-g'][data-on] :is(.iso-fill, .iso-top, .iso-shade)),
+  .veo-fig :global(.veo-lamp[data-tone='ok'][data-on] :is(.iso-fill, .iso-top, .iso-shade)) {
+    fill: #2fb37a;
+  }
+  .veo-fig :global(.veo-lamp[data-part='st-r'][data-on] :is(.iso-fill, .iso-top, .iso-shade)) {
+    fill: #e5484d;
+  }
+  .veo-fig :global([data-bad] :is(.iso-top, .iso-fill)) {
+    fill: #ffd3cf;
+  }
+  .veo-fig :global([data-bad] .iso-shade) {
+    fill: #f2a19b;
+  }
   .veo-fig :global(.veo-bead) {
     fill: #ff5a1f;
     stroke: #fff;
