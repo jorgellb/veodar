@@ -44,7 +44,13 @@ Variables de entorno en Vercel (Settings → Environment Variables, entorno Prod
 - `CONTACT_TO` — los buzones que reciben los mensajes, separados por comas.
 - `CONTACT_FROM` — remitente, p. ej. `Veodar <web@veodar.com>`, cuando veodar.com esté verificado en Resend. Sin ella se usa `onboarding@resend.dev`, que solo entrega al correo con el que se creó la cuenta de Resend.
 
-Sin JavaScript el formulario se envía igual y vuelve a `/contacto/#enviado`, `#revisar` o `#no-enviado`. `astro dev` no sirve `api/`; la función se prueba con `npm test` o ya desplegada.
+**Turnstile (Cloudflare).** El formulario lleva un widget de Turnstile (acción `contacto`, invisible salvo que haga falta interacción) y la función comprueba cada token con `siteverify` antes de hacer nada más: sin token válido, para esa acción y para el dominio esperado, no se envía ningún correo. Si Cloudflare no responde, el envío se rechaza. Cada token vale una vez: el formulario pide uno nuevo tras cada intento. Variables:
+
+- `PUBLIC_TURNSTILE_SITEKEY` — la clave pública del widget; se inyecta al compilar, así que un cambio necesita un despliegue nuevo. En `astro dev`, si no está, se usa la clave de pruebas de Cloudflare, que siempre pasa.
+- `TURNSTILE_SECRET` — la clave secreta; solo la lee la función.
+- `TURNSTILE_HOSTNAMES` — opcional, dominios aceptados separados por comas. Por defecto, el dominio desde el que se sirve la función (`veodar.com`). Nunca `localhost` en producción.
+
+Sin JavaScript Turnstile no puede funcionar, así que el envío sin JavaScript vuelve a `/contacto/#no-enviado` con el correo como alternativa. Los resultados posibles de un envío sin JavaScript son `/contacto/#enviado`, `#revisar` o `#no-enviado`. `astro dev` no sirve `api/`; la función se prueba con `npm test` o ya desplegada.
 
 ## Red de fibra (fondo)
 

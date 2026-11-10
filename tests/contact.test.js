@@ -16,11 +16,18 @@ const valid = {
   consent: true,
   website: '',
   t: NOW - 20_000,
+  'cf-turnstile-response': 'token-ok',
 };
-const env = { RESEND_API_KEY: 're_test', CONTACT_TO: 'buzon@example.com', CONTACT_FROM: 'Veodar <web@veodar.com>' };
+const env = {
+  RESEND_API_KEY: 're_test',
+  CONTACT_TO: 'buzon@example.com',
+  CONTACT_FROM: 'Veodar <web@veodar.com>',
+  TURNSTILE_SECRET: 'ts_secret',
+  TURNSTILE_HOSTNAMES: 'veodar.com',
+};
 
 const post = (body, { form = false, origin = 'https://veodar.com' } = {}) => {
-  const headers = { origin };
+  const headers = { origin, 'x-forwarded-for': '203.0.113.7, 10.0.0.1' };
   let payload;
   if (form) {
     const params = new URLSearchParams();
@@ -38,14 +45,32 @@ const post = (body, { form = false, origin = 'https://veodar.com' } = {}) => {
   return new Request('https://veodar.com/api/contacto/', { method: 'POST', headers, body: payload });
 };
 
-// A stand-in for Resend that records what it was sent.
-const resend = (status = 200) => {
+const SITEVERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+const PASS = { success: true, action: 'contacto', hostname: 'veodar.com', 'error-codes': [] };
+
+// Cloudflare's siteverify in front of any Resend stand-in: answers with `verdict`
+// (an object, or a function of the request) and records what it was asked.
+const withTurnstile = (resendImpl, verdict = PASS, checks = []) => async (url, init) => {
+  if (url !== SITEVERIFY) return resendImpl(url, init);
+  checks.push(Object.fromEntries(new URLSearchParams(init.body)));
+  const answer = typeof verdict === 'function' ? verdict() : verdict;
+  if (answer instanceof Error) throw answer;
+  return new Response(JSON.stringify(answer), { status: 200 });
+};
+
+// A stand-in for Resend that records what it was sent (Turnstile passes unless told otherwise).
+const resend = (status = 200, verdict = PASS) => {
   const calls = [];
-  const fetchImpl = async (url, init) => {
-    calls.push({ url, init, body: JSON.parse(init.body) });
-    return new Response(JSON.stringify(status < 300 ? { id: 'email_1' } : { message: 'boom' }), { status });
-  };
-  return { calls, fetchImpl };
+  const checks = [];
+  const fetchImpl = withTurnstile(
+    async (url, init) => {
+      calls.push({ url, init, body: JSON.parse(init.body) });
+      return new Response(JSON.stringify(status < 300 ? { id: 'email_1' } : { message: 'boom' }), { status });
+    },
+    verdict,
+    checks,
+  );
+  return { calls, checks, fetchImpl };
 };
 
 describe('parseSubmission', () => {
@@ -161,6 +186,23 @@ describe('handle', () => {
     assert.equal(big.status, 413);
   });
 
+  it('sends to each inbox on its own, so one rejected inbox does not block the other', async () => {
+    const calls = [];
+    // Resend in test mode: only the account owner's address is accepted.
+    const fetchImpl = withTurnstile(async (url, init) => {
+      const body = JSON.parse(init.body);
+      calls.push(body.to);
+      const okay = body.to.length === 1 && body.to[0] === 'owner@example.com';
+      return new Response(JSON.stringify(okay ? { id: 'email_1' } : { message: 'testing emails only' }), { status: okay ? 200 : 403 });
+    });
+    const twoInboxes = { ...env, CONTACT_TO: 'owner@example.com, info@example.com' };
+    const response = await handle(post(valid), twoInboxes, { fetchImpl, now: NOW });
+    assert.equal(response.status, 200);
+    assert.deepEqual(calls, [['owner@example.com'], ['info@example.com']]);
+    const none = await handle(post(valid), { ...env, CONTACT_TO: 'info@example.com, otro@example.com' }, { fetchImpl, now: NOW });
+    assert.equal(none.status, 502);
+  });
+
   it('says when the inbox is not configured and when Resend fails', async () => {
     const unset = await handle(post(valid), { ...env, RESEND_API_KEY: '' }, { fetchImpl: resend().fetchImpl, now: NOW });
     assert.equal(unset.status, 503);
@@ -168,5 +210,64 @@ describe('handle', () => {
     const failing = await handle(post(valid), env, { fetchImpl: resend(500).fetchImpl, now: NOW });
     assert.equal(failing.status, 502);
     assert.equal((await failing.json()).error, 'send');
+  });
+});
+
+describe('Turnstile', () => {
+  it('checks the token with Cloudflare before anything is sent', async () => {
+    const { calls, checks, fetchImpl } = resend();
+    const response = await handle(post(valid), env, { fetchImpl, now: NOW });
+    assert.equal(response.status, 200);
+    assert.deepEqual(checks, [{ secret: 'ts_secret', response: 'token-ok', remoteip: '203.0.113.7' }]);
+    assert.equal(calls.length, 1);
+  });
+
+  it('refuses a message without a token, and asks Cloudflare nothing', async () => {
+    const { calls, checks, fetchImpl } = resend();
+    const { 'cf-turnstile-response': _, ...noToken } = valid;
+    const response = await handle(post(noToken), env, { fetchImpl, now: NOW });
+    assert.equal(response.status, 403);
+    assert.equal((await response.json()).error, 'turnstile');
+    assert.equal(checks.length, 0);
+    assert.equal(calls.length, 0);
+  });
+
+  it('refuses a token Cloudflare rejects, or one solved for another action or site', async () => {
+    for (const verdict of [
+      { success: false, 'error-codes': ['timeout-or-duplicate'] },
+      { ...PASS, action: 'login' },
+      { ...PASS, hostname: 'otro.example' },
+    ]) {
+      const { calls, fetchImpl } = resend(200, verdict);
+      const response = await handle(post(valid), env, { fetchImpl, now: NOW });
+      assert.equal(response.status, 403, JSON.stringify(verdict));
+      assert.equal(calls.length, 0);
+    }
+  });
+
+  it('fails closed when Cloudflare cannot be reached or the secret is missing', async () => {
+    const down = resend(200, () => new Error('network'));
+    assert.equal((await handle(post(valid), env, { fetchImpl: down.fetchImpl, now: NOW })).status, 403);
+    assert.equal(down.calls.length, 0);
+    const unset = resend();
+    const response = await handle(post(valid), { ...env, TURNSTILE_SECRET: '' }, { fetchImpl: unset.fetchImpl, now: NOW });
+    assert.equal(response.status, 503);
+    assert.equal(unset.calls.length, 0);
+  });
+
+  it('expects the site it is served from when no hostname list is set', async () => {
+    const { calls, fetchImpl } = resend();
+    const { TURNSTILE_HOSTNAMES: _, ...noList } = env;
+    assert.equal((await handle(post(valid), noList, { fetchImpl, now: NOW })).status, 200);
+    assert.equal(calls.length, 1);
+    const other = resend(200, { ...PASS, hostname: 'localhost' });
+    assert.equal((await handle(post(valid), noList, { fetchImpl: other.fetchImpl, now: NOW })).status, 403);
+  });
+
+  it('sends a plain form post that fails the check back to the page', async () => {
+    const { fetchImpl } = resend(200, { success: false });
+    const response = await handle(post(valid, { form: true }), env, { fetchImpl, now: NOW });
+    assert.equal(response.status, 303);
+    assert.equal(response.headers.get('location'), '/contacto/#no-enviado');
   });
 });
