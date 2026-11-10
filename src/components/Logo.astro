@@ -1,0 +1,35 @@
+---
+interface Props {
+  class?: string;
+  inverted?: boolean;
+}
+const { class: className, inverted = false } = Astro.props;
+---
+
+<span class:list={['logo inline-flex items-center gap-2.5', inverted && 'logo--inverted', className]}>
+  <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+    <rect class="logo-tile" x="1" y="1" width="30" height="30" rx="9"></rect>
+    <path d="M8.2 10.4 16 23.4l7.8-13" fill="none" stroke="#ff5a1f" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round"></path>
+    <path class="logo-inner" d="M12.6 10.4 16 16.2l3.4-5.8" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".85"></path>
+  </svg>
+  <span class="font-display text-[25px] leading-none font-[460] tracking-[-0.04em]" style="font-variation-settings:'opsz' 72">veodar</span>
+</span>
+
+<style is:global>
+  .logo-tile {
+    fill: #16142c;
+    transition: fill 0.3s;
+  }
+  .logo-inner {
+    stroke: #f4f0e6;
+    transition: stroke 0.3s;
+  }
+  .logo--inverted .logo-tile,
+  .site-header[data-tone='dark']:not([data-scrolled]):not([data-open]) .logo-tile {
+    fill: #f4f0e6;
+  }
+  .logo--inverted .logo-inner,
+  .site-header[data-tone='dark']:not([data-scrolled]):not([data-open]) .logo-inner {
+    stroke: #16142c;
+  }
+</style>

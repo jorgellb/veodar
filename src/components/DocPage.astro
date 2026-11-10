@@ -1,0 +1,235 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from './Icon.astro';
+import Faq from './Faq.astro';
+import CtaBand from './CtaBand.astro';
+import Plant from './iso/Plant.astro';
+import Figure from './iso/Figure.astro';
+import ServiceCard from './ServiceCard.astro';
+import type { Block, Faq as FaqItem } from '../data/pages';
+import type { Tint } from '../data/services';
+import { services } from '../data/services';
+import { breadcrumbLd, faqLd } from '../data/site';
+
+interface Props {
+  title: string;
+  description: string;
+  kicker: string;
+  h1: string;
+  lead: string;
+  blocks: Block[];
+  faq: FaqItem[];
+  deliverablesTitle: string;
+  deliverables: string[];
+  related: string[];
+  ctaTitle: string;
+  ctaText: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+  crumbs: { name: string; path: string }[];
+  figure: string;
+  sceneTitle?: string;
+  sceneCaption?: string;
+  stack?: string[];
+  tint?: Tint;
+  extraLd?: Record<string, unknown>[];
+}
+
+const p = Astro.props;
+const relatedServices = p.related.map((slug) => services.find((s) => s.slug === slug)).filter((s) => s !== undefined);
+const tintBg: Record<string, string> = {
+  mint: 'bg-mint',
+  sky: 'bg-sky',
+  butter: 'bg-butter',
+  blush: 'bg-blush',
+  lilac: 'bg-lilac',
+  paper: 'bg-paper-2',
+};
+const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
+---
+
+<BaseLayout title={p.title} description={p.description} jsonLd={ld}>
+  <div class="read-progress" aria-hidden="true"></div>
+  <section class="pt-8 pb-16 md:pt-12 md:pb-24" data-spine="0.4885">
+    <div class="wrap">
+      <nav aria-label="Migas de pan" class="font-mono text-[12px] tracking-[0.04em] text-muted">
+        <ol class="flex flex-wrap items-center gap-2">
+          {
+            p.crumbs.map((crumb, index) => (
+              <li class="flex items-center gap-2">
+                {index > 0 && <span aria-hidden="true">/</span>}
+                {index < p.crumbs.length - 1 ? (
+                  <a href={crumb.path} class="hover:text-ink">
+                    {crumb.name}
+                  </a>
+                ) : (
+                  <span aria-current="page" class="text-ink">
+                    {crumb.name}
+                  </span>
+                )}
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+
+      <div class="mt-10 grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
+        <div>
+          <p class="eyebrow" data-reveal>{p.kicker}</p>
+          <h1 class="display h-xl mt-5 max-w-[14ch]" data-reveal style="--d:60ms">{p.h1}</h1>
+          <p class="lead mt-7 max-w-[56ch]" data-reveal style="--d:120ms">{p.lead}</p>
+          <div class="mt-9 flex flex-wrap gap-3" data-reveal style="--d:180ms">
+            <a href={p.ctaHref ?? '/contacto/'} class="btn btn-primary">{p.ctaLabel ?? 'Cuéntanos tu proyecto'} <Icon name="arrow" size={17} class="arrow" /></a>
+            <a href="#detalle" class="btn btn-ghost">Leer el detalle</a>
+          </div>
+          {
+            p.stack && (
+              <ul class="mt-10 flex flex-wrap gap-1.5" aria-label="Tecnologías" data-reveal style="--d:240ms">
+                {p.stack.map((tech) => (
+                  <li class="chip">{tech}</li>
+                ))}
+              </ul>
+            )
+          }
+        </div>
+        <div data-reveal style="--d:140ms">
+          {
+            p.figure === 'plant' ? (
+              <Plant />
+            ) : (
+              <Figure name={p.figure} fig="Fig. 01" title={p.sceneTitle ?? p.kicker} caption={p.sceneCaption} />
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="detalle" class="border-t border-line py-20 md:py-28" data-spine="0.226">
+    <div class="wrap grid gap-12 lg:grid-cols-[240px_1fr] lg:gap-20">
+      <aside class="hidden lg:block">
+        <nav class="sticky top-28" aria-label="En esta página">
+          <p class="font-mono text-[11.5px] tracking-[0.12em] text-muted uppercase">En esta página</p>
+          <ul class="mt-4 grid gap-1 border-l border-line" data-toc>
+            {
+              p.blocks.map((block) => (
+                <li>
+                  <a href={`#${block.id}`} class="toc-link">
+                    {block.nav ?? block.heading}
+                  </a>
+                </li>
+              ))
+            }
+            <li><a href="#entregables" class="toc-link">Qué recibís</a></li>
+            <li><a href="#preguntas" class="toc-link">Preguntas</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <div class="max-w-[760px]">
+        {
+          p.blocks.map((block, index) => (
+            <article id={block.id} class="doc-block" data-section>
+              <p class="font-mono text-[12px] text-accent-ink">{String(index + 1).padStart(2, '0')}</p>
+              <h2 class="display h-md mt-3">{block.heading}</h2>
+              <div class="prose-v mt-6 text-[17px]">
+                {block.paragraphs.map((paragraph) => (
+                  <p>{paragraph}</p>
+                ))}
+              </div>
+            </article>
+          ))
+        }
+
+        <div id="entregables" class:list={['mt-16 rounded-[28px] p-8 md:p-10', tintBg[p.tint ?? 'paper']]} data-section data-node>
+          <p class="eyebrow !text-ink-2">Entregables</p>
+          <h2 class="display h-md mt-4 max-w-[20ch]">{p.deliverablesTitle}</h2>
+          <ul class="mt-8 grid gap-3 sm:grid-cols-2">
+            {
+              p.deliverables.map((item) => (
+                <li class="flex gap-3 rounded-2xl bg-white/55 p-4 text-[15px] leading-snug shadow-[inset_0_0_0_1px_rgb(22_20_44/0.06)]">
+                  <span class="mt-0.5 grid h-6 w-6 flex-none place-items-center rounded-full bg-ink text-paper">
+                    <Icon name="check" size={14} />
+                  </span>
+                  {item}
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="border-t border-line">
+    <Faq items={p.faq} title="Lo que nos suelen preguntar" />
+  </div>
+
+  {
+    relatedServices.length > 0 && (
+      <section class="border-t border-line py-20 md:py-28" data-spine="0.331" aria-labelledby="related-title">
+        <div class="wrap">
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <h2 id="related-title" class="display h-lg">Encaja con</h2>
+            <a href="/servicios/" class="link-arrow">
+              Todos los servicios <Icon name="arrow" size={16} />
+            </a>
+          </div>
+          <ul class="mt-10 grid gap-4 md:grid-cols-3">
+            {relatedServices.map((service) => (
+              <li>
+                <ServiceCard service={service} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <CtaBand title={p.ctaTitle} text={p.ctaText} href={p.ctaHref} label={p.ctaLabel} />
+</BaseLayout>
+
+<style>
+  .toc-link {
+    display: block;
+    margin-left: -1px;
+    padding: 6px 0 6px 16px;
+    border-left: 2px solid transparent;
+    font-size: 14px;
+    color: var(--color-muted);
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .toc-link:hover {
+    color: var(--color-ink);
+  }
+  .toc-link[aria-current='true'] {
+    color: var(--color-ink);
+    font-weight: 560;
+    border-left-color: var(--color-accent);
+  }
+  .doc-block + .doc-block {
+    margin-top: 4.5rem;
+    padding-top: 4.5rem;
+    border-top: 1px solid var(--color-line);
+  }
+</style>
+
+<script>
+  const links = new Map(
+    [...document.querySelectorAll<HTMLAnchorElement>('[data-toc] a')].map((a) => [a.hash.slice(1), a]),
+  );
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        links.forEach((a) => a.removeAttribute('aria-current'));
+        links.get(entry.target.id)?.setAttribute('aria-current', 'true');
+      }
+    },
+    { rootMargin: '-30% 0px -60% 0px' },
+  );
+  document.querySelectorAll('[data-section], #preguntas').forEach((section) => io.observe(section));
+</script>

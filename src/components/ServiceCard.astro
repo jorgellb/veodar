@@ -1,0 +1,140 @@
+---
+import Icon from './Icon.astro';
+import ServiceGlyph from './ServiceGlyph.astro';
+import { services, serviceHref, type Service } from '../data/services';
+
+interface Props {
+  service: Service;
+  big?: boolean;
+}
+const { service, big = false } = Astro.props;
+
+const tintBg: Record<string, string> = {
+  mint: 'bg-mint',
+  sky: 'bg-sky',
+  butter: 'bg-butter',
+  blush: 'bg-blush',
+  lilac: 'bg-lilac',
+  paper: 'bg-paper-2',
+};
+const number = String(services.indexOf(service) + 1).padStart(2, '0');
+---
+
+<a href={serviceHref(service.slug)} class:list={['svc-card spot group', big && 'svc-card--big']} data-node={big ? '' : undefined}>
+  <span class:list={['svc-stage', tintBg[service.tint]]}>
+    <span class="svc-art">
+      <ServiceGlyph slug={service.slug} />
+    </span>
+    <span class="svc-num">{number}</span>
+  </span>
+  <span class="svc-body">
+    <span class:list={['block font-display tracking-[-0.03em]', big ? 'text-[clamp(1.8rem,2.6vw,2.4rem)] leading-[1]' : 'text-[1.5rem] leading-[1.05]']}>
+      {service.name}
+    </span>
+    <span class="mt-2.5 block text-[14.5px] leading-relaxed text-muted">{service.menu}</span>
+    {
+      big && (
+        <span class="mt-5 flex flex-wrap gap-1.5">
+          {service.stack.slice(0, 5).map((tech) => (
+            <span class="chip">{tech}</span>
+          ))}
+        </span>
+      )
+    }
+  </span>
+  <span class="svc-go" aria-hidden="true">
+    <Icon name="arrow" size={18} />
+  </span>
+</a>
+
+<style>
+  .svc-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    border-radius: 24px;
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    transition:
+      transform 0.5s var(--ease-spring),
+      box-shadow 0.5s var(--ease-spring);
+  }
+  .svc-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      inset 0 0 0 1px var(--color-ink),
+      0 24px 40px -24px rgb(22 20 44 / 0.45);
+  }
+  /* The stage: a tinted panel where the service's drawing plays. */
+  .svc-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 124px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgb(22 20 44 / 0.06);
+    --glyph-paper: rgb(255 255 255 / 0.72);
+  }
+  .svc-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgb(22 20 44 / 0.12) 1px, transparent 1px);
+    background-size: 14px 14px;
+    mask-image: linear-gradient(180deg, transparent, #000 140%);
+  }
+  .svc-card--big .svc-stage {
+    height: 190px;
+  }
+  .svc-art {
+    position: relative;
+    width: 116px;
+    aspect-ratio: 4 / 3;
+    transition: transform 0.6s var(--ease-spring);
+  }
+  .svc-card--big .svc-art {
+    width: 196px;
+  }
+  .svc-card:hover .svc-art {
+    transform: scale(1.06);
+  }
+  .svc-num {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: rgb(22 20 44 / 0.55);
+  }
+  .svc-body {
+    display: block;
+    padding: 20px 56px 16px 12px;
+  }
+  .svc-card--big .svc-body {
+    padding: 24px 64px 18px 18px;
+  }
+  .svc-go {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    transition:
+      background-color 0.3s,
+      color 0.3s,
+      transform 0.5s var(--ease-spring);
+  }
+  .svc-card:hover .svc-go {
+    background: var(--color-accent);
+    color: #1a0a03;
+    box-shadow: none;
+    transform: rotate(-45deg);
+  }
+</style>

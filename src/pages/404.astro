@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import ServiceGrid from '../components/ServiceGrid.astro';
+---
+
+<BaseLayout title="Página no encontrada" description="Esta página no existe. Vuelve al inicio o elige un servicio de Veodar." noindex>
+  <section class="py-20 md:py-28">
+    <div class="wrap">
+      <p class="eyebrow">Error 404</p>
+      <h1 class="display h-hero mt-6 max-w-[12ch]">Esta pieza no está en la <em>línea</em>.</h1>
+      <p class="lead mt-6 max-w-[48ch]">Puede que la página haya cambiado de sitio con el rediseño. Los servicios están todos aquí abajo.</p>
+      <div class="mt-9 flex flex-wrap gap-3">
+        <a href="/" class="btn btn-primary">Volver al inicio <Icon name="arrow" size={17} class="arrow" /></a>
+        <a href="/contacto/" class="btn btn-ghost">Contacto</a>
+      </div>
+      <div class="mt-20"><ServiceGrid headingLevel="h2" /></div>
+    </div>
+  </section>
+</BaseLayout>

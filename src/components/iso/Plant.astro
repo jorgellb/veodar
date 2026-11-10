@@ -1,0 +1,444 @@
+---
+import svg from '../../generated/plant.svg?raw';
+import '../../styles/anatomy-iso.css';
+
+interface Props {
+  fig?: string;
+}
+const { fig = 'Fig. 01' } = Astro.props;
+---
+
+<figure class="veo-fig plant iso" data-theme="light" data-plant>
+  <div class="veo-plate plant-plate" tabindex="0" data-node data-hub-target aria-label="Figura interactiva: usa las flechas para cambiar el umbral de confianza">
+    <span class="veo-corner" data-corner="fig">{fig}</span>
+    <span class="veo-corner" data-corner="title">Línea de triaje con IA</span>
+    <Fragment set:html={svg} />
+    <div class="plant-controls" data-corner="hint">
+      <span class="plant-label">Umbral</span>
+      <button type="button" class="plant-btn" data-step="-1" aria-label="Bajar el umbral">−</button>
+      <output class="plant-th" data-threshold aria-live="polite">0,80</output>
+      <button type="button" class="plant-btn" data-step="1" aria-label="Subir el umbral">+</button>
+    </div>
+    <strong class="veo-corner" data-corner="readout" data-status aria-live="polite"></strong>
+  </div>
+  <figcaption class="sr-only">
+    Cada tarjeta pasa bajo el lector de IA. El reloj marca la confianza; si no llega al umbral rojo, el carro la lleva a la bandeja de revisión y una persona la sella antes de archivarla.
+  </figcaption>
+</figure>
+
+<style>
+  .plant :global(.plant-svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .plant-plate {
+    padding: 52px 10px 58px;
+    outline: none;
+  }
+  .plant-plate:focus-visible {
+    box-shadow:
+      var(--anatomy-lift),
+      0 0 0 2px var(--color-accent);
+  }
+  .plant-controls {
+    position: absolute;
+    left: 18px;
+    bottom: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 4px 4px 12px;
+    border-radius: 999px;
+    background: var(--color-paper);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    font-family: var(--anatomy-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--anatomy-muted);
+  }
+  .plant-label {
+    margin-right: 4px;
+  }
+  .plant-btn {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    font-size: 15px;
+    line-height: 1;
+    color: var(--color-ink);
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      transform 0.3s var(--ease-spring);
+  }
+  .plant-btn:hover {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .plant-btn:active {
+    transform: scale(0.92);
+  }
+  .plant-th {
+    min-width: 3.2ch;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #c8261d;
+  }
+  .plant :global([data-part='leds'][data-on] circle) {
+    fill: var(--anatomy-lit);
+    opacity: 1;
+  }
+  .plant :global([data-part='lamp'][data-on] .iso-top),
+  .plant :global([data-part='lamp'][data-on] .iso-shade),
+  .plant :global([data-part='lamp'][data-on] .iso-fill) {
+    fill: #ff5a1f;
+  }
+  .plant :global([data-part^='lane-'] circle) {
+    fill: var(--anatomy-lit);
+  }
+  .plant :global(.plant-needle) {
+    stroke-width: 1.7px;
+  }
+  .plant :global(.plant-th-tick) {
+    stroke: #d92d20;
+    stroke-width: 2px;
+  }
+  @media (max-width: 640px) {
+    .plant-plate {
+      padding: 44px 0 64px;
+    }
+    .plant :global(.plant-svg) {
+      width: 125%;
+      margin-left: -12.5%;
+    }
+    .plant-controls {
+      bottom: 34px;
+      left: 12px;
+    }
+    .plant :global(.veo-corner[data-corner='readout']) {
+      right: 14px;
+      left: 14px;
+      bottom: 12px;
+      max-width: none;
+    }
+  }
+</style>
+
+<script>
+  import { depthOf, lineOnTop, translateAlong, iso, pathOf, towardViewer } from '../../iso/iso-kit.mjs';
+  import M from '../../generated/plant.json';
+
+  type Vec3 = [number, number, number];
+  const P = M.P as { origin: [number, number]; scale: number; azimuth: number; elevation: number };
+
+  const CARDS = [
+    { type: 'Factura de proveedor', conf: 0.96, lane: 0 },
+    { type: 'Correo de avería', conf: 0.91, lane: 1 },
+    { type: 'Pedido nuevo', conf: 0.86, lane: 2 },
+    { type: 'Contrato con cambios', conf: 0.58, lane: 0 },
+    { type: 'Lead desde la web', conf: 0.93, lane: 2 },
+    { type: 'Albarán sin firma', conf: 0.74, lane: 0 },
+    { type: 'Queja de cliente', conf: 0.83, lane: 1 },
+  ];
+  const REVIEW = 3;
+
+  // Phase table in seconds; one card per cycle.
+  const T = {
+    feed: [0, 1.0],
+    belt1: [1.0, 2.4],
+    scan: [2.4, 3.8],
+    decide: [3.8, 4.4],
+    belt2: [4.4, 5.7],
+    shuttle: [5.7, 6.7],
+    slide: [6.7, 7.4],
+    stamp: [7.4, 8.4],
+    fade: [8.4, 9.0],
+  } as const;
+  const CYCLE = 9.0;
+
+  const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+  const ease = (v: number) => {
+    const t = clamp01(v);
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  };
+  const span = (u: number, [a, b]: readonly [number, number]) => clamp01((u - a) / (b - a));
+  const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+  const fmt = (v: number) => v.toFixed(2).replace('.', ',');
+
+  function coilZ(z0: number, z1: number, cx: number, cy: number, radius: number, turns: number) {
+    const count = Math.max(12, Math.round(turns * 18));
+    const [vx, vy] = towardViewer(P);
+    const back: string[] = [];
+    const front: string[] = [];
+    let run: number[][] = [];
+    let near: boolean | null = null;
+    for (let i = 0; i <= count; i++) {
+      const share = i / count;
+      const angle = share * turns * Math.PI * 2;
+      const flat = iso([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle), z0 + (z1 - z0) * share], P);
+      const facing = Math.cos(angle) * vx + Math.sin(angle) * vy > 0;
+      if (near === null) near = facing;
+      if (facing !== near) {
+        run.push(flat);
+        (near ? front : back).push(pathOf(run));
+        run = [flat];
+        near = facing;
+        continue;
+      }
+      run.push(flat);
+    }
+    if (run.length > 1) (near ? front : back).push(pathOf(run));
+    return { back: back.join(''), front: front.join('') };
+  }
+
+  function mount(root: HTMLElement) {
+    const q = <E extends Element = SVGGElement>(sel: string) => root.querySelector<E>(sel);
+    const stackEl = q('[data-stack]')!;
+    const items = [...stackEl.children] as SVGGElement[];
+    const cardItem = items.find((el) => el.dataset.moves === 'card')!;
+    const shuttleItems = items.filter((el) => el.dataset.moves?.startsWith('shuttle'));
+    const cleats = q('[data-part="cleats"]')!;
+    const spot = q('[data-part="spot"]')!;
+    const leds = q('[data-part="leds"]')!;
+    const lamp = q('[data-part="lamp"]')!;
+    const plunger = q('[data-part="plunger"]')!;
+    const spring = q('[data-part="stamp-spring"]')!;
+    const mark = q('[data-part="mark"]')!;
+    const needleEl = q('[data-part="needle"]')!;
+    const thEl = q('[data-part="threshold"]')!;
+    const knobEl = q('[data-part="knob"]')!;
+    const lanesEls = M.lanes.map((_, i) => q(`[data-part="lane-${i}"]`)!);
+    const status = q<HTMLElement>('[data-status]')!;
+    const thOut = q<HTMLOutputElement>('[data-threshold]')!;
+    const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+    let threshold = 0.8;
+    let clock = 0;
+    let last = 0;
+    let frame = 0;
+    let visible = false;
+    let needle = 0;
+    let needleV = 0;
+    let order = '';
+    let filed = -1;
+    const decided = new Map<number, number>();
+
+    const say = (text: string) => {
+      if (status.textContent !== text) status.textContent = text;
+    };
+    const setOn = (el: Element, on: boolean) => (on ? el.setAttribute('data-on', '') : el.removeAttribute('data-on'));
+
+    const g = M.gauge;
+    const angleOf = (v: number) => g.from + clamp01(v) * g.span;
+    const polar = (cx: number, cy: number, r: number, a: number): [number, number] => [cx + Math.sin(a) * r, cy - Math.cos(a) * r];
+
+    function drawThreshold() {
+      const a = angleOf(threshold);
+      const tick = lineOnTop(polar(g.x, g.y, g.r - 2.2, a), polar(g.x, g.y, g.r - 6.4, a), g.top + 0.1, P);
+      thEl.innerHTML = `<path class="iso-line plant-th-tick" d="${tick}"/>`;
+      const ka = -0.8 * Math.PI + threshold * 1.6 * Math.PI;
+      const kn = M.knob;
+      knobEl.innerHTML = `<path class="iso-line" data-tone="hi" d="${lineOnTop([kn.x, kn.y], polar(kn.x, kn.y, kn.r - 0.9, ka), kn.top, P)}"/><circle class="iso-wire-end" r=".7" cx="${iso([...polar(kn.x, kn.y, kn.r - 0.9, ka), kn.top] as Vec3, P)[0]}" cy="${iso([...polar(kn.x, kn.y, kn.r - 0.9, ka), kn.top] as Vec3, P)[1]}"/>`;
+      thOut.value = fmt(threshold);
+      thOut.textContent = fmt(threshold);
+    }
+
+    function drawNeedle(v: number) {
+      const a = angleOf(v);
+      const tip = polar(g.x, g.y, g.r - 3.4, a);
+      const tail = polar(g.x, g.y, 3, a + Math.PI);
+      needleEl.innerHTML = `<path class="iso-line plant-needle" data-tone="lit" data-free="end" d="${lineOnTop(tail, tip, g.top + 0.2, P)}"/>`;
+    }
+
+    const laneFor = (cycle: number) => {
+      if (!decided.has(cycle)) {
+        const c = CARDS[cycle % CARDS.length];
+        decided.set(cycle, c.conf >= threshold ? c.lane : REVIEW);
+        if (decided.size > 6) decided.delete([...decided.keys()][0]);
+      }
+      return decided.get(cycle)!;
+    };
+
+    function sortStack(keys: Map<Element, Vec3>) {
+      const scored = items.map((el) => {
+        const key = keys.get(el) ?? ([Number(el.dataset.x), Number(el.dataset.y), Number(el.dataset.z)] as Vec3);
+        return { el, d: depthOf(key, P) };
+      });
+      scored.sort((a, b) => a.d - b.d);
+      const next = scored.map((s) => s.el.dataset.item).join(',');
+      if (next === order) return;
+      order = next;
+      for (const s of scored) stackEl.appendChild(s.el);
+    }
+
+    function apply(t: number, dt: number) {
+      const cycle = Math.floor(t / CYCLE);
+      const u = t - cycle * CYCLE;
+      const card = CARDS[cycle % CARDS.length];
+      const [rx, ry, rz] = M.rest;
+      const past = (key: keyof typeof T) => u >= T[key][0];
+      const lane = past('decide') ? laneFor(cycle) : null;
+      const laneY = lane === null ? 0 : M.lanes[lane].y;
+      const review = lane === REVIEW;
+
+      // Card path.
+      let x = rx;
+      let y = 0;
+      let z = rz;
+      if (u < T.feed[1]) x = lerp(rx, M.magExit, ease(span(u, T.feed)));
+      else if (u < T.belt1[1]) x = lerp(M.magExit, M.gantryX, ease(span(u, T.belt1)));
+      else if (u < T.belt2[0]) x = M.gantryX;
+      else if (u < T.belt2[1]) x = lerp(M.gantryX, M.shuttleX, ease(span(u, T.belt2)));
+      else if (u < T.slide[0]) {
+        x = M.shuttleX;
+        y = lerp(0, laneY, ease(span(u, T.shuttle)));
+      } else {
+        const s = ease(span(u, T.slide));
+        x = lerp(M.shuttleX, M.trayX, s);
+        y = laneY;
+        z = lerp(rz, M.trayFloor, s);
+      }
+
+      // Shuttle: carries the card out, comes back once it is empty.
+      let sy = 0;
+      if (u >= T.shuttle[0] && u < T.stamp[0]) sy = lerp(0, laneY, ease(span(u, T.shuttle)));
+      else if (u >= T.stamp[0]) sy = lerp(laneY, 0, ease(clamp01((u - T.stamp[0]) / 1.2)));
+
+      // Belt travel matches the card while it rides the belt.
+      const perCycle = rx < M.magExit ? M.magExit - rx + (M.gantryX - M.magExit) + (M.shuttleX - M.gantryX) : 0;
+      let travel = 0;
+      if (u < T.feed[1]) travel = x - rx;
+      else if (u < T.belt1[1]) travel = M.magExit - rx + (x - M.magExit);
+      else if (u < T.belt2[0]) travel = M.gantryX - rx;
+      else if (u < T.belt2[1]) travel = M.gantryX - rx + (x - M.gantryX);
+      else travel = perCycle;
+      const cleat = ((cycle * perCycle + travel) % M.cleatStep + M.cleatStep) % M.cleatStep;
+      cleats.setAttribute('transform', translateAlong(P, [cleat, 0, 0]));
+
+      cardItem.setAttribute('transform', translateAlong(P, [x - rx, y - ry, z - rz]));
+      const fade = 1 - span(u, T.fade);
+      cardItem.setAttribute('opacity', fade.toFixed(3));
+      shuttleItems.forEach((el) => el.setAttribute('transform', translateAlong(P, [0, sy, 0])));
+
+      // Reader head: light envelope during the scan.
+      const scanIn = clamp01((u - T.scan[0]) / 0.25);
+      const scanOut = 1 - clamp01((u - (T.scan[1] - 0.3)) / 0.3);
+      const light = u >= T.scan[0] && u < T.scan[1] ? Math.min(scanIn, scanOut) : 0;
+      spot.setAttribute('opacity', (light * 0.95).toFixed(3));
+      setOn(leds, light > 0.2);
+
+      // Needle: a damped spring toward the reading.
+      const target = u >= T.scan[0] + 0.2 && u < T.fade[0] ? card.conf : 0;
+      if (dt > 0) {
+        const kStiff = 70;
+        const damp = 2 * Math.sqrt(kStiff) * 0.62;
+        needleV += (kStiff * (target - needle) - damp * needleV) * dt;
+        needle += needleV * dt;
+      } else {
+        needle = target;
+        needleV = 0;
+      }
+      drawNeedle(needle);
+
+      // Stamp press, only for the review lane.
+      let press = 0;
+      if (review && u >= T.stamp[0] && u < T.stamp[1]) {
+        const s = (u - T.stamp[0]) / (T.stamp[1] - T.stamp[0]);
+        press = s < 0.35 ? ease(s / 0.35) : s < 0.6 ? 1 : 1 - ease((s - 0.6) / 0.4);
+      }
+      const st = M.stamp;
+      const dz = -(st.rest - st.press) * press;
+      plunger.setAttribute('transform', translateAlong(P, [0, 0, dz]));
+      const coil = coilZ(st.rest + 6 + dz, st.arm - 2, st.x, st.y, st.coilR, 6);
+      spring.innerHTML = `<path class="iso-line" data-tone="lo" d="${coil.back}"/><path class="iso-line" data-tone="mid" d="${coil.front}"/>`;
+      const stamped = review && u >= T.stamp[0] + (T.stamp[1] - T.stamp[0]) * 0.35;
+      mark.setAttribute('opacity', stamped ? '1' : '0');
+      setOn(lamp, review && u >= T.stamp[0] + 0.2 && u < T.fade[1]);
+      lanesEls.forEach((el, i) => el.setAttribute('opacity', lane === i && u >= T.slide[1] - 0.1 ? String(fade) : '0'));
+
+      // Tell the page once per document, when it lands in its tray.
+      if (dt > 0 && lane !== null && u >= T.slide[1] && filed !== cycle) {
+        filed = cycle;
+        root.dispatchEvent(new CustomEvent('plant:filed', { bubbles: true, detail: { review, conf: card.conf } }));
+      }
+
+      // Painter's order for the moving parts.
+      const keys = new Map<Element, Vec3>();
+      keys.set(cardItem, [x, y, z + 0.7]);
+      shuttleItems.forEach((el) => keys.set(el, [Number(el.dataset.x), Number(el.dataset.y) + sy, Number(el.dataset.z)]));
+      sortStack(keys);
+
+      // Readout.
+      const laneName = lane === null ? '' : lane === REVIEW ? 'revisión humana' : M.lanes[lane].name;
+      if (u < T.feed[1]) say(`Entra: ${card.type}`);
+      else if (u < T.scan[0]) say(`${card.type} → lector`);
+      else if (u < T.decide[0]) say(`Leyendo… confianza ${fmt(Math.max(0, needle))}`);
+      else if (u < T.belt2[0]) say(card.conf >= threshold ? `${fmt(card.conf)} ≥ ${fmt(threshold)} → ${laneName}` : `${fmt(card.conf)} < ${fmt(threshold)} → revisión humana`);
+      else if (u < T.slide[1]) say(`Carril: ${laneName}`);
+      else if (review && u < T.fade[0]) say('Una persona revisa y sella');
+      else say(review ? 'Revisado y archivado' : `Archivado en ${laneName}`);
+    }
+
+    const shown = () => {
+      const box = root.getBoundingClientRect();
+      return box.bottom > 0 && box.top < innerHeight && document.visibilityState === 'visible';
+    };
+    const tick = (now: number) => {
+      const dt = last ? Math.min((now - last) / 1000, 1 / 30) : 1 / 60;
+      last = now;
+      clock += dt;
+      apply(clock, dt);
+      frame = visible && shown() && !still.matches ? requestAnimationFrame(tick) : 0;
+    };
+    const run = () => {
+      if (frame || still.matches || !visible) return;
+      last = 0;
+      frame = requestAnimationFrame(tick);
+    };
+    const rest = () => {
+      clock = T.decide[0] + 0.3;
+      apply(clock, 0);
+    };
+
+    const setThreshold = (value: number) => {
+      threshold = Math.round(Math.max(0.5, Math.min(0.95, value)) * 100) / 100;
+      // Cards not yet past the decision re-route; the one already routed keeps its lane.
+      const cycle = Math.floor(clock / CYCLE);
+      for (const key of [...decided.keys()]) if (key > cycle || (key === cycle && clock - cycle * CYCLE < T.decide[0])) decided.delete(key);
+      drawThreshold();
+      if (!frame) apply(clock, 0);
+    };
+    root.querySelectorAll<HTMLButtonElement>('[data-step]').forEach((btn) =>
+      btn.addEventListener('click', () => setThreshold(threshold + Number(btn.dataset.step) * 0.05)),
+    );
+    root.querySelector('.plant-plate')!.addEventListener('keydown', (event) => {
+      const key = (event as KeyboardEvent).key;
+      if (key === 'ArrowUp' || key === 'ArrowRight') setThreshold(threshold + 0.05);
+      else if (key === 'ArrowDown' || key === 'ArrowLeft') setThreshold(threshold - 0.05);
+      else return;
+      event.preventDefault();
+    });
+
+    drawThreshold();
+    if (still.matches) rest();
+    else apply(0, 0);
+    still.addEventListener('change', () => (still.matches ? rest() : run()));
+    document.addEventListener('visibilitychange', run);
+    new IntersectionObserver(
+      (entries) => {
+        visible = entries[entries.length - 1].isIntersecting;
+        run();
+      },
+      { rootMargin: '60px' },
+    ).observe(root);
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-plant]').forEach(mount);
+</script>

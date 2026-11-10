@@ -1,0 +1,75 @@
+---
+import Figure from '../iso/Figure.astro';
+
+const pillars = [
+  {
+    figure: 'relays',
+    fig: 'Fig. 02',
+    title: 'Relés del agente',
+    name: 'Automatizar',
+    lead: 'La IA hace el trabajo repetido. Una persona decide lo importante.',
+    items: [
+      { h: 'Agentes con permisos', p: 'Leen correos, documentos y tickets con un acceso mínimo, revocable y con registro.' },
+      { h: 'Humano en el bucle', p: 'Si la confianza no llega al umbral, el caso va a revisión. Nada caro se publica solo.' },
+    ],
+  },
+  {
+    figure: 'pneumatic',
+    fig: 'Fig. 03',
+    title: 'Correo neumático',
+    name: 'Construir',
+    lead: 'Web, móvil y escritorio, cada formato donde de verdad se trabaja.',
+    items: [
+      { h: 'Diseño y código, un equipo', p: 'Cada pantalla se dibuja sabiendo qué dato existe y qué error hay que enseñar.' },
+      { h: 'Tecnología actual', p: 'Astro, Next.js, Expo, SwiftUI, Tauri y Rust, elegidos por el problema y no por moda.' },
+    ],
+  },
+  {
+    figure: 'radar',
+    fig: 'Fig. 04',
+    title: 'Radar de búsquedas',
+    name: 'Hacer que se vea',
+    lead: 'Marca, 3D y SEO para que lo que construimos se encuentre y se recuerde.',
+    items: [
+      { h: 'Experiencias que se recuerdan', p: 'Desarrollo creativo, 3D en tiempo real y vídeos de lanzamiento con el producto real.' },
+      { h: 'Visibles en Google y en IA', p: 'SEO técnico y contenido que ChatGPT, Perplexity y Gemini pueden citar.' },
+    ],
+  },
+];
+---
+
+<section class="py-24 md:py-36" data-spine="0.5" aria-labelledby="pillars-title">
+  <div class="wrap">
+    <div class="grid gap-8 md:grid-cols-[1.1fr_1fr] md:items-end">
+      <div data-reveal>
+        <p class="eyebrow">Lo que hacemos</p>
+        <h2 id="pillars-title" class="display h-xl mt-5 max-w-[14ch]">Tres oficios, <em>un</em> mismo taller.</h2>
+      </div>
+      <p class="lead max-w-[46ch]" data-reveal style="--d:100ms">
+        Automatizamos con IA, construimos el software donde ocurre el trabajo y lo hacemos visible. Las tres cosas con el mismo método: un ejemplo real, un alcance escrito y un primer corte que alguien usa.
+      </p>
+    </div>
+
+    <div class="mt-16 grid gap-5 lg:grid-cols-3">
+      {
+        pillars.map((pillar, index) => (
+          <article class="tile spot flex flex-col p-3" data-node data-reveal style={`--d:${index * 90}ms`}>
+            <Figure name={pillar.figure} fig={pillar.fig} title={pillar.title} node={false} />
+            <div class="flex flex-1 flex-col px-4 pt-6 pb-4">
+              <h3 class="display h-md">{pillar.name}</h3>
+              <p class="mt-3 text-[15.5px] leading-relaxed text-ink-2">{pillar.lead}</p>
+              <dl class="mt-6 grid gap-4 border-t border-line pt-5">
+                {pillar.items.map((item) => (
+                  <div>
+                    <dt class="text-[15px] font-semibold">{item.h}</dt>
+                    <dd class="mt-1 text-[14.5px] leading-relaxed text-muted">{item.p}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>

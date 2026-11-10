@@ -1,0 +1,56 @@
+---
+import Icon from '../Icon.astro';
+import Figure from '../iso/Figure.astro';
+
+const items = [
+  {
+    icon: 'key',
+    h: 'El código es vuestro',
+    p: 'Repositorio, dominio, cuentas de nube y de tiendas a nombre de la empresa. No hay una consola de Veodar de la que dependa el lunes.',
+    tint: 'bg-butter',
+  },
+  {
+    icon: 'shield',
+    h: 'La credencial no vive en el prompt',
+    p: 'Cada flujo usa un acceso mínimo, con nombre, revocable y con registro. Seguridad lo ve en la misma lista que todo lo demás.',
+    tint: 'bg-mint',
+  },
+  {
+    icon: 'bolt',
+    h: 'Rápido de verdad',
+    p: 'Core Web Vitals en verde, apps que abren al instante y animaciones que no tiran del móvil. Lo medimos en dispositivos reales.',
+    tint: 'bg-sky',
+  },
+  {
+    icon: 'spark',
+    h: 'El modelo se puede cambiar',
+    p: 'Claude, GPT, Gemini o un modelo abierto: la tarea y las reglas son vuestras. Cambiar de proveedor no rehace el negocio.',
+    tint: 'bg-blush',
+  },
+];
+---
+
+<section class="py-24 md:py-36" data-spine="0.468" aria-labelledby="principles-title">
+  <div class="wrap grid gap-14 lg:grid-cols-[1fr_1.15fr] lg:items-center lg:gap-20">
+    <div class="order-2 lg:order-1" data-reveal>
+      <Figure name="keys" fig="Fig. 06" title="Cuadro de llaves" hint="Una llave, una puerta" />
+    </div>
+    <div class="order-1 lg:order-2">
+      <p class="eyebrow" data-reveal>Lo que no negociamos</p>
+      <h2 id="principles-title" class="display h-xl mt-5 max-w-[13ch]" data-reveal>Las llaves se quedan en <em>casa</em>.</h2>
+      <ul class="mt-12 grid gap-4 sm:grid-cols-2">
+        {
+          items.map((item, index) => (
+            <li class="tile spot p-6" data-reveal style={`--d:${index * 70}ms`}>
+              <span class:list={['grid h-11 w-11 place-items-center rounded-xl', item.tint]}>
+                <Icon name={item.icon} size={20} />
+              </span>
+              <h3 class="mt-5 text-[17px] font-semibold tracking-[-0.01em]">{item.h}</h3>
+              <p class="mt-2 text-[14.5px] leading-relaxed text-muted">{item.p}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,105 @@
+---
+import Figure from '../iso/Figure.astro';
+
+const steps = [
+  {
+    n: '01',
+    h: 'Un ejemplo real',
+    p: 'Un correo, un parte, una pantalla de la semana pasada. Sin ejemplo, la conversación se queda en adjetivos; con él, se puede escribir qué entra.',
+  },
+  {
+    n: '02',
+    h: 'Un alcance escrito',
+    p: 'Qué se construye, qué queda fuera, qué sistema no se toca y qué credencial se usa. Seguridad y TI lo leen antes de encender nada.',
+  },
+  {
+    n: '03',
+    h: 'Un primer corte usable',
+    p: 'La pantalla o el flujo que, si mañana falta, alguien echa de menos. Se enseña pronto a quien lo va a usar, no el último viernes.',
+  },
+  {
+    n: '04',
+    h: 'Operar y medir',
+    p: 'Errores, uso real y coste vigilados. Si el equipo vuelve al método viejo, se ve. El código y las cuentas siguen a vuestro nombre.',
+  },
+];
+---
+
+<section id="proceso" class="bg-night py-24 text-paper md:py-36" data-dark data-spine="0.489" aria-labelledby="process-title">
+  <div class="wrap grid gap-14 lg:grid-cols-[1fr_1.05fr] lg:gap-20">
+    <div>
+      <p class="eyebrow !text-paper/60">Cómo trabajamos</p>
+      <h2 id="process-title" class="display h-xl mt-5 max-w-[12ch] !text-paper" data-reveal>
+        Cuatro pasos. <em class="!text-accent">Ninguno</em> es una reunión eterna.
+      </h2>
+      <ol class="steps mt-14 grid" data-steps>
+        {
+          steps.map((step, index) => (
+            <li class="step" data-step={index} data-reveal style={`--d:${index * 80}ms`}>
+              <span class="step-n">{step.n}</span>
+              <div>
+                <h3 class="font-display text-[1.75rem] leading-[1.05] tracking-[-0.03em]">{step.h}</h3>
+                <p class="mt-2.5 max-w-[52ch] text-[15.5px] leading-relaxed text-paper/70">{step.p}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+    <div data-reveal>
+      <Figure name="sequencer" fig="Fig. 05" title="Programador de levas" hint="Un pin por paso" />
+    </div>
+  </div>
+</section>
+
+<style>
+  .step {
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    gap: 1rem;
+    padding: 1.75rem 0;
+    border-top: 1px solid rgb(244 240 230 / 0.14);
+  }
+  .step:last-child {
+    border-bottom: 1px solid rgb(244 240 230 / 0.14);
+  }
+  .step {
+    position: relative;
+    transition: opacity 0.5s;
+  }
+  .step::before {
+    content: '';
+    position: absolute;
+    left: -1.25rem;
+    top: 1.75rem;
+    bottom: 1.75rem;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--color-accent);
+    transform: scaleY(0);
+    transform-origin: 50% 0;
+    transition: transform 0.6s var(--ease-out-soft);
+  }
+  .steps[data-live] .step:not([data-active]) {
+    opacity: 0.45;
+  }
+  .step[data-active]::before {
+    transform: scaleY(1);
+  }
+  .step-n {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-accent);
+    padding-top: 0.55rem;
+  }
+</style>
+
+<script>
+  const list = document.querySelector<HTMLElement>('[data-steps]');
+  document.addEventListener('figure:step', (event) => {
+    if (!list) return;
+    const step = (event as CustomEvent<number>).detail;
+    list.setAttribute('data-live', '');
+    list.querySelectorAll<HTMLElement>('[data-step]').forEach((el) => el.toggleAttribute('data-active', Number(el.dataset.step) === step));
+  });
+</script>

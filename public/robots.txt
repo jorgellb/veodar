@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Asistentes y buscadores de IA: bienvenidos
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://veodar.com/sitemap.xml
+# Resumen para asistentes de IA: https://veodar.com/llms.txt

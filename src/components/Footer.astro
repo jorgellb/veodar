@@ -1,0 +1,110 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { services, serviceHref } from '../data/services';
+import { askAi, site } from '../data/site';
+
+const columns = [
+  {
+    title: 'Ingeniería',
+    links: services.filter((s) => s.group === 'ingenieria').map((s) => ({ label: s.name, href: serviceHref(s.slug) })),
+  },
+  {
+    title: 'Estudio',
+    links: services.filter((s) => s.group === 'estudio').map((s) => ({ label: s.name, href: serviceHref(s.slug) })),
+  },
+  {
+    title: 'Soluciones',
+    links: [
+      { label: 'TI', href: '/soluciones/#ti' },
+      { label: 'Seguridad', href: '/soluciones/#seguridad' },
+      { label: 'Finanzas', href: '/soluciones/#finanzas' },
+      { label: 'Personas', href: '/soluciones/#personas' },
+      { label: 'RevOps', href: '/soluciones/#revops' },
+      { label: 'Legal', href: '/soluciones/#legal' },
+    ],
+  },
+  {
+    title: 'Veodar',
+    links: [
+      { label: 'Todos los servicios', href: '/servicios/' },
+      { label: 'Cómo trabajamos', href: '/#proceso' },
+      { label: 'Precios', href: '/precios/' },
+      { label: 'Preguntas frecuentes', href: '/#preguntas' },
+      { label: 'Contacto', href: '/contacto/' },
+    ],
+  },
+];
+const year = new Date().getFullYear();
+---
+
+<footer class="relative overflow-hidden bg-night text-paper" data-dark data-spine="0.361">
+  <div class="wrap pt-20 pb-10 md:pt-28">
+    <div class="grid gap-14 lg:grid-cols-[1.1fr_2fr]">
+      <div>
+        <Logo inverted class="text-paper" />
+        <p class="mt-6 max-w-[34ch] text-[15px] leading-relaxed text-paper/70">
+          Estudio de ingeniería y diseño. Automatizaciones con IA, software a medida y webs que se recuerdan. El código y las cuentas, siempre a vuestro nombre.
+        </p>
+        <a href={`mailto:${site.email}`} class="mt-6 inline-flex items-center gap-2 font-display text-[28px] tracking-[-0.03em] text-paper hover:text-accent">
+          {site.email} <Icon name="arrow" size={22} />
+        </a>
+        <div class="mt-8">
+          <p class="font-mono text-[11.5px] tracking-[0.12em] text-paper/50 uppercase">Pregunta a una IA por Veodar</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            {
+              askAi.map((ai) => (
+                <a href={ai.href} target="_blank" rel="noopener" class="rounded-full px-3 py-1.5 text-[13px] text-paper/80 ring-1 ring-paper/20 transition hover:bg-paper hover:text-ink">
+                  {ai.name}
+                </a>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+
+      <nav class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4" aria-label="Pie de página">
+        {
+          columns.map((column) => (
+            <div>
+              <p class="font-mono text-[11.5px] tracking-[0.12em] text-paper/50 uppercase">{column.title}</p>
+              <ul class="mt-4 grid gap-2.5">
+                {column.links.map((link) => (
+                  <li>
+                    <a href={link.href} class="text-[14.5px] text-paper/80 transition hover:text-paper">
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </nav>
+    </div>
+
+    <p class="footer-word" aria-hidden="true">veodar</p>
+
+    <div class="flex flex-col gap-3 border-t border-paper/15 pt-6 text-[13px] text-paper/55 sm:flex-row sm:items-center sm:justify-between">
+      <p>© {year} Veodar. Hecho a medida, como todo lo demás.</p>
+      <p class="font-mono text-[12px]">Astro · 0 cookies de seguimiento · AA</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer-word {
+    margin: 4.5rem 0 1.5rem;
+    font-family: var(--font-display);
+    font-weight: 380;
+    font-size: clamp(5rem, 25.5vw, 23rem);
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    color: transparent;
+    background: linear-gradient(180deg, rgb(244 240 230 / 0.16) 10%, rgb(244 240 230 / 0.02) 92%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    user-select: none;
+    white-space: nowrap;
+  }
+</style>
