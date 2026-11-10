@@ -5,7 +5,7 @@
 // on this page (#enviado, #revisar, #no-enviado), shown with :target.
 import Icon from './Icon.astro';
 import { BUDGETS, LIMITS, NEEDS, TIMING, TURNSTILE_ACTION } from '../../api/_contact.js';
-import { langOf } from '../i18n';
+import { langOf, pathTo } from '../i18n';
 
 const lang = langOf(Astro.url);
 // Option keys travel to the server; the labels are the page's language.
@@ -38,7 +38,8 @@ const T = {
     trap: 'No rellenes este campo',
     consent: 'Acepto que Veodar use estos datos para responder a mi mensaje.',
     legal:
-      'Responsable: Veodar. Finalidad: responder a tu mensaje y, si sigue adelante, preparar una propuesta. El mensaje nos llega por correo a través de Resend y no se cede a nadie más. Para frenar a los bots, Cloudflare Turnstile comprueba el envío. Para consultar o borrar tus datos, escribe a info@veodar.com.',
+      'Responsable: Veodar S.L. Finalidad: responder a tu mensaje y, si sigue adelante, preparar una propuesta. El mensaje nos llega por correo a través de Resend y no se cede a nadie más. Para frenar a los bots, Cloudflare Turnstile comprueba el envío. Para consultar o borrar tus datos, escribe a info@veodar.com.',
+    legalLink: 'Política de privacidad',
     send: 'Enviar mensaje',
     prefer: '¿Prefieres el correo?',
     doneTitle: 'Mensaje enviado',
@@ -67,7 +68,8 @@ const T = {
     trap: 'Leave this field empty',
     consent: 'I agree that Veodar may use this data to reply to my message.',
     legal:
-      'Controller: Veodar. Purpose: replying to your message and, if it moves forward, preparing a proposal. The message reaches us by email through Resend and is not shared with anyone else. To stop bots, Cloudflare Turnstile checks the submission. To see or delete your data, write to info@veodar.com.',
+      'Controller: Veodar S.L. Purpose: replying to your message and, if it moves forward, preparing a proposal. The message reaches us by email through Resend and is not shared with anyone else. To stop bots, Cloudflare Turnstile checks the submission. To see or delete your data, write to info@veodar.com.',
+    legalLink: 'Privacy policy',
     send: 'Send message',
     prefer: 'Prefer email?',
     doneTitle: 'Message sent',
@@ -217,7 +219,7 @@ const morse =
       </label>
       <p class="cf-error" id="err-consent"></p>
       <p class="cf-legal" id="cf-legal">
-        {T.legal}
+        {T.legal} <a href={pathTo('privacidad', lang)} class="cf-legal-link">{T.legalLink}</a>
       </p>
     </div>
 
@@ -634,6 +636,12 @@ const morse =
     font-size: 12.5px;
     line-height: 1.5;
     color: var(--color-muted);
+  }
+  .cf-legal-link {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-underline-offset: 2px;
   }
 
   .cf-turnstile:empty {

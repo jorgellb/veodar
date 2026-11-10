@@ -46,7 +46,8 @@ Para añadir una página: su ruta en `PAGES` (si es fija) o su slug en `SERVICE_
 El sitio se despliega en Vercel (proyecto `veodar`, dominio `veodar.com`): cada push a `main` publica en producción.
 
 - `vercel.json` — barra final obligatoria (`/servicios` responde 308 a `/servicios/`, una sola URL por página), redirecciones permanentes de las URL antiguas de servicios y cabeceras de seguridad y caché. Las redirecciones viven aquí y no en `astro.config.mjs`: así Vercel responde con un 308 real en lugar de una página con meta refresh.
-- `BaseLayout.astro` carga `@vercel/analytics` (visitas) y `@vercel/speed-insights` (Core Web Vitals de usuarios reales). Solo recogen datos en el sitio desplegado y hay que activarlos en el panel del proyecto (pestañas *Analytics* y *Speed Insights*). En el plan Hobby, Web Analytics incluye 50.000 eventos al mes sin eventos personalizados; Speed Insights, 10.000 eventos cada 30 días.
+- Textos legales: `src/data/legal.ts` (aviso legal, privacidad y cookies, en español e inglés; vista `src/views/LegalPage.astro`). Los datos de la sociedad están en `company` (`src/data/site.ts`); al rellenar `registry` con la inscripción del Registro Mercantil aparece sola en el aviso legal.
+- `CookieBox.astro` (incluida en `BaseLayout.astro`) carga `@vercel/analytics` (visitas) y `@vercel/speed-insights` (Core Web Vitals de usuarios reales) solo si el visitante acepta la medición; la elección se guarda 12 meses en `localStorage` (`veodar:consent`) y se puede cambiar desde «Preferencias de cookies» en el pie. Si se retira el permiso, los envíos se cancelan al momento. Solo recogen datos en el sitio desplegado y hay que activarlos en el panel del proyecto (pestañas *Analytics* y *Speed Insights*). En el plan Hobby, Web Analytics incluye 50.000 eventos al mes sin eventos personalizados; Speed Insights, 10.000 eventos cada 30 días.
 
 ### Formulario de contacto (Resend)
 

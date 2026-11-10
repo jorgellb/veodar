@@ -4,8 +4,7 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import { site, organizationLdFor, websiteLd } from '../data/site';
 import { alternatesOf, htmlLang, langOf, ogLocale, LANGS } from '../i18n';
-import Analytics from '@vercel/analytics/astro';
-import SpeedInsights from '@vercel/speed-insights/astro';
+import CookieBox from '../components/CookieBox.astro';
 
 interface Props {
   title: string;
@@ -97,11 +96,9 @@ const skip = { es: 'Saltar al contenido', en: 'Skip to content' }[lang];
     </main>
     <Footer />
     <canvas class="net-canvas" data-network aria-hidden="true"></canvas>
-    <!-- Vercel: visits (Web Analytics) and real-user Core Web Vitals (Speed Insights).
-         Both are cookieless and only collect on the deployed site. They live in the body,
-         not the head: their custom elements would close the head early. -->
-    <Analytics />
-    <SpeedInsights />
+    <!-- Consent box. Vercel Web Analytics and Speed Insights (both cookieless) load
+         from it only after the visitor accepts measurement. -->
+    <CookieBox />
     <script>
       import { startNetwork } from '../scripts/network';
 

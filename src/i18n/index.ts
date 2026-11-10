@@ -60,6 +60,9 @@ export const PAGES = {
   sectores: { es: '/sectores/', en: '/en/industries/' },
   precios: { es: '/precios/', en: '/en/pricing/' },
   contacto: { es: '/contacto/', en: '/en/contact/' },
+  avisoLegal: { es: '/aviso-legal/', en: '/en/legal-notice/' },
+  privacidad: { es: '/privacidad/', en: '/en/privacy/' },
+  cookies: { es: '/cookies/', en: '/en/cookies/' },
 } as const;
 export type PageKey = keyof typeof PAGES;
 

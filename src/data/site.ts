@@ -10,6 +10,19 @@ export const site = {
     'Estudio de ingeniería y diseño: automatizaciones con IA, desarrollo web, apps móviles y de escritorio, 3D interactivo y SEO. Código y cuentas a nombre de tu empresa.',
 };
 
+/** The company behind the site, as it appears in the legal notice. */
+export const company = {
+  legalName: 'Veodar S.L.',
+  taxId: 'B14287718',
+  street: 'Carretera de Ronda, 80',
+  postalCode: '04620',
+  locality: 'Vera',
+  region: 'Almería',
+  country: { es: 'España', en: 'Spain' },
+  /** Mercantile Registry entry (volume, folio, sheet); shown in the legal notice once known. */
+  registry: '',
+};
+
 /** Tagline and description in each language (site.* keeps the Spanish ones). */
 export const siteText: Record<Lang, { tagline: string; description: string }> = {
   es: { tagline: site.tagline, description: site.description },
@@ -24,9 +37,19 @@ export const organizationLd = {
   '@type': 'Organization',
   '@id': `${site.url}/#organization`,
   name: site.name,
+  legalName: company.legalName,
+  taxID: company.taxId,
   url: `${site.url}/`,
   email: site.email,
   logo: `${site.url}/favicon.svg`,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: company.street,
+    postalCode: company.postalCode,
+    addressLocality: company.locality,
+    addressRegion: company.region,
+    addressCountry: 'ES',
+  },
   description: site.description,
   knowsLanguage: ['es', 'en'],
   contactPoint: {

@@ -27,6 +27,9 @@ export const GET: APIRoute = ({ site: astroSite }) => {
     })),
     { paths: PAGES.precios, priority: '0.6' },
     { paths: PAGES.contacto, priority: '0.6' },
+    { paths: PAGES.avisoLegal, priority: '0.2' },
+    { paths: PAGES.privacidad, priority: '0.2' },
+    { paths: PAGES.cookies, priority: '0.2' },
   ];
 
   const urls = entries.flatMap(({ paths, priority }) =>

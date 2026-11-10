@@ -21,6 +21,9 @@ const T = {
     allSectors: 'Todos los sectores',
     made: 'Hecho a medida, como todo lo demás.',
     tech: 'Astro · 0 cookies de seguimiento · AA',
+    cookies: 'Preferencias de cookies',
+    legalNav: 'Textos legales',
+    legal: ['Aviso legal', 'Privacidad', 'Cookies'],
   },
   en: {
     blurb: 'Engineering and design studio. AI automation, custom software and websites people remember. Code and accounts, always in your name.',
@@ -32,6 +35,9 @@ const T = {
     allSectors: 'All industries',
     made: 'Custom-made, like everything else.',
     tech: 'Astro · 0 tracking cookies · AA',
+    cookies: 'Cookie preferences',
+    legalNav: 'Legal',
+    legal: ['Legal notice', 'Privacy', 'Cookies'],
   },
 }[lang];
 
@@ -67,6 +73,7 @@ const columns = [
   },
 ];
 const year = new Date().getFullYear();
+const legalLinks = (['avisoLegal', 'privacidad', 'cookies'] as const).map((key, i) => ({ label: T.legal[i], href: pathTo(key, lang) }));
 ---
 
 <footer class="relative overflow-hidden bg-night text-paper" data-dark data-spine="0.361">
@@ -117,8 +124,16 @@ const year = new Date().getFullYear();
     <p class="footer-word" aria-hidden="true">veodar</p>
 
     <div class="flex flex-col gap-3 border-t border-paper/15 pt-6 text-[13px] text-paper/55 sm:flex-row sm:items-center sm:justify-between">
-      <p>© {year} Veodar. {T.made}</p>
-      <div class="flex items-center gap-5">
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <p>© {year} Veodar S.L. {T.made}</p>
+        <nav aria-label={T.legalNav}>
+          <ul class="flex flex-wrap gap-x-4 gap-y-1">
+            {legalLinks.map((item) => <li><a href={item.href} class="footer-legal">{item.label}</a></li>)}
+          </ul>
+        </nav>
+      </div>
+      <div class="flex flex-wrap items-center gap-5">
+        <button type="button" class="footer-cookies" data-cookie-open>{T.cookies}</button>
         <p class="font-mono text-[12px]">{T.tech}</p>
         <div class="footer-lang"><LangSwitch variant="bar" /></div>
       </div>
@@ -127,6 +142,24 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
+  .footer-cookies {
+    font-size: 13px;
+    color: rgb(244 240 230 / 0.55);
+    text-decoration: underline;
+    text-decoration-color: rgb(244 240 230 / 0.25);
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+  }
+  .footer-cookies:hover {
+    color: var(--color-paper);
+  }
+  .footer-legal {
+    color: rgb(244 240 230 / 0.55);
+    transition: color 0.2s;
+  }
+  .footer-legal:hover {
+    color: var(--color-paper);
+  }
   .footer-lang :global(.ls) {
     display: inline-grid;
     color: var(--color-paper);

@@ -1,0 +1,589 @@
+---
+// Floating consent box. The site sets no tracking cookies: it keeps the chosen
+// language and this choice in the browser, and Turnstile protects the contact form.
+// Vercel Web Analytics and Speed Insights (cookieless) load only after consent.
+import { langOf, pathTo } from '../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    region: 'Preferencias de privacidad',
+    eyebrow: 'Cookies',
+    title: 'Sin rastreo. Medimos solo si nos dejas.',
+    text: 'Guardamos tu idioma y esta elección para que la web funcione. Con tu permiso medimos visitas y velocidad de forma anónima, sin cookies de seguimiento ni publicidad.',
+    accept: 'Aceptar',
+    reject: 'Rechazar',
+    settings: 'Configurar',
+    back: 'Volver',
+    settingsTitle: 'Qué guardamos y para qué',
+    necessary: 'Necesarias',
+    necessaryText: 'Tu idioma, esta elección y la protección antispam del formulario de contacto.',
+    always: 'Siempre activas',
+    measure: 'Medición anónima',
+    measureText: 'Páginas vistas y tiempos de carga, en conjunto, con Vercel. No usan cookies ni te siguen por otros sitios.',
+    details: 'Ver el detalle',
+    save: 'Guardar selección',
+    acceptAll: 'Aceptar todo',
+    items: [
+      ['veodar:consent', 'Esta web · navegador', 'Recuerda esta elección', '12 meses'],
+      ['veodar:lang', 'Esta web · navegador', 'Recuerda el idioma que eliges', 'Hasta que lo borres'],
+      ['Cloudflare Turnstile', 'Solo en Contacto', 'Comprueba que no eres un bot', 'La sesión'],
+      ['Vercel Web Analytics', 'Opcional', 'Cuenta visitas por página', 'No guarda nada'],
+      ['Vercel Speed Insights', 'Opcional', 'Mide la velocidad real de carga', 'No guarda nada'],
+    ],
+    saved: 'Preferencias guardadas',
+    policy: 'Política de cookies',
+  },
+  en: {
+    region: 'Privacy preferences',
+    eyebrow: 'Cookies',
+    title: 'No tracking. We only measure if you let us.',
+    text: 'We store your language and this choice so the site works. With your permission, we measure visits and speed anonymously, with no tracking cookies or advertising.',
+    accept: 'Accept',
+    reject: 'Reject',
+    settings: 'Settings',
+    back: 'Back',
+    settingsTitle: 'What we store and why',
+    necessary: 'Necessary',
+    necessaryText: 'Your language, this choice and spam protection on the contact form.',
+    always: 'Always on',
+    measure: 'Anonymous measurement',
+    measureText: 'Page views and load times, in aggregate, through Vercel. No cookies, no tracking across sites.',
+    details: 'See the details',
+    save: 'Save choice',
+    acceptAll: 'Accept all',
+    items: [
+      ['veodar:consent', 'This site · browser', 'Remembers this choice', '12 months'],
+      ['veodar:lang', 'This site · browser', 'Remembers the language you pick', 'Until you clear it'],
+      ['Cloudflare Turnstile', 'Contact page only', 'Checks you are not a bot', 'The session'],
+      ['Vercel Web Analytics', 'Optional', 'Counts visits per page', 'Stores nothing'],
+      ['Vercel Speed Insights', 'Optional', 'Measures real load speed', 'Stores nothing'],
+    ],
+    saved: 'Preferences saved',
+    policy: 'Cookie policy',
+  },
+}[lang];
+---
+
+<section class="ck" data-cookies data-view="intro" role="region" aria-label={T.region} hidden>
+  <div class="ck-card">
+    <div class="ck-view ck-intro" data-ck-view="intro">
+      <p class="ck-eyebrow"><span class="ck-node" aria-hidden="true"></span>{T.eyebrow}</p>
+      <h2 id="ck-title" class="ck-title">{T.title}</h2>
+      <p class="ck-text">{T.text}</p>
+      <div class="ck-actions">
+        <button type="button" class="ck-btn ck-btn--accept" data-ck="accept">{T.accept}</button>
+        <button type="button" class="ck-btn ck-btn--reject" data-ck="reject">{T.reject}</button>
+        <button type="button" class="ck-link" data-ck="settings" aria-controls="ck-settings">
+          {T.settings}
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="ck-view ck-settings" id="ck-settings" data-ck-view="settings">
+      <div class="ck-head">
+        <button type="button" class="ck-back" data-ck="back">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M13 8H4M7.5 4.5 4 8l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          {T.back}
+        </button>
+        <p class="ck-eyebrow"><span class="ck-node" aria-hidden="true"></span>{T.eyebrow}</p>
+      </div>
+      <h2 class="ck-title ck-title--sm" tabindex="-1" data-ck-focus>{T.settingsTitle}</h2>
+
+      <div class="ck-row">
+        <div>
+          <p class="ck-row-name">{T.necessary}</p>
+          <p class="ck-row-text">{T.necessaryText}</p>
+        </div>
+        <span class="ck-always">{T.always}</span>
+      </div>
+      <div class="ck-row">
+        <div>
+          <p class="ck-row-name" id="ck-measure-label">{T.measure}</p>
+          <p class="ck-row-text" id="ck-measure-text">{T.measureText}</p>
+        </div>
+        <button type="button" class="ck-switch" role="switch" aria-checked="false" aria-labelledby="ck-measure-label" aria-describedby="ck-measure-text" data-ck="toggle">
+          <span class="ck-knob"></span>
+        </button>
+      </div>
+
+      <details class="ck-details">
+        <summary>{T.details}</summary>
+        <dl>
+          {
+            T.items.map(([name, where, what, how]) => (
+              <div class="ck-item">
+                <dt>{name}</dt>
+                <dd>
+                  <span>{what}</span>
+                  <span class="ck-item-meta">
+                    {where} · {how}
+                  </span>
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+        <a class="ck-policy" href={pathTo('cookies', lang)}>{T.policy}</a>
+      </details>
+
+      <div class="ck-actions">
+        <button type="button" class="ck-btn ck-btn--reject" data-ck="save">{T.save}</button>
+        <button type="button" class="ck-btn ck-btn--accept" data-ck="accept">{T.acceptAll}</button>
+      </div>
+    </div>
+  </div>
+  <p class="sr-only" aria-live="polite" data-ck-status></p>
+  <span hidden data-ck-saved>{T.saved}</span>
+</section>
+
+<style>
+  .ck {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 58;
+    width: min(400px, calc(100vw - 32px));
+    color: var(--color-paper);
+    transform: translateY(calc(100% + 40px));
+    opacity: 0;
+    transition:
+      transform 0.7s var(--ease-spring),
+      opacity 0.4s var(--ease-out-soft);
+  }
+  .ck[data-shown] {
+    transform: none;
+    opacity: 1;
+  }
+  @media (max-width: 560px) {
+    .ck {
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      width: auto;
+    }
+  }
+  .ck-card {
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: calc(100dvh - 40px);
+    overscroll-behavior: contain;
+    border-radius: 24px;
+    /* A shade above the night hero, so it still reads as a card on the home page. */
+    background: color-mix(in srgb, var(--color-night) 86%, #4a4585);
+    box-shadow:
+      inset 0 0 0 1px rgb(244 240 230 / 0.16),
+      0 2px 4px rgb(10 9 24 / 0.2),
+      0 24px 60px -18px rgb(10 9 24 / 0.65);
+    isolation: isolate;
+  }
+  /* A faint fibre grid in the corner, the same texture as the figure cards. */
+  .ck-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(rgb(244 240 230 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(244 240 230 / 0.05) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(circle at 100% 0%, #000 0%, transparent 62%);
+  }
+  .ck-view {
+    padding: 22px 22px 20px;
+  }
+  .ck[data-view='intro'] .ck-settings,
+  .ck[data-view='settings'] .ck-intro {
+    display: none;
+  }
+  .ck[data-view='settings'] .ck-settings {
+    animation: ck-in 0.45s var(--ease-out-soft) both;
+  }
+  .ck[data-view='intro'][data-was] .ck-intro {
+    animation: ck-in 0.45s var(--ease-out-soft) both;
+  }
+  @keyframes ck-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  .ck-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(244 240 230 / 0.6);
+  }
+  /* The fibre socket: a ring with a live dot, as on the network behind the page. */
+  .ck-node {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1.4px rgb(244 240 230 / 0.55);
+  }
+  .ck-node::after {
+    content: '';
+    position: absolute;
+    inset: 3.5px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 0 rgb(255 90 31 / 0.6);
+    animation: ck-pulse 2.4s var(--ease-out-soft) infinite;
+  }
+  @keyframes ck-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgb(255 90 31 / 0.55);
+    }
+    70%,
+    100% {
+      box-shadow: 0 0 0 7px rgb(255 90 31 / 0);
+    }
+  }
+  .ck-title {
+    margin-top: 12px;
+    font-family: var(--font-display);
+    font-size: 23px;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    font-weight: 420;
+    text-wrap: balance;
+    outline: none;
+  }
+  .ck-title--sm {
+    font-size: 20px;
+  }
+  .ck-text {
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgb(244 240 230 / 0.72);
+  }
+  .ck-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .ck-btn {
+    flex: 1 1 0;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    font-size: 14.5px;
+    font-weight: 560;
+    white-space: nowrap;
+    transition:
+      transform 0.35s var(--ease-spring),
+      background-color 0.25s,
+      box-shadow 0.25s,
+      color 0.25s;
+  }
+  .ck-btn:active {
+    transform: translateY(1px) scale(0.98);
+  }
+  /* Accept and reject carry the same size and weight: refusing is as easy as agreeing. */
+  .ck-btn--accept {
+    background: var(--color-accent);
+    color: #1a0a03;
+    box-shadow: 0 8px 22px -10px rgb(255 90 31 / 0.8);
+  }
+  .ck-btn--accept:hover {
+    background: #ff6f3c;
+  }
+  .ck-btn--reject {
+    color: var(--color-paper);
+    box-shadow: inset 0 0 0 1.4px rgb(244 240 230 / 0.32);
+  }
+  .ck-btn--reject:hover {
+    background: rgb(244 240 230 / 0.08);
+    box-shadow: inset 0 0 0 1.4px rgb(244 240 230 / 0.6);
+  }
+  .ck-link {
+    flex-basis: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    margin-top: 2px;
+    font-size: 13.5px;
+    color: rgb(244 240 230 / 0.72);
+    transition: color 0.2s;
+  }
+  .ck-link svg {
+    transition: transform 0.35s var(--ease-spring);
+  }
+  .ck-link:hover {
+    color: var(--color-paper);
+  }
+  .ck-link:hover svg {
+    transform: translateX(3px);
+  }
+  .ck-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ck-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    margin-left: -4px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    color: rgb(244 240 230 / 0.72);
+  }
+  .ck-back:hover {
+    color: var(--color-paper);
+  }
+  .ck-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgb(244 240 230 / 0.1);
+  }
+  .ck-row-name {
+    font-size: 14.5px;
+    font-weight: 560;
+  }
+  .ck-row-text {
+    margin-top: 4px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgb(244 240 230 / 0.62);
+  }
+  .ck-always {
+    flex: none;
+    margin-top: 2px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(244 240 230 / 0.5);
+  }
+  .ck-switch {
+    flex: none;
+    position: relative;
+    width: 44px;
+    height: 26px;
+    margin-top: 1px;
+    border-radius: 999px;
+    background: rgb(244 240 230 / 0.16);
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.18);
+    transition: background-color 0.3s;
+  }
+  .ck-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--color-paper);
+    box-shadow: 0 2px 6px rgb(10 9 24 / 0.4);
+    transition: transform 0.45s var(--ease-spring);
+  }
+  .ck-switch[aria-checked='true'] {
+    background: var(--color-accent);
+  }
+  .ck-switch[aria-checked='true'] .ck-knob {
+    transform: translateX(18px);
+  }
+  .ck-details {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgb(244 240 230 / 0.1);
+    font-size: 13px;
+  }
+  .ck-details summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    list-style: none;
+    color: rgb(244 240 230 / 0.72);
+  }
+  .ck-details summary::-webkit-details-marker {
+    display: none;
+  }
+  .ck-details summary::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.3s var(--ease-spring);
+  }
+  .ck-details[open] summary::before {
+    transform: rotate(45deg);
+  }
+  .ck-details summary:hover {
+    color: var(--color-paper);
+  }
+  .ck-details dl {
+    display: grid;
+    gap: 8px;
+    max-height: 190px;
+    margin-top: 10px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .ck-policy {
+    display: inline-block;
+    margin-top: 10px;
+    color: var(--color-paper);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-underline-offset: 3px;
+  }
+  .ck-item {
+    padding: 9px 12px;
+    border-radius: 12px;
+    background: rgb(244 240 230 / 0.05);
+  }
+  .ck-item dt {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-paper);
+  }
+  .ck-item dd {
+    display: grid;
+    gap: 2px;
+    margin-top: 3px;
+    color: rgb(244 240 230 / 0.7);
+  }
+  .ck-item-meta {
+    font-size: 12px;
+    color: rgb(244 240 230 / 0.45);
+  }
+  .ck :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ck,
+    .ck-knob,
+    .ck-btn {
+      transition: none;
+    }
+    .ck-node::after,
+    .ck[data-view='settings'] .ck-settings,
+    .ck[data-view='intro'][data-was] .ck-intro {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  // Consent lives in localStorage for twelve months. Measurement loads only with
+  // consent, and every event checks the current choice, so revoking stops it at once.
+  type Consent = { v: number; measure: boolean; at: number };
+  const KEY = 'veodar:consent';
+  const VERSION = 1;
+  const YEAR = 365 * 24 * 3600 * 1000;
+
+  const box = document.querySelector<HTMLElement>('[data-cookies]');
+  const read = (): Consent | null => {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return null;
+      const c = JSON.parse(raw) as Consent;
+      return c.v === VERSION && Date.now() - c.at < YEAR ? c : null;
+    } catch {
+      return null;
+    }
+  };
+  let consent = read();
+  const write = (measure: boolean) => {
+    consent = { v: VERSION, measure, at: Date.now() };
+    try {
+      localStorage.setItem(KEY, JSON.stringify(consent));
+    } catch {
+      // Private mode or blocked storage: the choice holds for this page only.
+    }
+  };
+
+  let injected = false;
+  const startMeasurement = async () => {
+    if (injected || !consent?.measure) return;
+    injected = true;
+    const allowed = () => !!consent?.measure;
+    const [{ inject }, { injectSpeedInsights }] = await Promise.all([import('@vercel/analytics'), import('@vercel/speed-insights')]);
+    inject({ framework: 'astro', beforeSend: (event) => (allowed() ? event : null) });
+    injectSpeedInsights({ framework: 'astro', route: location.pathname, beforeSend: (data) => (allowed() ? data : null) });
+  };
+
+  if (box) {
+    const toggle = box.querySelector<HTMLButtonElement>('[data-ck="toggle"]')!;
+    const status = box.querySelector<HTMLElement>('[data-ck-status]')!;
+    const savedText = box.querySelector<HTMLElement>('[data-ck-saved]')!.textContent ?? '';
+    let opener: HTMLElement | null = null;
+
+    const setView = (view: 'intro' | 'settings') => {
+      if (box.dataset.view !== view) box.setAttribute('data-was', '');
+      box.dataset.view = view;
+      if (view === 'settings') {
+        toggle.setAttribute('aria-checked', String(!!consent?.measure));
+        box.querySelector<HTMLElement>('[data-ck-focus]')?.focus({ preventScroll: true });
+      }
+    };
+    const show = (view: 'intro' | 'settings') => {
+      box.hidden = false;
+      setView(view);
+      requestAnimationFrame(() => requestAnimationFrame(() => box.setAttribute('data-shown', '')));
+    };
+    const hide = () => {
+      box.removeAttribute('data-shown');
+      const done = () => {
+        if (!box.hasAttribute('data-shown')) box.hidden = true;
+      };
+      matchMedia('(prefers-reduced-motion: reduce)').matches ? done() : setTimeout(done, 650);
+      status.textContent = savedText;
+      opener?.focus({ preventScroll: true });
+      opener = null;
+    };
+    const decide = (measure: boolean) => {
+      write(measure);
+      if (measure) startMeasurement();
+      hide();
+    };
+
+    box.addEventListener('click', (event) => {
+      const action = (event.target as HTMLElement).closest<HTMLElement>('[data-ck]')?.dataset.ck;
+      if (action === 'accept') decide(true);
+      else if (action === 'reject') decide(false);
+      else if (action === 'save') decide(toggle.getAttribute('aria-checked') === 'true');
+      else if (action === 'settings') setView('settings');
+      else if (action === 'back') setView('intro');
+      else if (action === 'toggle') toggle.setAttribute('aria-checked', String(toggle.getAttribute('aria-checked') !== 'true'));
+    });
+    box.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && consent && box.dataset.view === 'settings') hide();
+    });
+
+    // Any [data-cookie-open] button (the footer has one) reopens the settings.
+    document.querySelectorAll<HTMLElement>('[data-cookie-open]').forEach((button) =>
+      button.addEventListener('click', () => {
+        opener = button;
+        show('settings');
+      }),
+    );
+
+    if (consent) startMeasurement();
+    else setTimeout(() => show('intro'), 700);
+  }
+</script>
