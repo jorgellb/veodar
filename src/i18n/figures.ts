@@ -100,6 +100,49 @@ const en: Record<string, FigureText> = {
       'A solar test bench on a plate: a lamp travels along an arc rail like the sun and four single-axis trackers turn to face it; each row reports its output to the inverter. When one row stops producing, the alarm lights, a work order prints and the dial shows total output dropping until the row is repaired.',
     texts: { 'PLANTA · INVERSOR': 'PLANT · INVERTER' },
   },
+  attendance: {
+    label:
+      'An attendance bench on a plate: each session a reader runs over four student cards and each student present raises their glass tube one step. After the last session, students above the 75% minimum get a printed certificate, and the one below it lights a red lamp and the tutor is notified.',
+    texts: { ASISTENCIA: 'ATTENDANCE', CERTIFICADOS: 'CERTIFICATES', 'MÍN 75 %': 'MIN 75%', 'SESIÓN 0/8': 'SESSION 0/8' },
+  },
+  deadlines: {
+    label:
+      'A deadline belt on a plate: case files ride carriers along a rail marked in business days; each working day the belt moves one slot toward today, and over the weekend it does not move. A printer issues a court notice, its deadline is counted in business days and its file joins the belt; files that reach today are stamped as filed and drop into the box.',
+    texts: {
+      'AGENDA DE PLAZOS': 'DEADLINE CALENDAR',
+      'HOY · LUN': 'TODAY · MON',
+      'HÁBIL': 'WORKDAY',
+      NOTIFICACIONES: 'COURT NOTICES',
+      HOY: 'TODAY',
+      'DÍAS HÁBILES': 'BUSINESS DAYS',
+      PRESENTADOS: 'FILED',
+      L: 'M',
+      M: 'T',
+      X: 'W',
+      J: 'T',
+      V: 'F',
+      D: 'S',
+    },
+  },
+  grader: {
+    label:
+      'A fruit grader on a plate: oranges from a grower’s bin roll along two rails that spread apart; each one sinks as the gap widens and drops through where the gap is wider than it is, into the crate for its size. A camera reads each piece and an air jet blows the blemished one off. The screen keeps the lot traced to grower and field.',
+    texts: {
+      'TRAZABILIDAD · LOTE 0412': 'TRACEABILITY · LOT 0412',
+      'SOCIO 118 · PARC. 7': 'GROWER 118 · FIELD 7',
+      'SOCIO 118': 'GROWER 118',
+      'PARCELA 7': 'FIELD 7',
+      'CAL 1': 'SIZE 1',
+      'CAL 2': 'SIZE 2',
+      'CAL 3': 'SIZE 3',
+      'DESTRÍO': 'CULLS',
+    },
+  },
+  hotel: {
+    label:
+      'A hotel model on a plate: the twenty rooms on the façade light up when occupied. Bookings arrive through three channels on a channel manager; each one lights a room and the availability shown on every channel drops together. A checkout goes to housekeeping and returns to sale once marked clean, and the guest’s phone gets answers and online check-in.',
+    texts: { 'DISPONIBLES · UN INVENTARIO': 'AVAILABLE · ONE INVENTORY', 'RECEPCIÓN': 'FRONT DESK' },
+  },
   radar: {
     label:
       "A radar on a plate: a console with a round screen, range rings and a rotating sweep, and a mast with a bar antenna turning in step; the echoes are the websites that answer a search, and Veodar's moves closer to the center with every sweep.",

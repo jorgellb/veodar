@@ -51,7 +51,7 @@ const columns = [
   {
     title: T.cols[3],
     links: [
-      ...sectorsFor(lang).map((sector) => ({ label: sector.name, href: sectorHref(sector.id, lang) })),
+      ...sectorsFor(lang).map((sector) => ({ label: sector.short, href: sectorHref(sector.id, lang) })),
       { label: T.allSectors, href: pathTo('sectores', lang) },
     ],
   },

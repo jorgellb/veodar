@@ -773,6 +773,374 @@ export const sectors: Sector[] = [
     ctaText: 'Con una exportación de alarmas o una factura de ejemplo os decimos qué se agrupa y qué se revisa solo. Respondemos por correo.',
     ask: '¿Quién convierte las alarmas de plantas solares en órdenes de trabajo y revisa facturas de energía con IA en España?',
   },
+  {
+    id: 'educacion',
+    name: 'Educación y formación',
+    short: 'Educación',
+    menu: 'Matrículas, asistencia y certificados sin hojas de cálculo.',
+    tint: 'mint',
+    icon: 'cap',
+    figure: 'attendance',
+    sceneTitle: 'Control de asistencia',
+    sceneCaption:
+      'En cada sesión, el lector pasa por las tarjetas y suben los tubos de los alumnos presentes. Quien supera el mínimo de asistencia recibe su certificado; quien no llega genera un aviso para el tutor.',
+    stack: ['Moodle', 'Google Classroom', 'Microsoft Teams', 'Canvas', 'ERP académico', 'FUNDAE', 'Stripe', 'Zoom'],
+    kicker: 'Sector · Educación',
+    title: 'Software e IA para centros educativos y de formación',
+    description:
+      'Matrícula online, asistencia que se registra sola, certificados automáticos y formación bonificada sin papeleo. La IA ayuda a preparar; el docente decide.',
+    h1: 'Centros de formación con más tiempo para formar',
+    lead: 'Una academia, un colegio o un centro de formación para empresas dedica una parte enorme del día a tareas que no son enseñar: matrículas, listas de asistencia, recibos, avisos a familias, certificados y la documentación de la formación bonificada. Veodar automatiza ese trabajo para que el tiempo vuelva al aula.',
+    blocks: [
+      {
+        id: 'matricula',
+        nav: 'Matrícula',
+        heading: 'Una matrícula que no necesita tres visitas a secretaría.',
+        paragraphs: [
+          'Formulario de matrícula online con los documentos que pide cada curso, pago o domiciliación y firma electrónica. Lo que falta se reclama solo, y la secretaría ve en una pantalla qué expedientes están completos.',
+          'Los datos pasan a vuestra plataforma educativa o a vuestro ERP académico sin teclearlos otra vez, y el alumno recibe sus accesos el mismo día.',
+        ],
+      },
+      {
+        id: 'asistencia',
+        nav: 'Asistencia',
+        heading: 'Asistencia que se registra sola y avisa a tiempo.',
+        paragraphs: [
+          'Con un código QR en el aula, el registro de la plataforma online o una app móvil para el docente, la asistencia queda apuntada sin papel. El sistema calcula el porcentaje de cada alumno y avisa al tutor cuando alguien se acerca al mínimo exigido, no cuando ya lo ha perdido.',
+          'En la formación bonificada para empresas, esos mismos registros alimentan la documentación de asistencia y evaluación que hay que justificar.',
+        ],
+      },
+      {
+        id: 'familias',
+        nav: 'Familias y alumnos',
+        heading: 'Las preguntas de siempre, contestadas a cualquier hora.',
+        paragraphs: [
+          'Horarios, calendario, fechas de pago, cómo justificar una falta. Un asistente con IA responde por la web o por mensajería a lo que tiene respuesta escrita y pasa a secretaría lo demás, con la conversación completa.',
+          'Los comunicados a familias se envían por curso y grupo, y se sabe quién los ha leído. Con menores, el consentimiento y los permisos de comunicación se gestionan según la normativa de protección de datos.',
+        ],
+      },
+      {
+        id: 'docentes',
+        nav: 'Docentes',
+        heading: 'La IA prepara materiales. Evaluar sigue siendo cosa del docente.',
+        paragraphs: [
+          'Un docente puede pedir a la IA un primer borrador de ejercicios, rúbricas o resúmenes a partir de su temario y revisarlo antes de usarlo. Ahorra horas de preparación sin ceder el criterio pedagógico.',
+          'La IA no pone notas ni decide quién aprueba. El Reglamento europeo de IA considera de alto riesgo los sistemas que evalúan a estudiantes o deciden su acceso, y lo diseñamos con esa regla: propone, y el docente decide.',
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: '¿Os integráis con Moodle o con Google Classroom?',
+        a: 'Sí. Ambos tienen API, igual que Microsoft Teams y Canvas. Sincronizamos alumnos, grupos, calificaciones y asistencia con la plataforma que ya uséis.',
+      },
+      {
+        q: '¿Servís para la formación bonificada por FUNDAE?',
+        a: 'Sí, en la gestión: registros de asistencia, evaluación y la documentación que hay que conservar y justificar. La comunicación de las acciones formativas se sigue haciendo desde vuestra cuenta, con los datos ya preparados.',
+      },
+      {
+        q: '¿Qué pasa con los datos de menores?',
+        a: 'Se tratan con especial cuidado: accesos mínimos, servidores en la Unión Europea y consentimiento de padres o tutores cuando corresponde. En España, por debajo de los 14 años el consentimiento lo dan los tutores.',
+      },
+      {
+        q: '¿La IA corrige exámenes?',
+        a: 'No pone notas. Puede ayudar al docente a revisar, por ejemplo señalando respuestas que no siguen la rúbrica, pero la calificación la pone siempre una persona.',
+      },
+      {
+        q: '¿Por dónde se empieza?',
+        a: 'Por la matrícula o por la asistencia: son las que más horas consumen en secretaría y las que antes se notan.',
+      },
+    ],
+    deliverablesTitle: 'Lo que solemos construir para educación.',
+    deliverables: [
+      'Matrícula online con documentos, pago y firma',
+      'Registro de asistencia con QR, plataforma o app',
+      'Avisos al tutor antes de perder el mínimo',
+      'Certificados que se generan y se envían solos',
+      'Asistente para familias y alumnos',
+      'Documentación de formación bonificada',
+    ],
+    related: ['automatizaciones-ia', 'desarrollo-web', 'aplicaciones-moviles'],
+    ctaTitle: 'Contadnos cuántas horas se van en secretaría.',
+    ctaText: 'Con vuestro proceso de matrícula o de asistencia os decimos qué se automatiza primero. Respondemos por correo.',
+    ask: '¿Quién automatiza matrículas, asistencia y certificados con IA para academias y centros de formación en España?',
+  },
+  {
+    id: 'despachos-profesionales',
+    name: 'Despachos profesionales',
+    short: 'Despachos',
+    menu: 'Abogados, asesorías y gestorías con los plazos bajo control.',
+    tint: 'lilac',
+    icon: 'briefcase',
+    figure: 'deadlines',
+    sceneTitle: 'Cinta de plazos',
+    sceneCaption:
+      'Cada notificación entra con su fecha y se calcula el vencimiento en días hábiles. Los expedientes avanzan por la cinta día a día; el fin de semana el plazo no corre, y al llegar a hoy se presentan.',
+    stack: ['LexNET', 'A3', 'Sage', 'Holded', 'Wolters Kluwer', 'Microsoft 365', 'DocuSign', 'Portal del cliente'],
+    kicker: 'Sector · Despachos',
+    title: 'Software e IA para despachos de abogados y asesorías',
+    description:
+      'Plazos calculados al recibir cada notificación, documentación de clientes ordenada, borradores con IA revisados por el profesional y portal del cliente.',
+    h1: 'Despachos donde ningún plazo depende de la memoria de nadie',
+    lead: 'En un despacho, el riesgo no está en el trabajo difícil. Está en la notificación que se leyó tarde, en el documento que el cliente mandó por el canal equivocado y en la hora que nadie apuntó. Veodar automatiza esa parte para que abogados, asesores y gestores dediquen su tiempo a lo que cobran.',
+    blocks: [
+      {
+        id: 'plazos',
+        nav: 'Plazos',
+        heading: 'El plazo se calcula al recibir la notificación, no al leerla.',
+        paragraphs: [
+          'Las notificaciones de LexNET, de las sedes electrónicas o del correo se leen al entrar: se identifica el procedimiento, el tipo de resolución y la fecha, y se calcula el vencimiento en días hábiles, descontando sábados, domingos, festivos y agosto cuando corresponde.',
+          'El plazo aparece en la agenda del responsable y del equipo con avisos escalonados. Una persona confirma el cálculo antes de darlo por bueno; el sistema nunca decide solo cuándo vence algo.',
+        ],
+      },
+      {
+        id: 'documentacion',
+        nav: 'Documentación',
+        heading: 'Documentación de clientes que llega ordenada.',
+        paragraphs: [
+          'Para una asesoría, la campaña de la renta o el cierre trimestral es una avalancha de facturas, extractos y certificados por correo y WhatsApp. Un portal del cliente pide exactamente lo que falta, y un flujo con IA clasifica cada documento por cliente, ejercicio y tipo antes de que nadie lo abra.',
+          'Los datos pasan a vuestro programa contable o fiscal, como A3, Sage o Holded, por su API o por importación, y lo dudoso queda marcado para revisión.',
+        ],
+      },
+      {
+        id: 'borradores',
+        nav: 'Borradores',
+        heading: 'Primeros borradores con IA, firmados por el profesional.',
+        paragraphs: [
+          'Contratos a partir de vuestras plantillas, escritos de trámite, requerimientos o respuestas a consultas frecuentes: la IA prepara el borrador con los datos del expediente, y el profesional lo revisa, lo corrige y lo firma.',
+          'El modelo trabaja con vuestros documentos de referencia, no con lo que recuerde de internet, y cita de qué cláusula o de qué documento sale cada párrafo.',
+        ],
+      },
+      {
+        id: 'confidencialidad',
+        nav: 'Confidencialidad',
+        heading: 'Secreto profesional también en el software.',
+        paragraphs: [
+          'Los expedientes viven en servidores de la Unión Europea, cifrados y en cuentas a nombre del despacho. Cada acceso queda registrado y los permisos se dan por cliente y por asunto.',
+          'Los modelos de IA se usan con condiciones que impiden entrenar con vuestros datos, o en vuestra propia infraestructura si el despacho lo prefiere.',
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: '¿Os conectáis con LexNET?',
+        a: 'Trabajamos con las notificaciones que el despacho recibe de LexNET y de las sedes electrónicas: las leemos desde donde las descarguéis, sea una carpeta, el correo o vuestro programa de gestión. El acceso con certificado sigue siendo del profesional.',
+      },
+      {
+        q: '¿Trabajáis con gestorías y asesorías fiscales?',
+        a: 'Sí. Es donde más se nota la clasificación de documentos y la entrada de datos en el programa contable, sobre todo en cierres trimestrales y en la campaña de la renta.',
+      },
+      {
+        q: '¿La IA puede presentar un escrito?',
+        a: 'No. Prepara borradores y calcula plazos para que una persona los revise. Presentar, firmar y decidir la estrategia es siempre cosa del profesional.',
+      },
+      {
+        q: '¿Cómo se protege la confidencialidad?',
+        a: 'Con servidores en la Unión Europea, cifrado, permisos por cliente y asunto, registro de accesos y modelos de IA que no entrenan con vuestros datos.',
+      },
+      {
+        q: '¿Por dónde se empieza?',
+        a: 'En un despacho de abogados, por los plazos. En una asesoría, por la recogida y la clasificación de documentos de clientes.',
+      },
+    ],
+    deliverablesTitle: 'Lo que solemos construir para despachos.',
+    deliverables: [
+      'Lectura de notificaciones y plazos en días hábiles',
+      'Agenda de vencimientos con avisos escalonados',
+      'Portal del cliente que pide lo que falta',
+      'Clasificación de documentos por cliente y ejercicio',
+      'Borradores con IA a partir de vuestras plantillas',
+      'Registro de horas y preparación de minutas',
+    ],
+    related: ['automatizaciones-ia', 'desarrollo-web', 'aplicaciones-escritorio'],
+    ctaTitle: 'Contadnos cómo controláis hoy los plazos.',
+    ctaText: 'Hoja de cálculo, agenda compartida o memoria: con eso os decimos qué se automatiza y cómo se revisa. Respondemos por correo.',
+    ask: '¿Quién automatiza el control de plazos y la documentación de clientes con IA para despachos de abogados y asesorías en España?',
+  },
+  {
+    id: 'agroalimentacion',
+    name: 'Agroalimentación',
+    short: 'Agro',
+    menu: 'Del campo al palé, con trazabilidad lote a lote.',
+    tint: 'butter',
+    icon: 'leaf',
+    figure: 'grader',
+    sceneTitle: 'Calibradora de fruta',
+    sceneCaption:
+      'La fruta del socio entra por la tolva y rueda entre dos raíles que se separan: cada pieza cae donde el hueco supera su tamaño. La pieza con defecto sale por el soplador, y cada caja lleva su lote, su socio y su parcela.',
+    stack: ['ERP', 'SGA', 'GlobalG.A.P.', 'IFS', 'GS1-128', 'EDI', 'Sensores IoT', 'Power BI'],
+    kicker: 'Sector · Agroalimentación',
+    title: 'Software e IA para empresas agroalimentarias',
+    description:
+      'Trazabilidad de la parcela al palé, entradas y liquidaciones de socios, cuaderno de campo digital, calidad con visión artificial y cadena de frío vigilada.',
+    h1: 'Agroalimentación con cada caja trazada hasta su parcela',
+    lead: 'Una cooperativa recibe fruta de cientos de socios, la calibra, la envasa y la vende a cadenas que quieren saber de dónde viene cada caja. La información existe, pero repartida entre albaranes, básculas, hojas de cálculo y la memoria del encargado. Veodar la une en un solo hilo, del campo al cliente.',
+    blocks: [
+      {
+        id: 'trazabilidad',
+        nav: 'Trazabilidad',
+        heading: 'Un lote que se puede seguir hacia atrás y hacia delante.',
+        paragraphs: [
+          'La normativa europea de seguridad alimentaria exige saber de quién se recibió cada producto y a quién se entregó. Conectamos báscula, entrada de socios, confección y expedición para que cada caja lleve una etiqueta GS1 con su lote, y cada lote apunte a su parcela, su fecha de recolección y sus tratamientos.',
+          'Ante una alerta o una auditoría de GlobalG.A.P. o IFS, la trazabilidad completa sale en minutos, no en una tarde buscando papeles.',
+        ],
+      },
+      {
+        id: 'socios',
+        nav: 'Socios y liquidaciones',
+        heading: 'Entradas y liquidaciones de socios sin rehacer cuentas.',
+        paragraphs: [
+          'Cada entrada de un socio se registra con peso, variedad, calidad y calibre, y la liquidación se calcula con las reglas de la cooperativa: precios por categoría, descuentos y anticipos. El socio ve sus entradas y su liquidación en una app o en un portal.',
+          'Las dudas de siempre, como por qué cobró menos un mes, tienen respuesta con el detalle de cada entrada.',
+        ],
+      },
+      {
+        id: 'calidad',
+        nav: 'Calidad',
+        heading: 'Control de calidad con visión artificial y una persona al final.',
+        paragraphs: [
+          'Cámaras en la línea miden calibre, color y defectos, y desvían lo que no cumple. Cada decisión queda registrada con su foto, y el responsable de calidad ajusta los umbrales con datos de la propia campaña.',
+          'Cuando el modelo duda, la pieza o el lote va a revisión. La IA propone la categoría; en una reclamación, la última palabra la tiene una persona.',
+        ],
+      },
+      {
+        id: 'campo',
+        nav: 'Campo y frío',
+        heading: 'Del cuaderno de campo a la cámara frigorífica.',
+        paragraphs: [
+          'Un cuaderno de campo digital en el móvil para registrar tratamientos, riegos y labores por parcela, también sin cobertura, con los datos listos para auditorías y para la Administración.',
+          'Sensores de temperatura y humedad en cámaras y camiones avisan en cuanto un valor se sale de rango, y el histórico queda asociado al lote.',
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: '¿Trabajáis con cooperativas?',
+        a: 'Sí, y con centrales hortofrutícolas, almazaras, bodegas e industrias de transformación. La trazabilidad y las liquidaciones son casi siempre el punto de partida.',
+      },
+      {
+        q: '¿Os conectáis con básculas y calibradoras?',
+        a: 'Con las que exportan datos o tienen conexión, sí. Las más antiguas se pueden leer desde el ticket o el fichero que generan.',
+      },
+      {
+        q: '¿Las etiquetas cumplen el estándar GS1?',
+        a: 'Sí. Generamos etiquetas GS1-128 con lote, fecha y lo que pida cada cliente, y los avisos de expedición por EDI cuando la cadena los exige.',
+      },
+      {
+        q: '¿El cuaderno de campo funciona sin cobertura?',
+        a: 'Sí. Se registra en el teléfono y se sincroniza al volver la señal, que en el campo no es un detalle menor.',
+      },
+      {
+        q: '¿Por dónde se empieza?',
+        a: 'Por la trazabilidad o por las liquidaciones de socios, según lo que más os pese. Las dos parten de la entrada de producto, así que una lleva a la otra.',
+      },
+    ],
+    deliverablesTitle: 'Lo que solemos construir en agroalimentación.',
+    deliverables: [
+      'Trazabilidad de la parcela al cliente, lote a lote',
+      'Etiquetas GS1-128 y avisos de expedición por EDI',
+      'Entradas y liquidaciones de socios',
+      'Portal o app del socio',
+      'Cuaderno de campo digital sin cobertura',
+      'Alertas de cadena de frío asociadas al lote',
+    ],
+    related: ['automatizaciones-ia', 'aplicaciones-moviles', 'aplicaciones-escritorio'],
+    ctaTitle: 'Contadnos cuánto tardáis en trazar un lote.',
+    ctaText: 'Con un albarán de entrada y una etiqueta de salida os decimos qué falta para unirlos. Respondemos por correo.',
+    ask: '¿Quién desarrolla software de trazabilidad, liquidaciones de socios y control de calidad con IA para cooperativas agroalimentarias en España?',
+  },
+  {
+    id: 'hosteleria-turismo',
+    name: 'Hostelería y turismo',
+    short: 'Hostelería',
+    menu: 'Reservas, huéspedes y habitaciones en un solo inventario.',
+    tint: 'sky',
+    icon: 'bell',
+    figure: 'hotel',
+    sceneTitle: 'Maqueta del hotel',
+    sceneCaption:
+      'Las reservas llegan por tres canales y encienden habitaciones de un solo inventario: la disponibilidad baja a la vez en todos. Una salida pasa a limpieza y vuelve a venderse en cuanto se marca limpia.',
+    stack: ['PMS', 'Channel manager', 'Booking.com', 'Expedia', 'SES.HOSPEDAJES', 'TPV', 'WhatsApp Business', 'Google Business Profile'],
+    kicker: 'Sector · Hostelería',
+    title: 'Software e IA para hoteles, restaurantes y turismo',
+    description:
+      'Reservas de todos los canales en un solo inventario, check-in online con registro de viajeros, asistente para huéspedes en su idioma y limpieza desde el móvil.',
+    h1: 'Hoteles con un solo inventario y huéspedes atendidos en su idioma',
+    lead: 'Un hotel vende la misma habitación en su web, en dos agencias online y por teléfono, recibe preguntas en cinco idiomas y tiene que comunicar los datos de cada viajero a la Administración. Veodar conecta reservas, recepción, limpieza y comunicación para que el equipo atienda a personas y no a pestañas del navegador.',
+    blocks: [
+      {
+        id: 'reservas',
+        nav: 'Reservas',
+        heading: 'Una habitación, un inventario, todos los canales.',
+        paragraphs: [
+          'Conectamos vuestro PMS con el channel manager, la web y las agencias online para que una reserva en cualquier canal descuente la habitación en todos al momento. Las reservas directas, sin comisión, se cuidan con un motor de reservas rápido y claro en vuestra web.',
+          'Tarifas y ocupación prevista se ven en un panel, y la IA propone ajustes de precio que el responsable acepta o descarta.',
+        ],
+      },
+      {
+        id: 'huespedes',
+        nav: 'Huéspedes',
+        heading: 'El huésped pregunta en su idioma y alguien contesta a las tres de la mañana.',
+        paragraphs: [
+          'Un asistente con IA responde por WhatsApp o por la web a las preguntas de siempre, como horarios, aparcamiento, desayuno o cómo llegar, en el idioma del huésped y con la información real del establecimiento. Lo que no sabe lo pasa a recepción con la conversación completa.',
+          'Antes de llegar, el huésped hace el check-in online con su documento, y los datos del registro de viajeros que exige la normativa quedan preparados para su envío sin teclearlos en recepción.',
+        ],
+      },
+      {
+        id: 'operacion',
+        nav: 'Pisos y mantenimiento',
+        heading: 'Limpieza y mantenimiento coordinados desde el móvil.',
+        paragraphs: [
+          'Una app móvil para el equipo de pisos con las habitaciones del día, su estado y las incidencias. Cuando una habitación se marca limpia, recepción lo ve al instante y puede volver a venderla.',
+          'Las averías se comunican con foto y llegan al responsable de mantenimiento con su prioridad, sin papeles en el office.',
+        ],
+      },
+      {
+        id: 'restaurante',
+        nav: 'Restauración',
+        heading: 'Restaurantes con escandallos, alérgenos y reservas al día.',
+        paragraphs: [
+          'Para restauración: reservas con recordatorio, carta digital con alérgenos, escandallos que recalculan el coste de cada plato cuando cambia el precio de un ingrediente y conexión con el TPV para cuadrar ventas y stock.',
+          'Las reseñas de Google y de las plataformas se responden con un borrador con IA que alguien del equipo revisa antes de publicar.',
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: '¿Os integráis con nuestro PMS y channel manager?',
+        a: 'Si tienen API, sí, y la mayoría la tienen. Lo comprobamos al principio con vuestros proveedores para saber qué datos se pueden leer y escribir.',
+      },
+      {
+        q: '¿Gestionáis el registro de viajeros?',
+        a: 'Preparamos los datos del check-in online en el formato que pide la plataforma oficial, para que su envío no obligue a teclearlos de nuevo. El envío se hace con las credenciales del establecimiento.',
+      },
+      {
+        q: '¿El asistente se inventa respuestas?',
+        a: 'Responde solo con la información que le damos del establecimiento. Si una pregunta no tiene respuesta escrita, la pasa a recepción en lugar de improvisar.',
+      },
+      {
+        q: '¿Trabajáis también con restaurantes?',
+        a: 'Sí: reservas, carta con alérgenos, escandallos y conexión con el TPV.',
+      },
+      {
+        q: '¿Por dónde se empieza?',
+        a: 'Por el asistente para huéspedes o por el check-in online: se notan en recepción desde la primera semana.',
+      },
+    ],
+    deliverablesTitle: 'Lo que solemos construir en hostelería.',
+    deliverables: [
+      'Inventario único entre PMS, web y agencias online',
+      'Motor de reservas directas para la web',
+      'Asistente para huéspedes en varios idiomas',
+      'Check-in online con datos del registro de viajeros',
+      'App de pisos y mantenimiento',
+      'Escandallos y alérgenos para restauración',
+    ],
+    related: ['automatizaciones-ia', 'diseno-web', 'aplicaciones-moviles'],
+    ctaTitle: 'Contadnos cuántos mensajes recibe vuestra recepción al día.',
+    ctaText: 'Con eso y el PMS que usáis os decimos qué se contesta solo y qué conviene conectar primero. Respondemos por correo.',
+    ask: '¿Quién desarrolla asistentes con IA para huéspedes, check-in online e integraciones de PMS y channel manager para hoteles en España?',
+  },
 ];
 
 const sectorsInEnglish: Sector[] = sectors.map((sector) => {

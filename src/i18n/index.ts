@@ -42,6 +42,10 @@ export const SECTOR_SLUGS: Record<string, string> = {
   'banca-fintech': 'banking-fintech',
   'inmobiliaria-construccion': 'real-estate-construction',
   energia: 'energy',
+  educacion: 'education',
+  'despachos-profesionales': 'law-and-accounting-firms',
+  agroalimentacion: 'agrifood',
+  'hosteleria-turismo': 'hospitality-tourism',
 };
 const SECTOR_IDS = Object.fromEntries(Object.entries(SECTOR_SLUGS).map(([id, en]) => [en, id]));
 export const sectorIdOf = (slug: string, lang: Lang) => (lang === 'en' ? SECTOR_IDS[slug] : slug);
