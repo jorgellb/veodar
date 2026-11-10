@@ -124,6 +124,48 @@ ${rows
   return { from: env.CONTACT_FROM || 'Veodar <onboarding@resend.dev>', to: inboxes(env), reply_to: data.email, subject, html, text };
 }
 
+// ── Turnstile ─────────────────────────────────────────────────────────────
+export const TURNSTILE_ACTION = 'contacto';
+const SITEVERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+
+/**
+ * Ask Cloudflare whether the visitor's Turnstile token is good. It must be a fresh
+ * token (each one is redeemed once), solved for this form's action, on one of the
+ * expected hostnames: TURNSTILE_HOSTNAMES (comma separated) or, when that is unset,
+ * the host this function is served from. Anything else, including Cloudflare being
+ * unreachable, counts as a failure.
+ */
+export async function verifyTurnstile(token, request, env, fetchImpl = fetch) {
+  if (typeof token !== 'string' || token.length === 0 || token.length > 2048) return false;
+  const listed = String(env.TURNSTILE_HOSTNAMES ?? '')
+    .split(',')
+    .map((hostname) => hostname.trim())
+    .filter(Boolean);
+  const expected = new Set(listed.length ? listed : [new URL(request.url).hostname]);
+  const forwarded = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? '';
+  const params = { secret: env.TURNSTILE_SECRET, response: token };
+  const ip = forwarded.split(',')[0].trim();
+  if (ip) params.remoteip = ip;
+
+  let result;
+  try {
+    const response = await fetchImpl(SITEVERIFY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(params).toString(),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) throw new Error(`siteverify ${response.status}`);
+    result = await response.json();
+  } catch (error) {
+    console.error('Turnstile siteverify failed', error);
+    return false;
+  }
+  const passed = result?.success === true && result.action === TURNSTILE_ACTION && expected.has(result.hostname);
+  if (!passed) console.warn('Turnstile rejected a contact message', JSON.stringify({ codes: result?.['error-codes'], action: result?.action, hostname: result?.hostname }));
+  return passed;
+}
+
 const json = (status, body) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 // Without JavaScript the result is an anchor on the contact page, shown with :target in CSS.
 const back = (anchor) => new Response(null, { status: 303, headers: { location: `/contacto/#${anchor}`, 'cache-control': 'no-store' } });
@@ -168,6 +210,12 @@ export async function handle(request, env, { fetchImpl = fetch, now = Date.now()
     return json(400, { ok: false, error: 'format' });
   }
 
+  // Turnstile gates everything after this point: no verified token, nothing is sent.
+  if (!env.TURNSTILE_SECRET) return isForm ? back(FAILED) : json(503, { ok: false, error: 'config' });
+  if (!(await verifyTurnstile(input?.['cf-turnstile-response'], request, env, fetchImpl))) {
+    return isForm ? back(FAILED) : json(403, { ok: false, error: 'turnstile' });
+  }
+
   const result = parseSubmission(input, now);
   // Bots get the same answer as people, so they learn nothing.
   if (result.spam) return isForm ? back(SENT) : json(200, { ok: true });
@@ -175,20 +223,26 @@ export async function handle(request, env, { fetchImpl = fetch, now = Date.now()
 
   if (!env.RESEND_API_KEY || inboxes(env).length === 0) return isForm ? back(FAILED) : json(503, { ok: false, error: 'config' });
 
-  try {
-    const response = await fetchImpl('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(buildEmail(result.data, env)),
-    });
-    if (!response.ok) {
-      console.error('Resend rejected the contact email', response.status, await response.text().catch(() => ''));
-      return isForm ? back(FAILED) : json(502, { ok: false, error: 'send' });
-    }
-  } catch (error) {
-    console.error('Resend could not be reached', error);
-    return isForm ? back(FAILED) : json(502, { ok: false, error: 'send' });
-  }
+  // One email per inbox: if Resend refuses one address (for example an inbox outside a
+  // verified domain), the others still get the message.
+  const email = buildEmail(result.data, env);
+  const delivered = await Promise.all(
+    email.to.map(async (to) => {
+      try {
+        const response = await fetchImpl('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...email, to: [to] }),
+        });
+        if (response.ok) return true;
+        console.error('Resend rejected the contact email for one inbox', response.status, await response.text().catch(() => ''));
+      } catch (error) {
+        console.error('Resend could not be reached', error);
+      }
+      return false;
+    }),
+  );
+  if (!delivered.some(Boolean)) return isForm ? back(FAILED) : json(502, { ok: false, error: 'send' });
 
   return isForm ? back(SENT) : json(200, { ok: true });
 }

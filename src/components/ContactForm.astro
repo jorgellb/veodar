@@ -4,7 +4,12 @@
 // place; without it, it is a plain form post and the result comes back as an anchor
 // on this page (#enviado, #revisar, #no-enviado), shown with :target.
 import Icon from './Icon.astro';
-import { BUDGETS, LIMITS, NEEDS, TIMING } from '../../api/_contact.js';
+import { BUDGETS, LIMITS, NEEDS, TIMING, TURNSTILE_ACTION } from '../../api/_contact.js';
+
+// Turnstile site key (public; set PUBLIC_TURNSTILE_SITEKEY in Vercel). In development
+// without one, Cloudflare's test key renders a widget that always passes.
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY || (import.meta.env.DEV ? '1x00000000000000000000AA' : '');
+if (!siteKey) console.warn('[contacto] PUBLIC_TURNSTILE_SITEKEY is not set: the contact form cannot be sent.');
 
 const needIcons: Record<string, string> = {
   ia: 'spark',
@@ -136,9 +141,12 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
       </label>
       <p class="cf-error" id="err-consent"></p>
       <p class="cf-legal" id="cf-legal">
-        Responsable: Veodar. Finalidad: responder a tu mensaje y, si sigue adelante, preparar una propuesta. El mensaje nos llega por correo a través de Resend y no se cede a nadie más. Para consultar o borrar tus datos, escribe a info@veodar.com.
+        Responsable: Veodar. Finalidad: responder a tu mensaje y, si sigue adelante, preparar una propuesta. El mensaje nos llega por correo a través de Resend y no se cede a nadie más. Para frenar a los bots, Cloudflare Turnstile comprueba el envío. Para consultar o borrar tus datos, escribe a info@veodar.com.
       </p>
     </div>
+
+    <!-- Cloudflare Turnstile: invisible unless a visitor has to prove they are a person. -->
+    <div class="cf-turnstile" data-turnstile data-sitekey={siteKey} data-action={TURNSTILE_ACTION}></div>
 
     <div class="cf-foot">
       <button type="submit" class="btn btn-accent cf-submit">
@@ -552,6 +560,12 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
     color: var(--color-muted);
   }
 
+  .cf-turnstile:empty {
+    display: none;
+  }
+  .cf-turnstile {
+    margin-top: -6px;
+  }
   .cf-foot {
     display: flex;
     flex-wrap: wrap;
@@ -696,7 +710,13 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
 </style>
 
 <script>
-  import { LIMITS } from '../../api/_contact.js';
+  import { LIMITS, TURNSTILE_ACTION } from '../../api/_contact.js';
+
+  type Turnstile = {
+    render: (el: HTMLElement, options: Record<string, unknown>) => string;
+    reset: (id: string) => void;
+  };
+  const tw = window as Window & { turnstile?: Turnstile };
 
   type Errors = Partial<Record<'name' | 'email' | 'company' | 'needs' | 'message' | 'consent', string>>;
 
@@ -710,6 +730,56 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
     const count = form.querySelector<HTMLElement>('[data-count]')!;
     const started = form.querySelector<HTMLInputElement>('[data-started]')!;
     started.value = String(Date.now());
+
+    // Turnstile, rendered explicitly so the widget can be reset after every attempt:
+    // a token is good for one check only.
+    const slot = form.querySelector<HTMLElement>('[data-turnstile]')!;
+    let widgetId: string | undefined;
+    let token = '';
+    let waiting: ((value: string) => void)[] = [];
+    const setToken = (value: string) => {
+      token = value;
+      if (value) waiting.splice(0).forEach((resolve) => resolve(value));
+    };
+    const render = () => {
+      if (!tw.turnstile || widgetId !== undefined || !slot.dataset.sitekey) return;
+      widgetId = tw.turnstile.render(slot, {
+        sitekey: slot.dataset.sitekey,
+        action: TURNSTILE_ACTION,
+        appearance: 'interaction-only',
+        theme: 'light',
+        language: 'es',
+        size: 'flexible',
+        callback: setToken,
+        'expired-callback': () => setToken(''),
+        'error-callback': () => setToken(''),
+      });
+    };
+    if (slot.dataset.sitekey) {
+      if (tw.turnstile) render();
+      else {
+        const script = document.createElement('script');
+        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        script.async = true;
+        script.addEventListener('load', render, { once: true });
+        document.head.appendChild(script);
+      }
+    }
+    const resetTurnstile = () => {
+      setToken('');
+      if (widgetId !== undefined) tw.turnstile?.reset(widgetId);
+    };
+    // The check usually finishes while the visitor types; if not, wait for it a little.
+    const tokenSoon = (ms = 10_000) =>
+      token
+        ? Promise.resolve(token)
+        : new Promise<string>((resolve) => {
+            waiting.push(resolve);
+            setTimeout(() => {
+              waiting = waiting.filter((fn) => fn !== resolve);
+              resolve(token);
+            }, ms);
+          });
 
     const EMAIL = /^[^\s@<>()",;]+@[^\s@<>()",;]+\.[^\s@<>()",;]{2,}$/;
     const fields = ['needs', 'name', 'email', 'company', 'message', 'consent'] as const;
@@ -726,6 +796,7 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
         consent: data.get('consent') === 'on',
         website: String(data.get('website') ?? ''),
         t: Number(started.value),
+        'cf-turnstile-response': token,
       };
     };
     // The same rules as the server, so most mistakes are caught before sending.
@@ -792,8 +863,14 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
       show({});
 
       form.setAttribute('data-sending', '');
-      label.textContent = 'Enviando…';
+      label.textContent = 'Comprobando…';
       try {
+        data['cf-turnstile-response'] = await tokenSoon();
+        if (!data['cf-turnstile-response']) {
+          fail('No hemos podido comprobar que no eres un robot. Espera unos segundos y vuelve a enviarlo, o escríbenos a <a href="mailto:info@veodar.com">info@veodar.com</a>.');
+          return;
+        }
+        label.textContent = 'Enviando…';
         const response = await fetch('/api/contacto/', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
@@ -809,12 +886,16 @@ const morse = [1, 1, 1, 1, 0, 3, 3, 3, 0, 1, 3, 1, 1, 0, 1, 3];
           document.dispatchEvent(new CustomEvent('veo:sent'));
         } else if (response.status === 400 && body.errors) {
           show(body.errors as Errors);
+        } else if (response.status === 403 && body.error === 'turnstile') {
+          fail('No hemos podido verificar el envío. Vuelve a enviarlo en unos segundos.');
         } else {
           fail(FALLBACK);
         }
       } catch {
         fail(FALLBACK);
       } finally {
+        // The token has been used (or refused): get a fresh one for the next attempt.
+        resetTurnstile();
         form.removeAttribute('data-sending');
         label.textContent = 'Enviar mensaje';
       }
