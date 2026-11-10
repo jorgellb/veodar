@@ -68,7 +68,7 @@ Sin JavaScript Turnstile no puede funcionar, así que el envío sin JavaScript v
 
 ## Red de fibra (fondo)
 
-`src/scripts/network.ts` dibuja en un único `<canvas>` fijo la malla de nodos, la troncal y los paquetes de datos. Estos atributos la gobiernan:
+`src/scripts/network.ts` dibuja en un único `<canvas>` fijo la troncal de fibra, sus derivaciones a las tarjetas y los paquetes de datos que las recorren. (Antes había además una malla de nodos de fondo; se quitó para no recargar.) Estos atributos la gobiernan:
 
 - `data-node` — la troncal saca una derivación hasta esta tarjeta.
 - `data-dark` — sección de fondo oscuro: la red se dibuja en claro.
@@ -80,7 +80,7 @@ En el hero, cada chip («Tus sistemas» a la izquierda, «Lo que construimos» a
 
 - `data-hub="in|out"` + `data-id` — un chip. Su fibra acaba en el conector con ese mismo `id`.
 - `data-hub-target` + `data-ports` — la escena y la posición de cada conector (fracciones de su caja). Lo escribe `Nexus.astro` a partir de `nexus.json`.
-- `data-quiet` — bajo este bloque no se dibuja la malla cercana. `data-trunk-start="0.5"` — la troncal nace en el borde inferior de este bloque, a esa fracción de su ancho.
+- `data-trunk-start="0.5"` — la troncal nace en el borde inferior de este bloque, a esa fracción de su ancho.
 - Eventos en `document`: `nexus:pulse {id, dur}` (un paquete brillante recorre la fibra de ese chip), `nexus:request {id}` (clic en un chip: la escena cuenta su recorrido a continuación) y `nexus:done {route, did, done, reviewed}` (alimenta la franja «En vivo»).
 
 Las fibras no se cruzan porque el orden de los chips, del borde de la ventana hacia dentro, es el orden de los conectores en la regleta de cada isla (`SOCKET_V` en `iso/fig-nexus.mjs`, `hubsIn`/`hubsOut` en `Hero.astro`). Si se mueve un chip o se cambia un objeto de sitio, hay que mantener ese orden. Entre 1280 y 1408 px de ancho la escena se estrecha (`max-width` en `Nexus.astro`) para que cada conector siga quedando por dentro de su chip.

@@ -31,7 +31,7 @@ const pct = ([x, y]: number[]) => `left:${((x / M.w) * 100).toFixed(2)}%;top:${(
 ---
 
 <figure class="nexus iso" data-theme="night" data-nexus>
-  <div class="nexus-stage" data-hub-target data-quiet data-trunk-start={trunkX.toFixed(4)} data-ports={JSON.stringify(ports)}>
+  <div class="nexus-stage" data-hub-target data-trunk-start={trunkX.toFixed(4)} data-ports={JSON.stringify(ports)}>
     <Fragment set:html={svg} />
     <span class="nexus-note nexus-note--core" style={pct(M.anchors.core)}><i></i>{T.core}</span>
     <span class="nexus-note nexus-note--review" style={pct(M.anchors.review)}><i></i>{T.review}</span>
