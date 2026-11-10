@@ -1,6 +1,6 @@
 ---
 import Icon from '../Icon.astro';
-import Plant from '../iso/Plant.astro';
+import Nexus from '../iso/Nexus.astro';
 
 const stack = [
   'Claude',
@@ -29,46 +29,47 @@ const stack = [
 ];
 
 // Hubs: what the client already runs (in) and what we build on top (out).
+// Their horizontal order matters: from the window edge inward it is the order of
+// the sockets on each island's pier in the scene below (iso/fig-nexus.mjs), which
+// is what keeps the fibres from crossing.
 const hubsIn = [
-  { label: 'Correo', icon: 'mail', x: 34, y: 0 },
-  { label: 'ERP', icon: 'layers', x: 126, y: 86 },
-  { label: 'CRM', icon: 'sliders', x: 0, y: 176 },
-  { label: 'Documentos', icon: 'layout', x: 56, y: 270 },
+  { id: 'correo', label: 'Correo', icon: 'mail', x: 34, y: 0 },
+  { id: 'erp', label: 'ERP', icon: 'layers', x: 126, y: 86 },
+  { id: 'crm', label: 'CRM', icon: 'sliders', x: 0, y: 176 },
+  { id: 'documentos', label: 'Documentos', icon: 'layout', x: 56, y: 270 },
 ];
 const hubsOut = [
-  { label: 'Agentes IA', icon: 'spark', x: 62, y: 0 },
-  { label: 'Web', icon: 'browser', x: 0, y: 86 },
-  { label: 'App móvil', icon: 'phone', x: 100, y: 176 },
-  { label: 'Escritorio', icon: 'desktop', x: 18, y: 270 },
+  { id: 'agentes', label: 'Agentes IA', icon: 'spark', x: 100, y: 0 },
+  { id: 'web', label: 'Web', icon: 'browser', x: 0, y: 86 },
+  { id: 'movil', label: 'App móvil', icon: 'phone', x: 62, y: 176 },
+  { id: 'escritorio', label: 'Escritorio', icon: 'desktop', x: 18, y: 270 },
 ];
 ---
 
 <section class="hero" data-dark data-spine="0.5" aria-labelledby="hero-title">
-  <div class="hero-glow" aria-hidden="true"></div>
-
-  <div class="hero-hubs hero-hubs--in" aria-hidden="true">
+  <div class="hero-hubs hero-hubs--in">
     <p class="hub-label">Tus sistemas</p>
     {
       hubsIn.map((hub, index) => (
-        <span class="hub" data-hub="in" data-reveal style={`left:${hub.x}px;top:${hub.y + 34}px;--d:${400 + index * 110}ms`}>
+        <button type="button" class="hub" data-hub="in" data-id={hub.id} data-reveal aria-label={`Ver el recorrido de ${hub.label}`} style={`left:${hub.x}px;top:${hub.y + 34}px;--d:${400 + index * 110}ms`}>
           <i class="hub-ico">
             <Icon name={hub.icon} size={16} />
           </i>
           {hub.label}
-        </span>
+        </button>
       ))
     }
   </div>
-  <div class="hero-hubs hero-hubs--out" aria-hidden="true">
+  <div class="hero-hubs hero-hubs--out">
     <p class="hub-label hub-label--right">Lo que construimos</p>
     {
       hubsOut.map((hub, index) => (
-        <span class="hub" data-hub="out" data-reveal style={`left:${hub.x}px;top:${hub.y + 34}px;--d:${460 + index * 110}ms`}>
+        <button type="button" class="hub" data-hub="out" data-id={hub.id} data-reveal aria-label={`Ver el recorrido hasta ${hub.label}`} style={`left:${hub.x}px;top:${hub.y + 34}px;--d:${460 + index * 110}ms`}>
           <i class="hub-ico hub-ico--out">
             <Icon name={hub.icon} size={16} />
           </i>
           {hub.label}
-        </span>
+        </button>
       ))
     }
   </div>
@@ -76,8 +77,11 @@ const hubsOut = [
   <div class="wrap pt-8 text-center md:pt-10">
     <a href="/servicios/automatizaciones-ia/" class="hero-pill" data-reveal>
       <span class="hero-pill-tag">Nuevo</span>
-      Agentes con MCP conectados a tu ERP y tu CRM
-      <Icon name="arrow" size={15} />
+      <span class="hero-pill-text">
+        <span class="hero-pill-long">Agentes con MCP conectados a tu ERP y tu CRM</span>
+        <span class="hero-pill-short">Agentes con MCP en tu ERP y CRM</span>
+      </span>
+      <Icon name="arrow" size={15} class="hero-pill-arrow" />
     </a>
 
     <h1 id="hero-title" class="display h-hero mx-auto mt-7 max-w-[13ch] text-paper" data-reveal style="--d:80ms">
@@ -94,39 +98,23 @@ const hubsOut = [
     </div>
   </div>
 
-  <div class="wrap mt-20 md:mt-[92px]" data-reveal style="--d:320ms">
-    <div class="hero-machine relative">
-      <Plant />
-      <span class="float-chip hidden md:inline-flex" style="top:16%;left:-14px"><i class="dot"></i>La IA propone</span>
-      <span class="float-chip hidden md:inline-flex" style="top:44%;right:-14px"><i class="dot dot--ink"></i>Una persona confirma</span>
-      <span class="float-chip hidden lg:inline-flex" style="bottom:20%;left:-14px"><Icon name="key" size={14} />Código a tu nombre</span>
-    </div>
+  <div class="wrap mt-6 md:mt-3" data-reveal style="--d:320ms">
+    <Nexus />
 
-    <dl class="hero-stats" data-stats>
-      <div class="hero-stats-live">
-        <i class="live-dot"></i>
-        <span>En vivo · lo que ha hecho esta máquina desde que abriste la página</span>
-      </div>
-      <div>
-        <dd data-stat="done">0</dd>
-        <dt>documentos clasificados</dt>
-      </div>
-      <div>
-        <dd data-stat="auto">0</dd>
-        <dt>archivados solos</dt>
-      </div>
-      <div>
-        <dd data-stat="review">0</dd>
-        <dt>a revisión humana</dt>
-      </div>
-      <div>
-        <dd data-stat="conf">—</dd>
-        <dt>confianza media</dt>
-      </div>
-    </dl>
+    <div class="hero-log" data-log>
+      <p class="hero-log-live"><i class="live-dot"></i>En vivo</p>
+      <p class="hero-log-line">
+        <strong data-log-route>El taller, en marcha</strong>
+        <span data-log-did>Cada tarea sale de un sistema, pasa por la IA y llega a un producto.</span>
+      </p>
+      <p class="hero-log-count">
+        <span><b data-log-done>0</b> <i data-log-done-label>tareas resueltas</i></span>
+        <span><b data-log-reviewed>0</b> <i data-log-reviewed-label>confirmadas por una persona</i></span>
+      </p>
+    </div>
   </div>
 
-  <div class="hero-marquee relative z-[1] mt-14 py-5 md:mt-20" aria-label="Tecnologías con las que trabajamos">
+  <div class="hero-marquee relative z-[1] mt-14 py-5 md:mt-16" aria-label="Tecnologías con las que trabajamos">
     <div class="marquee" role="presentation">
       <ul class="marquee-track">
         {[...stack, ...stack].map((item, index) => <li aria-hidden={index >= stack.length ? 'true' : undefined}>{item}</li>)}
@@ -141,7 +129,7 @@ const hubsOut = [
     margin-top: -68px;
     padding-top: 68px;
     background:
-      radial-gradient(900px 520px at 50% 64%, rgb(255 90 31 / 0.2), transparent 70%),
+      radial-gradient(900px 480px at 50% 72%, rgb(255 90 31 / 0.17), transparent 70%),
       radial-gradient(700px 500px at 12% 8%, rgb(98 76 201 / 0.22), transparent 70%),
       radial-gradient(700px 500px at 90% 14%, rgb(46 110 201 / 0.16), transparent 70%),
       var(--color-night);
@@ -150,9 +138,6 @@ const hubsOut = [
   }
   .hero :global(.display em) {
     color: var(--color-accent);
-  }
-  .hero-glow {
-    display: none;
   }
 
   .hero-pill {
@@ -175,7 +160,58 @@ const hubsOut = [
     background: rgb(244 240 230 / 0.12);
     box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.4);
   }
+  /* One line at every width: phones get a shorter wording, and anything that still
+     does not fit is cut with an ellipsis instead of wrapping the pill into a block. */
+  .hero-pill {
+    max-width: 100%;
+  }
+  .hero-pill-text {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .hero-pill-short {
+    display: none;
+  }
+  .hero-pill :global(.hero-pill-arrow) {
+    flex: none;
+  }
+  @media (max-width: 560px) {
+    .hero-pill {
+      gap: 8px;
+      padding-right: 12px;
+      font-size: 13.5px;
+    }
+    .hero-pill-long {
+      display: none;
+    }
+    .hero-pill-short {
+      display: inline;
+    }
+  }
+  @media (max-width: 380px) {
+    .hero-pill {
+      gap: 7px;
+      font-size: 13px;
+    }
+    .hero-pill-tag {
+      padding: 3px 7px;
+      font-size: 10px;
+    }
+  }
+  @media (max-width: 350px) {
+    .hero-pill {
+      gap: 6px;
+      padding-right: 11px;
+      font-size: 12px;
+    }
+    .hero-pill :global(.hero-pill-arrow) {
+      display: none;
+    }
+  }
   .hero-pill-tag {
+    flex: none;
     padding: 3px 9px;
     border-radius: 999px;
     background: var(--color-accent);
@@ -213,7 +249,7 @@ const hubsOut = [
     left: max(20px, calc(50% - 690px));
   }
   .hero-hubs--out {
-    right: max(20px, calc(50% - 690px));
+    right: max(20px, calc(50% - 698px));
   }
   .hub-label {
     font-family: var(--font-mono);
@@ -237,9 +273,28 @@ const hubsOut = [
     white-space: nowrap;
     color: var(--color-paper);
     background: #1c1938;
+    cursor: pointer;
     box-shadow:
       inset 0 0 0 1px rgb(244 240 230 / 0.14),
       inset 0 1px 0 rgb(244 240 230 / 0.1),
+      0 14px 30px -14px rgb(0 0 0 / 0.7);
+    transition:
+      opacity 0.9s var(--ease-out-soft),
+      transform 0.9s var(--ease-out-soft),
+      box-shadow 0.35s,
+      background-color 0.35s,
+      translate 0.35s var(--ease-spring);
+    transition-delay: var(--d, 0ms), var(--d, 0ms), 0s, 0s, 0s;
+  }
+  .hub:hover {
+    translate: 0 -2px;
+    background: #24204a;
+  }
+  .hub[data-active] {
+    background: #2a2046;
+    box-shadow:
+      inset 0 0 0 1px rgb(255 90 31 / 0.85),
+      0 0 28px -4px rgb(255 90 31 / 0.7),
       0 14px 30px -14px rgb(0 0 0 / 0.7);
   }
   .hub::after {
@@ -266,92 +321,38 @@ const hubsOut = [
     background: var(--color-accent);
     color: #1a0a03;
   }
-  .hero-machine :global(.veo-plate) {
-    box-shadow:
-      0 0 0 1px rgb(244 240 230 / 0.14),
-      0 60px 140px -40px rgb(255 90 31 / 0.55),
-      0 30px 60px -30px rgb(0 0 0 / 0.8);
-  }
-  .float-chip {
-    position: absolute;
-    z-index: 2;
+
+  /* Activity strip: the last route the scene completed and what it has done so far. */
+  .hero-log {
+    display: grid;
+    gap: 10px 28px;
     align-items: center;
-    gap: 8px;
-    padding: 9px 14px;
-    border-radius: 999px;
-    background: var(--color-card);
-    color: var(--color-ink);
-    font-size: 13.5px;
-    font-weight: 560;
-    box-shadow:
-      inset 0 0 0 1px var(--color-line),
-      0 14px 30px -14px rgb(0 0 0 / 0.6);
-    animation: bob 6s ease-in-out infinite;
+    margin-top: 6px;
+    padding: 14px 20px;
+    border-radius: 18px;
+    background: rgb(23 20 49 / 0.78);
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.12);
+    backdrop-filter: blur(8px);
   }
-  .float-chip:nth-of-type(2) {
-    animation-delay: -2s;
-  }
-  .float-chip:nth-of-type(3) {
-    animation-delay: -4s;
-  }
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-accent);
-    box-shadow: 0 0 0 4px rgb(255 90 31 / 0.18);
-  }
-  .dot--ink {
-    background: var(--color-ink);
-    box-shadow: 0 0 0 4px rgb(22 20 44 / 0.12);
-  }
-  @keyframes bob {
-    50% {
-      transform: translateY(-7px);
+  @media (min-width: 900px) {
+    .hero-log {
+      grid-template-columns: auto 1fr auto;
     }
   }
-
-  /* Live counters fed by the machine above. */
-  .hero-stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1px;
-    margin-top: 18px;
-    border-radius: 20px;
-    overflow: hidden;
-    background: rgb(244 240 230 / 0.12);
-    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.12);
-  }
-  .hero-stats > div {
-    padding: 18px 20px;
-    background: #171431;
-  }
-  .hero-stats-live {
-    grid-column: 1 / -1;
-    display: flex;
+  .hero-log-live {
+    display: inline-flex;
     align-items: center;
     gap: 10px;
     font-family: var(--font-mono);
     font-size: 11.5px;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgb(244 240 230 / 0.6);
-  }
-  @media (min-width: 900px) {
-    .hero-stats {
-      grid-template-columns: 1.5fr repeat(4, 1fr);
-    }
-    .hero-stats-live {
-      grid-column: auto;
-      align-items: flex-start;
-      line-height: 1.5;
-    }
   }
   .live-dot {
     flex: none;
     width: 8px;
     height: 8px;
-    margin-top: 0.3em;
     border-radius: 50%;
     background: var(--color-accent);
     animation: live 1.6s ease-out infinite;
@@ -364,27 +365,50 @@ const hubsOut = [
       box-shadow: 0 0 0 10px rgb(255 90 31 / 0);
     }
   }
-  .hero-stats dd {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 3.4vw, 2.9rem);
-    line-height: 1;
-    letter-spacing: -0.03em;
-    font-variant-numeric: tabular-nums;
+  .hero-log-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    align-items: baseline;
+    min-width: 0;
+  }
+  .hero-log-line strong {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    font-weight: 600;
     color: var(--color-paper);
   }
-  .hero-stats dd[data-bump] {
-    animation: bump 0.6s var(--ease-out-soft);
+  .hero-log-line span {
+    font-size: 14px;
+    color: rgb(244 240 230 / 0.66);
   }
-  @keyframes bump {
+  .hero-log-line[data-fresh] strong {
+    animation: fresh 0.7s var(--ease-out-soft);
+  }
+  @keyframes fresh {
     0% {
       color: var(--color-accent);
-      transform: translateY(6px);
+      transform: translateY(5px);
+      opacity: 0.3;
     }
   }
-  .hero-stats dt {
-    margin-top: 6px;
+  .hero-log-count {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
     font-size: 13.5px;
     color: rgb(244 240 230 / 0.6);
+  }
+  .hero-log-count i {
+    font-style: normal;
+  }
+  .hero-log-count b {
+    margin-right: 5px;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-paper);
   }
 
   .hero-marquee {
@@ -420,29 +444,37 @@ const hubsOut = [
 </style>
 
 <script>
-  // Counters are fed by the figure itself: one event per document it files.
-  const stats = document.querySelector<HTMLElement>('[data-stats]');
-  if (stats) {
-    const cell = (name: string) => stats.querySelector<HTMLElement>(`[data-stat="${name}"]`)!;
-    let done = 0;
-    let review = 0;
-    let sum = 0;
-    const set = (el: HTMLElement, text: string) => {
-      if (el.textContent === text) return;
-      el.textContent = text;
-      el.removeAttribute('data-bump');
-      void el.offsetWidth;
-      el.setAttribute('data-bump', '');
-    };
-    document.addEventListener('plant:filed', (event) => {
-      const detail = (event as CustomEvent<{ review: boolean; conf: number }>).detail;
-      done += 1;
-      if (detail.review) review += 1;
-      sum += detail.conf;
-      set(cell('done'), String(done));
-      set(cell('auto'), String(done - review));
-      set(cell('review'), String(review));
-      set(cell('conf'), (sum / done).toFixed(2).replace('.', ','));
+  // The scene below tells the page what it is doing; the chips and the strip follow it.
+  const chips = new Map([...document.querySelectorAll<HTMLElement>('.hub[data-id]')].map((el) => [el.dataset.id!, el]));
+  const timers = new Map<string, number>();
+  document.addEventListener('nexus:pulse', (event) => {
+    const { id, dur } = (event as CustomEvent<{ id: string; dur: number }>).detail;
+    const chip = chips.get(id);
+    if (!chip) return;
+    chip.setAttribute('data-active', '');
+    clearTimeout(timers.get(id));
+    timers.set(
+      id,
+      window.setTimeout(() => chip.removeAttribute('data-active'), dur * 1000 + 500),
+    );
+  });
+  chips.forEach((chip, id) => chip.addEventListener('click', () => document.dispatchEvent(new CustomEvent('nexus:request', { detail: { id } }))));
+
+  const log = document.querySelector<HTMLElement>('[data-log]');
+  if (log) {
+    const line = log.querySelector<HTMLElement>('.hero-log-line')!;
+    const set = (sel: string, text: string) => (log.querySelector<HTMLElement>(sel)!.textContent = text);
+    document.addEventListener('nexus:done', (event) => {
+      const d = (event as CustomEvent<{ route: string; did: string; done: number; reviewed: number }>).detail;
+      set('[data-log-route]', d.route);
+      set('[data-log-did]', d.did);
+      set('[data-log-done]', String(d.done));
+      set('[data-log-done-label]', d.done === 1 ? 'tarea resuelta' : 'tareas resueltas');
+      set('[data-log-reviewed]', String(d.reviewed));
+      set('[data-log-reviewed-label]', d.reviewed === 1 ? 'confirmada por una persona' : 'confirmadas por una persona');
+      line.removeAttribute('data-fresh');
+      void line.offsetWidth;
+      line.setAttribute('data-fresh', '');
     });
   }
 </script>

@@ -31,6 +31,51 @@ const resources = [
   { name: 'Contacto', desc: 'El siguiente paso, por correo', href: '/contacto/', icon: 'mail' },
 ];
 
+// Phone menu: the four rows on the fibre, and what each one opens.
+const path = Astro.url.pathname;
+const here = path.startsWith('/servicios') ? 'servicios' : path.startsWith('/soluciones') ? 'soluciones' : path.startsWith('/precios') ? 'precios' : '';
+const rows = [
+  { id: 'servicios', name: 'Servicios', cap: `Ingeniería y estudio · ${services.length}` },
+  { id: 'soluciones', name: 'Soluciones', cap: `Por área de la empresa · ${areas.length}` },
+  { id: 'recursos', name: 'Recursos', cap: 'Proceso, preguntas y contacto' },
+  { id: 'precios', name: 'Precios', cap: 'Cómo se escribe un presupuesto', href: '/precios/' },
+];
+
+// The fibre mesh behind the phone menu: a jittered grid from a fixed seed, so every build draws the same one.
+let seed = 11;
+const rnd = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+const MW = 400;
+const MH = 900;
+const COLS = 6;
+const ROWS = 13;
+const grid = Array.from({ length: ROWS }, (_, r) =>
+  Array.from({ length: COLS }, (_, c) => [
+    (c + 0.5) * (MW / COLS) + (rnd() - 0.5) * (MW / COLS) * 0.75,
+    (r + 0.5) * (MH / ROWS) + (rnd() - 0.5) * (MH / ROWS) * 0.75,
+  ]),
+);
+const edges: number[][][] = [];
+for (let r = 0; r < ROWS; r++) {
+  for (let c = 0; c < COLS; c++) {
+    if (c < COLS - 1 && rnd() < 0.72) edges.push([grid[r][c], grid[r][c + 1]]);
+    if (r < ROWS - 1 && rnd() < 0.68) edges.push([grid[r][c], grid[r + 1][c]]);
+    if (r < ROWS - 1 && c < COLS - 1 && rnd() < 0.22) edges.push([grid[r][c], grid[r + 1][c + 1]]);
+  }
+}
+const seg = ([a, b]: number[][]) => `M${a[0].toFixed(1)} ${a[1].toFixed(1)}L${b[0].toFixed(1)} ${b[1].toFixed(1)}`;
+const meshLines = edges.map(seg).join('');
+const meshFlows = edges.filter((_, i) => i % 7 === 3).map((edge, i) => ({ d: seg(edge), delay: ((i * 0.73) % 3.2).toFixed(2) }));
+const meshNodes = grid.flat();
+
+const tintVar: Record<string, string> = {
+  mint: 'var(--color-mint)',
+  sky: 'var(--color-sky)',
+  butter: 'var(--color-butter)',
+  blush: 'var(--color-blush)',
+  lilac: 'var(--color-lilac)',
+  paper: 'var(--color-paper-2)',
+};
+
 const tintBg: Record<string, string> = {
   mint: 'bg-mint',
   sky: 'bg-sky',
@@ -69,7 +114,7 @@ const tintBg: Record<string, string> = {
     </nav>
 
     <div class="ml-auto flex items-center gap-2">
-      <a href="/contacto/" class="nav-trigger hidden md:inline-flex">Contacto</a>
+      <a href="/contacto/" class="nav-trigger nav-contact">Contacto</a>
       <a href="/contacto/" class="btn btn-primary hidden !min-h-[40px] !px-4 !text-[14px] sm:inline-flex">
         Cuéntanos tu proyecto <Icon name="arrow" size={16} class="arrow" />
       </a>
@@ -218,64 +263,171 @@ const tintBg: Record<string, string> = {
     </div>
   </div>
 
-  <!-- Mobile menu -->
-  <div class="mobile-sheet lg:hidden" id="menu-movil" data-sheet hidden>
-    <div class="wrap pb-10">
-      <details class="m-group" open>
-        <summary>Servicios <Icon name="chevron" size={18} /></summary>
-        <p class="mega-label mt-2">Ingeniería</p>
-        <ul>
-          {
-            engineering.map((service) => (
-              <li>
-                <a href={serviceHref(service.slug)} class="m-link">
-                  <span class:list={['mega-ico mega-ico--sm', tintBg[service.tint]]}>
-                    <Icon name={service.icon} size={16} />
-                  </span>
-                  {service.name}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-        <p class="mega-label mt-4">Estudio</p>
-        <ul>
-          {
-            studio.map((service) => (
-              <li>
-                <a href={serviceHref(service.slug)} class="m-link">
-                  <span class:list={['mega-ico mega-ico--sm', tintBg[service.tint]]}>
-                    <Icon name={service.icon} size={16} />
-                  </span>
-                  {service.name}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </details>
-      <details class="m-group">
-        <summary>Soluciones <Icon name="chevron" size={18} /></summary>
-        <ul>
-          {areas.map((area) => (
-            <li><a href={area.href} class="m-link">{area.name}</a></li>
-          ))}
-        </ul>
-      </details>
-      <details class="m-group">
-        <summary>Recursos <Icon name="chevron" size={18} /></summary>
-        <ul>
-          {resources.map((item) => (
-            <li><a href={item.href} class="m-link">{item.name}</a></li>
-          ))}
-        </ul>
-      </details>
-      <a href="/precios/" class="m-group m-plain">Precios</a>
-      <a href="/contacto/" class="btn btn-primary mt-6 w-full">Cuéntanos tu proyecto <Icon name="arrow" size={16} class="arrow" /></a>
-    </div>
-  </div>
 </header>
 <div class="mega-scrim" data-scrim hidden></div>
+
+<!-- Phone menu: a night panel that opens from the menu button like an iris. -->
+<div class="msheet" id="menu-movil" data-sheet data-view="root" role="dialog" aria-modal="true" aria-label="Menú" hidden>
+  <svg class="ms-mesh" viewBox={`0 0 ${MW} ${MH}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <path class="ms-mesh-lines" d={meshLines}></path>
+    {meshFlows.map((flow) => <path class="ms-flow" pathLength="100" d={flow.d} style={`--fd:${flow.delay}s`}></path>)}
+    {meshNodes.map(([x, y], i) => <circle class:list={['ms-mesh-node', i % 9 === 4 && 'ms-mesh-hub']} cx={x.toFixed(1)} cy={y.toFixed(1)} r={i % 9 === 4 ? 2.4 : 1.3}></circle>)}
+  </svg>
+
+  <div class="ms-top">
+    <div class="wrap flex h-[68px] items-center">
+      <a href="/" class="shrink-0" aria-label="Veodar, inicio"><Logo inverted /></a>
+      <button type="button" class="ms-close" aria-label="Cerrar menú" data-close><span></span><span></span></button>
+    </div>
+  </div>
+
+  <div class="ms-levels">
+    <section class="ms-level" data-level="root" aria-label="Menú">
+      <div class="wrap">
+        <ul class="ms-list" style={`--n:${rows.length}`}>
+          <li class="ms-packet" aria-hidden="true"></li>
+          {
+            rows.map((row, i) => (
+              <li class="ms-item" style={`--i:${i}`} data-here={here === row.id ? '' : undefined}>
+                {row.href ? (
+                  <a href={row.href} class="ms-link" aria-current={here === row.id ? 'page' : undefined}>
+                    <span class="ms-node" />
+                    <span class="ms-name"><span>{row.name}</span></span>
+                    <span class="ms-cap">{row.cap}</span>
+                    <span class="ms-go"><Icon name="arrow" size={17} /></span>
+                  </a>
+                ) : (
+                  <button type="button" class="ms-link" data-go={row.id} aria-expanded="false" aria-controls={`ms-${row.id}`}>
+                    <span class="ms-node" />
+                    <span class="ms-name"><span>{row.name}</span></span>
+                    <span class="ms-cap">{row.cap}</span>
+                    <span class="ms-go"><Icon name="chevron" size={18} class="ms-chev" /></span>
+                  </button>
+                )}
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="ms-foot">
+          <a href="/contacto/" class="btn btn-accent ms-cta">Cuéntanos tu proyecto <Icon name="arrow" size={17} class="arrow" /></a>
+          <a href="mailto:hola@veodar.com" class="ms-mail"><Icon name="mail" size={15} /> hola@veodar.com</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="ms-level" id="ms-servicios" data-level="servicios" aria-label="Servicios" inert>
+      <div class="ms-bar">
+        <div class="wrap"><button type="button" class="ms-back" data-back><Icon name="chevron" size={17} class="ms-chev-back" /> Menú</button></div>
+      </div>
+      <div class="wrap">
+        <h2 class="ms-head"><span>Servicios</span></h2>
+        <p class="ms-head-cap">Ingeniería · {engineering.length}</p>
+        <ul class="ms-tiles">
+          {
+            engineering.map((service, i) => (
+              <li class:list={['ms-tile', i === 0 && 'ms-tile--feature']} style={`--i:${i};--tint:${tintVar[service.tint]}`}>
+                <a href={serviceHref(service.slug)} aria-current={path.startsWith(serviceHref(service.slug)) ? 'page' : undefined}>
+                  <span class="ms-art"><ServiceGlyph slug={service.slug} /></span>
+                  <span class="ms-tile-text">
+                    {i === 0 && <span class="ms-flag">Lo más pedido</span>}
+                    <span class="ms-tile-name">{service.name}</span>
+                    <span class="ms-tile-desc">{service.menu}</span>
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="ms-head-cap ms-head-cap--sub">Estudio · {studio.length}</p>
+        <ul class="ms-tiles">
+          {
+            studio.map((service, i) => (
+              <li class="ms-tile" style={`--i:${i + engineering.length};--tint:${tintVar[service.tint]}`}>
+                <a href={serviceHref(service.slug)} aria-current={path.startsWith(serviceHref(service.slug)) ? 'page' : undefined}>
+                  <span class="ms-art"><ServiceGlyph slug={service.slug} /></span>
+                  <span class="ms-tile-text">
+                    <span class="ms-tile-name">{service.name}</span>
+                    <span class="ms-tile-desc">{service.menu}</span>
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <a href="/servicios/" class="ms-all">Todos los servicios <Icon name="arrow" size={16} /></a>
+      </div>
+    </section>
+
+    <section class="ms-level" id="ms-soluciones" data-level="soluciones" aria-label="Soluciones" inert>
+      <div class="ms-bar">
+        <div class="wrap"><button type="button" class="ms-back" data-back><Icon name="chevron" size={17} class="ms-chev-back" /> Menú</button></div>
+      </div>
+      <div class="wrap">
+        <h2 class="ms-head"><span>Soluciones</span></h2>
+        <p class="ms-head-cap">Por área de la empresa · {areas.length}</p>
+        <ul class="ms-rows">
+          {
+            areas.map((area, i) => (
+              <li class="ms-row" style={`--i:${i}`}>
+                <a href={area.href}>
+                  <span class="ms-row-ico"><Icon name={area.icon} size={18} /></span>
+                  <span>
+                    <span class="ms-row-name">{area.name}</span>
+                    <span class="ms-row-desc">{area.desc}</span>
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <a href="/soluciones/" class="ms-card bg-mint" style={`--i:${areas.length}`}>
+          <span class="chip">Un equipo primero</span>
+          <span class="ms-card-text">Cada área encarga lo suyo. La lista de producción es una.</span>
+          <span class="ms-card-link">Ver soluciones <Icon name="arrow" size={15} /></span>
+        </a>
+      </div>
+    </section>
+
+    <section class="ms-level" id="ms-recursos" data-level="recursos" aria-label="Recursos" inert>
+      <div class="ms-bar">
+        <div class="wrap"><button type="button" class="ms-back" data-back><Icon name="chevron" size={17} class="ms-chev-back" /> Menú</button></div>
+      </div>
+      <div class="wrap">
+        <h2 class="ms-head"><span>Recursos</span></h2>
+        <p class="ms-head-cap">Proceso, preguntas y contacto · {resources.length}</p>
+        <ul class="ms-rows">
+          {
+            resources.map((item, i) => (
+              <li class="ms-row" style={`--i:${i}`}>
+                <a href={item.href}>
+                  <span class="ms-row-ico"><Icon name={item.icon} size={18} /></span>
+                  <span>
+                    <span class="ms-row-name">{item.name}</span>
+                    <span class="ms-row-desc">{item.desc}</span>
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="ms-card bg-lilac" style={`--i:${resources.length}`}>
+          <span class="chip">Pregúntale a una IA</span>
+          <span class="ms-card-text">¿Quién es Veodar? Que te lo cuente tu asistente.</span>
+          <span class="mt-4 flex flex-wrap gap-1.5">
+            {
+              askAi.map((ai) => (
+                <a href={ai.href} target="_blank" rel="noopener" class="chip">
+                  {ai.name}
+                </a>
+              ))
+            }
+          </span>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
 
 <style>
   .site-header {
@@ -392,10 +544,12 @@ const tintBg: Record<string, string> = {
       opacity 0.3s 0.06s,
       transform 0.42s var(--ease-spring);
   }
-  .mega-panel[data-from='left'] {
+  /* Only a panel on its way in or out is offset. The active one always sits at 0,
+     whatever direction it came from (these rules used to win over [data-active]). */
+  .mega-panel:not([data-active])[data-from='left'] {
     transform: translateX(-28px);
   }
-  .mega-panel[data-from='right'] {
+  .mega-panel:not([data-active])[data-from='right'] {
     transform: translateX(28px);
   }
 
@@ -523,6 +677,15 @@ const tintBg: Record<string, string> = {
     opacity: 1;
   }
 
+  /* Scoped .nav-trigger sets display, which beat Tailwind's `hidden`: say it here. */
+  .nav-contact {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .nav-contact {
+      display: inline-flex;
+    }
+  }
   .nav-burger {
     display: inline-grid;
   }
@@ -554,57 +717,695 @@ const tintBg: Record<string, string> = {
     transform: translateY(-3.8px) rotate(-45deg);
   }
 
-  .mobile-sheet {
-    z-index: 2;
-    color: var(--color-ink);
-    position: fixed;
-    inset: 68px 0 0;
-    overflow-y: auto;
-    background: var(--color-paper);
-    border-top: 1px solid var(--color-line);
-    animation: sheet-in 0.4s var(--ease-spring);
-  }
-  @keyframes sheet-in {
-    from {
-      opacity: 0;
-      transform: translateY(-8px);
-    }
-  }
-  .m-group {
-    display: block;
-    border-bottom: 1px solid var(--color-line);
-    padding: 6px 0 12px;
-  }
-  .m-group summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 0 6px;
-    font-family: var(--font-display);
-    font-size: 30px;
-    letter-spacing: -0.03em;
-    cursor: pointer;
-    list-style: none;
-  }
-  .m-group summary::-webkit-details-marker {
+  /* ── Phone menu ───────────────────────────────────────────────────────
+     A night panel that opens as an iris from the menu button. A fibre trunk
+     runs down the rows; a packet of light travels it and lights each node. */
+  .msheet[hidden] {
     display: none;
   }
-  .m-group[open] summary :global(svg) {
-    transform: rotate(180deg);
+  .msheet {
+    --ix: calc(100% - 41px);
+    --iy: 34px;
+    --ir: 150vmax;
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    overflow: hidden;
+    color: var(--color-paper);
+    background:
+      radial-gradient(520px 440px at 100% 0%, rgb(98 76 201 / 0.32), transparent 70%),
+      radial-gradient(560px 520px at 0% 100%, rgb(255 90 31 / 0.15), transparent 70%),
+      var(--color-night);
+    clip-path: circle(0px at var(--ix) var(--iy));
+    transition: clip-path 0.66s cubic-bezier(0.7, 0, 0.2, 1);
   }
-  .m-plain {
-    padding: 18px 0;
+  .msheet[data-open] {
+    clip-path: circle(var(--ir) at var(--ix) var(--iy));
+  }
+  .msheet[data-open][data-closing] {
+    clip-path: circle(0px at var(--ix) var(--iy));
+    transition-duration: 0.5s;
+    transition-timing-function: cubic-bezier(0.6, 0, 0.35, 1);
+  }
+  /* The light the iris opens from: a flash at the button that settles into a glow. */
+  .msheet::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(240px circle at var(--ix) var(--iy), rgb(255 90 31 / 0.5), transparent 70%);
+    opacity: 0.32;
+  }
+  .msheet[data-open]::before {
+    animation: ms-flash 1.2s var(--ease-out-soft) both;
+  }
+  @keyframes ms-flash {
+    from {
+      opacity: 1;
+    }
+  }
+
+  .ms-mesh {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    mask-image: linear-gradient(105deg, rgb(0 0 0 / 0.25) 15%, #000 75%);
+  }
+  .ms-mesh-lines {
+    fill: none;
+    stroke: var(--color-paper);
+    stroke-opacity: 0.08;
+    stroke-width: 0.8px;
+    vector-effect: non-scaling-stroke;
+  }
+  .ms-mesh-node {
+    fill: var(--color-paper);
+    fill-opacity: 0.22;
+  }
+  .ms-mesh-hub {
+    fill: var(--color-night);
+    stroke: var(--color-paper);
+    stroke-opacity: 0.35;
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+  }
+  .ms-flow {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1.4px;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 9 91;
+    stroke-dashoffset: 9;
+    opacity: 0.85;
+  }
+  .msheet[data-open] .ms-flow {
+    animation: ms-flow 3.2s linear infinite;
+    animation-delay: var(--fd);
+  }
+  @keyframes ms-flow {
+    from {
+      stroke-dashoffset: 9;
+    }
+    to {
+      stroke-dashoffset: -91;
+    }
+  }
+
+  .ms-top {
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 3;
+  }
+  .ms-close {
+    position: relative;
+    display: inline-grid;
+    place-content: center;
+    width: 42px;
+    height: 42px;
+    margin-left: auto;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.3);
+    transition: background-color 0.25s;
+  }
+  .ms-close:active {
+    background: rgb(244 240 230 / 0.1);
+  }
+  .ms-close span {
+    position: absolute;
+    left: 12px;
+    top: 20.2px;
+    width: 18px;
+    height: 1.6px;
+    border-radius: 2px;
+    background: currentColor;
+    transform: rotate(45deg);
+  }
+  .ms-close span:last-child {
+    transform: rotate(-45deg);
+  }
+
+  .ms-levels {
+    position: absolute;
+    inset: 68px 0 0;
+    overflow: hidden;
+  }
+  .ms-level {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
+    transition:
+      transform 0.6s var(--ease-spring),
+      opacity 0.4s,
+      visibility 0s 0.6s;
+  }
+  .ms-level[data-level='root'] {
+    padding-top: 10px;
+  }
+  .ms-level:not([data-level='root']) {
+    transform: translateX(100%);
+    visibility: hidden;
+  }
+  .msheet:not([data-view='root']) .ms-level[data-level='root'] {
+    transform: translateX(-28%);
+    opacity: 0;
+    visibility: hidden;
+  }
+  .msheet[data-view='servicios'] .ms-level[data-level='servicios'],
+  .msheet[data-view='soluciones'] .ms-level[data-level='soluciones'],
+  .msheet[data-view='recursos'] .ms-level[data-level='recursos'],
+  .msheet[data-view='root'] .ms-level[data-level='root'] {
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    transition:
+      transform 0.6s var(--ease-spring),
+      opacity 0.4s 0.05s,
+      visibility 0s;
+  }
+
+  /* Rows on the trunk. Geometry is in em of the row type, so the nodes stay on the
+     first line of each name at any size: node centre = 12px + 0.525em from the row top. */
+  .ms-list {
+    position: relative;
+    padding-left: 36px;
+    font-size: clamp(38px, 11vw, 66px);
+  }
+  .ms-list::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: calc(12px + 0.525em);
+    bottom: calc(33px + 0.525em);
+    width: 1.5px;
+    background: linear-gradient(rgb(244 240 230 / 0.32), rgb(244 240 230 / 0.16));
+    transform-origin: 50% 0;
+  }
+  .msheet[data-open] .ms-list::before {
+    animation: ms-grow 0.9s var(--ease-out-soft) 0.22s both;
+  }
+  @keyframes ms-grow {
+    from {
+      transform: scaleY(0);
+    }
+  }
+  .ms-link {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: 12px;
+    width: 100%;
+    padding: 12px 0 14px;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Branch from the trunk to the name. */
+  .ms-link::before {
+    content: '';
+    position: absolute;
+    left: -22px;
+    top: calc(12px + 0.525em - 0.75px);
+    width: 15px;
+    height: 1.5px;
+    background: rgb(244 240 230 / 0.3);
+    transform-origin: 0 50%;
+  }
+  .msheet[data-open] .ms-link::before {
+    animation: ms-branch 0.5s var(--ease-out-soft) both;
+    animation-delay: calc(0.36s + var(--i) * 0.09s);
+  }
+  @keyframes ms-branch {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  .ms-node {
+    position: absolute;
+    left: -35.75px;
+    top: calc(12px + 0.525em - 6.5px);
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--color-night);
+    box-shadow:
+      inset 0 0 0 1.5px rgb(244 240 230 / 0.5),
+      0 0 0 0 rgb(255 90 31 / 0);
+  }
+  .ms-node::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: rgb(244 240 230 / 0.6);
+  }
+  .msheet[data-open] .ms-node {
+    animation:
+      ms-pop 0.55s var(--ease-spring) both,
+      ms-ping 5.4s linear infinite;
+    animation-delay:
+      calc(0.3s + var(--i) * 0.09s),
+      calc(1.7s + var(--i) * 1.8s / (var(--n) - 1));
+  }
+  @keyframes ms-pop {
+    from {
+      transform: scale(0);
+    }
+  }
+  @keyframes ms-ping {
+    0% {
+      background: var(--color-accent);
+      box-shadow:
+        inset 0 0 0 1.5px var(--color-accent),
+        0 0 0 5px rgb(255 90 31 / 0.22),
+        0 0 22px rgb(255 90 31 / 0.85);
+    }
+    16%,
+    100% {
+      background: var(--color-night);
+      box-shadow:
+        inset 0 0 0 1.5px rgb(244 240 230 / 0.5),
+        0 0 0 0 rgb(255 90 31 / 0),
+        0 0 0 rgb(255 90 31 / 0);
+    }
+  }
+  /* The section you are in keeps its node lit. */
+  .ms-item[data-here] .ms-node,
+  .msheet[data-open] .ms-item[data-here] .ms-node {
+    background: var(--color-accent);
+    box-shadow:
+      inset 0 0 0 1.5px var(--color-accent),
+      0 0 0 5px rgb(255 90 31 / 0.2),
+      0 0 18px rgb(255 90 31 / 0.7);
+    animation: ms-pop 0.55s var(--ease-spring) both;
+    animation-delay: calc(0.3s + var(--i) * 0.09s);
+  }
+  .ms-item[data-here] .ms-node::after {
+    background: #fff1e6;
+  }
+  .ms-item[data-here] .ms-cap::after {
+    content: ' · Aquí';
+    color: var(--color-accent);
+  }
+
+  /* The packet that runs down the trunk, timed to light each node as it passes. */
+  .ms-packet {
+    position: absolute;
+    left: 2.75px;
+    top: calc(12px + 0.525em - 4px);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff1e6;
+    box-shadow:
+      0 0 0 2px var(--color-accent),
+      0 0 16px 3px rgb(255 90 31 / 0.8);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .ms-packet::before {
+    content: '';
+    position: absolute;
+    left: 3px;
+    bottom: 5px;
+    width: 2px;
+    height: 54px;
+    border-radius: 2px;
+    background: linear-gradient(rgb(255 90 31 / 0), var(--color-accent));
+  }
+  .msheet[data-open] .ms-packet {
+    animation: ms-packet 5.4s linear 1.7s infinite;
+  }
+  @keyframes ms-packet {
+    0% {
+      top: calc(12px + 0.525em - 4px);
+      opacity: 1;
+    }
+    33.333% {
+      top: calc(100% - 33px - 0.525em - 4px);
+      opacity: 1;
+    }
+    37%,
+    100% {
+      top: calc(100% - 33px - 0.525em - 4px);
+      opacity: 0;
+    }
+  }
+
+  .ms-name {
+    grid-column: 1;
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.1em;
+    margin-bottom: -0.1em;
     font-family: var(--font-display);
-    font-size: 30px;
+    font-weight: 380;
+    font-variation-settings: 'opsz' 40;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    transition: translate 0.35s var(--ease-spring);
+  }
+  .ms-name > span {
+    display: block;
+  }
+  .msheet[data-open] .ms-name > span {
+    animation: ms-rise 0.85s var(--ease-out-soft) both;
+    animation-delay: calc(0.32s + var(--i) * 0.09s);
+  }
+  @keyframes ms-rise {
+    from {
+      transform: translateY(110%);
+    }
+  }
+  .ms-link:active .ms-name {
+    translate: 6px 0;
+  }
+  .ms-cap {
+    grid-column: 1;
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 15px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(244 240 230 / 0.52);
+    /* One line, always: the trunk's geometry counts on every row being the same height. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ms-go {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.2);
+    transition:
+      background-color 0.25s,
+      box-shadow 0.25s;
+  }
+  .ms-link:active .ms-go {
+    background: var(--color-accent);
+    color: #1a0a03;
+    box-shadow: none;
+  }
+  .ms-go :global(.ms-chev) {
+    transform: rotate(-90deg);
+  }
+  .msheet[data-open] :is(.ms-cap, .ms-go) {
+    animation: ms-fade 0.6s var(--ease-out-soft) both;
+    animation-delay: calc(0.5s + var(--i) * 0.09s);
+  }
+  @keyframes ms-fade {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  .ms-foot {
+    display: grid;
+    gap: 16px;
+    margin-top: 30px;
+  }
+  .msheet[data-open] .ms-foot {
+    animation: ms-fade 0.7s var(--ease-out-soft) 0.78s both;
+  }
+  .ms-cta {
+    width: 100%;
+    min-height: 56px;
+    font-size: 16px;
+  }
+  .ms-mail {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: rgb(244 240 230 / 0.7);
+  }
+
+  /* Second level: a bar with the way back, a heading, then the content. */
+  .ms-bar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 6px 0 10px;
+    transition:
+      background-color 0.3s,
+      box-shadow 0.3s;
+  }
+  .ms-level[data-scrolled] .ms-bar {
+    background: rgb(18 16 38 / 0.82);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 rgb(244 240 230 / 0.08);
+  }
+  .ms-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 38px;
+    padding: 0 15px 0 9px;
+    border-radius: 999px;
+    font-size: 14.5px;
+    font-weight: 540;
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.24);
+  }
+  .ms-back :global(.ms-chev-back) {
+    transform: rotate(90deg);
+  }
+  .ms-head {
+    overflow: hidden;
+    padding-bottom: 0.1em;
+    margin: 4px 0 -0.1em;
+    font-family: var(--font-display);
+    font-size: clamp(42px, 12.5vw, 56px);
+    font-weight: 380;
+    font-variation-settings: 'opsz' 40;
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+  .ms-head > span {
+    display: block;
+  }
+  .ms-head-cap {
+    margin: 10px 0 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(244 240 230 / 0.52);
+  }
+  .ms-head-cap--sub {
+    margin-top: 26px;
+  }
+  .msheet:is([data-view='servicios'], [data-view='soluciones'], [data-view='recursos']) .ms-level:not([data-level='root']):not([inert]) .ms-head > span {
+    animation: ms-rise 0.8s var(--ease-out-soft) 0.12s both;
+  }
+  .msheet:is([data-view='servicios'], [data-view='soluciones'], [data-view='recursos']) .ms-level:not([inert]) :is(.ms-tile, .ms-row, .ms-card, .ms-head-cap) {
+    animation: ms-tile 0.6s var(--ease-out-soft) both;
+    animation-delay: calc(0.18s + var(--i, 0) * 0.04s);
+  }
+  @keyframes ms-tile {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.97);
+    }
+  }
+
+  /* Services: one tile per service, each with its own animated drawing. */
+  .ms-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .ms-tile > a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 12px 12px 14px;
+    border-radius: 18px;
+    background:
+      radial-gradient(130% 75% at 50% 0%, color-mix(in srgb, var(--tint) 20%, transparent), transparent 75%),
+      #1a1736;
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.1);
+    transition:
+      transform 0.35s var(--ease-spring),
+      box-shadow 0.25s;
+  }
+  .ms-tile > a:active {
+    transform: scale(0.97);
+  }
+  .ms-tile > a[aria-current] {
+    box-shadow:
+      inset 0 0 0 1.5px var(--color-accent),
+      0 0 24px -8px rgb(255 90 31 / 0.8);
+  }
+  .ms-art {
+    display: block;
+    height: 86px;
+    margin: 2px 0 12px;
+    --glyph-paper: #1d1a3c;
+  }
+  .ms-art :global(.glyph) {
+    color: var(--color-paper);
+  }
+  .ms-tile-name {
+    display: block;
+    font-size: 15px;
+    font-weight: 580;
+    line-height: 1.2;
+  }
+  .ms-tile-desc {
+    display: -webkit-box;
+    margin-top: 4px;
+    overflow: hidden;
+    font-size: 12.5px;
+    line-height: 1.38;
+    color: rgb(244 240 230 / 0.58);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .ms-tile--feature {
+    grid-column: 1 / -1;
+  }
+  .ms-tile--feature > a {
+    display: grid;
+    grid-template-columns: 1fr 42%;
+    align-items: end;
+    gap: 12px;
+    min-height: 176px;
+    padding: 16px;
+    background:
+      radial-gradient(90% 120% at 100% 0%, rgb(255 90 31 / 0.22), transparent 70%),
+      #1a1736;
+  }
+  .ms-tile--feature .ms-art {
+    order: 2;
+    align-self: center;
+    height: 112px;
+    margin: 0;
+  }
+  .ms-tile--feature .ms-tile-name {
+    font-family: var(--font-display);
+    font-size: 25px;
+    font-weight: 400;
+    line-height: 1;
     letter-spacing: -0.03em;
   }
-  .m-link {
+  .ms-tile--feature .ms-tile-desc {
+    -webkit-line-clamp: 4;
+    margin-top: 8px;
+  }
+  .ms-flag {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: #1a0a03;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .ms-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    font-size: 15px;
+    font-weight: 560;
+    color: var(--color-accent);
+  }
+
+  /* Solutions and resources: rows, then a card. */
+  .ms-rows {
+    display: grid;
+  }
+  .ms-row + .ms-row {
+    border-top: 1px solid rgb(244 240 230 / 0.08);
+  }
+  .ms-row > a {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 9px 0;
-    font-size: 17px;
-    font-weight: 500;
+    gap: 14px;
+    padding: 13px 4px;
+    border-radius: 14px;
+    transition: background-color 0.2s;
+  }
+  .ms-row > a:active {
+    background: rgb(244 240 230 / 0.06);
+  }
+  .ms-row-ico {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #221e46;
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.1);
+  }
+  .ms-row-name {
+    display: block;
+    font-size: 16.5px;
+    font-weight: 560;
+    line-height: 1.25;
+  }
+  .ms-row-desc {
+    display: block;
+    margin-top: 2px;
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: rgb(244 240 230 / 0.58);
+  }
+  .ms-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 22px;
+    color: var(--color-ink);
+  }
+  .ms-card-text {
+    margin-top: 28px;
+    font-family: var(--font-display);
+    font-size: 25px;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+  }
+  .ms-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    font-size: 14px;
+    font-weight: 560;
+  }
+
+  .msheet :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  @media (min-width: 1024px) {
+    .msheet {
+      display: none;
+    }
   }
 </style>
 
@@ -709,7 +1510,7 @@ const tintBg: Record<string, string> = {
     const was = current;
     close();
     if (was) triggers.find((t) => t.dataset.trigger === was)?.focus();
-    if (!sheet.hidden) toggleSheet(false);
+    closeSheet();
   });
   mega.addEventListener('focusout', (event) => {
     const next = event.relatedTarget as Node | null;
@@ -717,17 +1518,95 @@ const tintBg: Record<string, string> = {
   });
   addEventListener('resize', () => current && size(panels.get(current)!));
 
-  // Mobile sheet
+  // Phone menu
   const burger = header.querySelector<HTMLButtonElement>('[data-burger]')!;
-  const sheet = header.querySelector<HTMLElement>('[data-sheet]')!;
-  function toggleSheet(force?: boolean) {
-    const show = force ?? sheet.hidden;
-    sheet.hidden = !show;
-    burger.setAttribute('aria-expanded', String(show));
-    burger.setAttribute('aria-label', show ? 'Cerrar menú' : 'Abrir menú');
-    header.toggleAttribute('data-open', show);
-    document.documentElement.style.overflow = show ? 'hidden' : '';
+  const sheet = document.querySelector<HTMLElement>('[data-sheet]')!;
+  const closeButton = sheet.querySelector<HTMLButtonElement>('[data-close]')!;
+  const levels = [...sheet.querySelectorAll<HTMLElement>('[data-level]')];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const wide = matchMedia('(min-width: 1024px)');
+  let sheetOpen = false;
+  let sheetTimer = 0;
+
+  // Everything outside the menu goes inert while it is open.
+  const outside = () => [...document.body.children].filter((el): el is HTMLElement => el !== sheet && el instanceof HTMLElement && el.tagName !== 'SCRIPT');
+
+  function show(view: string) {
+    sheet.dataset.view = view;
+    levels.forEach((level) => {
+      const on = level.dataset.level === view;
+      level.inert = !on;
+      if (on && view !== 'root') level.scrollTop = 0;
+    });
+    sheet.querySelectorAll<HTMLElement>('[data-go]').forEach((button) => button.setAttribute('aria-expanded', String(button.dataset.go === view)));
   }
-  burger.addEventListener('click', () => toggleSheet());
-  sheet.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => toggleSheet(false)));
+
+  function openSheet() {
+    if (sheetOpen) return;
+    sheetOpen = true;
+    clearTimeout(sheetTimer);
+    // The iris opens from the centre of the menu button and reaches the farthest corner.
+    const r = burger.getBoundingClientRect();
+    const x = r.left + r.width / 2;
+    const y = r.top + r.height / 2;
+    sheet.style.setProperty('--ix', `${x}px`);
+    sheet.style.setProperty('--iy', `${y}px`);
+    sheet.style.setProperty('--ir', `${Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)) + 8}px`);
+    show('root');
+    sheet.removeAttribute('data-closing');
+    sheet.hidden = false;
+    void sheet.offsetWidth;
+    sheet.setAttribute('data-open', '');
+    burger.setAttribute('aria-expanded', 'true');
+    outside().forEach((el) => (el.inert = true));
+    document.documentElement.style.overflow = 'hidden';
+    closeButton.focus({ preventScroll: true });
+  }
+
+  function closeSheet(instant = false) {
+    if (!sheetOpen) return;
+    sheetOpen = false;
+    burger.setAttribute('aria-expanded', 'false');
+    outside().forEach((el) => (el.inert = false));
+    document.documentElement.style.overflow = '';
+    const finish = () => {
+      sheet.hidden = true;
+      sheet.removeAttribute('data-open');
+      sheet.removeAttribute('data-closing');
+    };
+    clearTimeout(sheetTimer);
+    if (instant || reduce.matches) finish();
+    else {
+      sheet.setAttribute('data-closing', '');
+      sheetTimer = window.setTimeout(finish, 520);
+    }
+    if (!instant) burger.focus({ preventScroll: true });
+  }
+
+  burger.addEventListener('click', openSheet);
+  closeButton.addEventListener('click', () => closeSheet());
+  sheet.querySelectorAll<HTMLButtonElement>('[data-go]').forEach((button) =>
+    button.addEventListener('click', () => {
+      show(button.dataset.go!);
+      sheet.querySelector<HTMLElement>(`[data-level="${button.dataset.go}"] [data-back]`)?.focus({ preventScroll: true });
+    }),
+  );
+  sheet.querySelectorAll<HTMLButtonElement>('[data-back]').forEach((button) =>
+    button.addEventListener('click', () => {
+      const from = sheet.dataset.view;
+      show('root');
+      sheet.querySelector<HTMLElement>(`[data-go="${from}"]`)?.focus({ preventScroll: true });
+    }),
+  );
+  // A link to another page leaves the menu up while the next page loads (the view
+  // transition fades it out); a link within this page closes it first so it can scroll.
+  sheet.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((link) =>
+    link.addEventListener('click', () => {
+      if (link.target === '_blank' || link.protocol === 'mailto:') return;
+      if (link.pathname === location.pathname) closeSheet(true);
+    }),
+  );
+  levels.forEach((level) => level.addEventListener('scroll', () => level.toggleAttribute('data-scrolled', level.scrollTop > 4), { passive: true }));
+  wide.addEventListener('change', () => wide.matches && closeSheet(true));
+  addEventListener('pageshow', (event) => event.persisted && closeSheet(true));
 </script>
