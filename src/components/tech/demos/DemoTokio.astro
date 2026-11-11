@@ -1,0 +1,242 @@
+---
+// Tokio: sixteen devices send one reading each and number 7 never answers. One at a
+// time, the round hangs on it; all at once, the other fifteen are not held up, and a
+// maximum wait turns the silent one into a known failure instead of an endless wait.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    how: 'Cómo se atienden',
+    modes: ['De uno en uno', 'A la vez'],
+    timeout: 'Con tiempo máximo de espera',
+    run: 'Lanzar la ronda',
+    devices: 'Aparatos',
+    device: 'Aparato',
+    result: 'Resultado de la ronda',
+    idle: 'Elige cómo atenderlos y lanza la ronda.',
+    js: {
+      device: 'Aparato',
+      states: { idle: 'en espera', asking: 'preguntando', ok: 'lectura lista', late: 'no contesta', down: 'marcado como caído', blocked: 'sin atender' },
+      running: 'Ronda en marcha…',
+      hung: 'La ronda no termina: el programa sigue esperando al aparato 7 y los nueve siguientes no llegan a preguntarse.',
+      slow: 'Ronda terminada, pero todos han esperado al aparato 7 antes de seguir. Lecturas: 15 · caídos: 1.',
+      pending: 'Quince lecturas listas sin esperar a nadie. La del aparato 7 sigue pendiente, sin límite: la ronda no se cierra.',
+      done: 'Ronda cerrada: 15 lecturas listas y el aparato 7 marcado como caído al agotar su tiempo. Nadie ha esperado por él.',
+    },
+  },
+  en: {
+    how: 'How they are served',
+    modes: ['One at a time', 'All at once'],
+    timeout: 'With a maximum wait',
+    run: 'Run the round',
+    devices: 'Devices',
+    device: 'Device',
+    result: 'Outcome of the round',
+    idle: 'Choose how to serve them and run the round.',
+    js: {
+      device: 'Device',
+      states: { idle: 'waiting', asking: 'asking', ok: 'reading ready', late: 'no answer', down: 'marked as down', blocked: 'not served' },
+      running: 'Round in progress…',
+      hung: 'The round never ends: the program keeps waiting for device 7 and the next nine are never asked.',
+      slow: 'Round finished, but everyone waited for device 7 before going on. Readings: 15 · down: 1.',
+      pending: 'Fifteen readings ready without waiting for anyone. Device 7 is still pending, with no limit: the round does not close.',
+      done: 'Round closed: 15 readings ready and device 7 marked as down when its time ran out. Nobody waited for it.',
+    },
+  },
+}[lang];
+const DEVICES = Array.from({ length: 16 }, (_, i) => i + 1);
+---
+
+<DemoFrame id="tokio" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--wide">
+    <div class="dm-panel">
+      <p class="dm-cap" id="dtk-how">{T.how}</p>
+      <div class="dm-row" role="group" aria-labelledby="dtk-how">
+        {T.modes.map((mode, i) => <button class="dm-btn dm-btn--ghost" type="button" data-mode={i ? 'all' : 'one'} aria-pressed={i === 0 ? 'true' : 'false'}>{mode}</button>)}
+      </div>
+      <label class="dm-switch">
+        <input type="checkbox" data-timeout />
+        <span>{T.timeout}</span>
+      </label>
+      <div class="dm-row">
+        <button class="dm-btn" type="button" data-run>{T.run}</button>
+      </div>
+      <p class="dm-cap">{T.result}</p>
+      <p class="dtk-result" data-result>{T.idle}</p>
+    </div>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.devices}</p>
+      <ol class="dtk-grid">
+        {
+          DEVICES.map((n) => (
+            <li data-device={n} data-state="idle">
+              <span class="sr-only">{T.device} </span>
+              <b>{n}</b>
+              <small data-note>{T.js.states.idle}</small>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  .dtk-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+  .dtk-grid li {
+    display: grid;
+    gap: 0.1rem;
+    align-content: center;
+    min-height: 62px;
+    padding: 0.45rem 0.55rem;
+    border-radius: 12px;
+    background: rgb(22 20 44 / 0.04);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    transition: background-color 0.2s;
+  }
+  .dtk-grid b {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .dtk-grid small {
+    font-size: 11.5px;
+    line-height: 1.25;
+    color: var(--color-muted);
+  }
+  .dtk-grid li[data-state='asking'] {
+    background: var(--color-butter);
+  }
+  .dtk-grid li[data-state='ok'] {
+    background: var(--color-mint);
+  }
+  .dtk-grid li[data-state='ok'] small {
+    color: #14573a;
+  }
+  .dtk-grid li[data-state='late'],
+  .dtk-grid li[data-state='down'] {
+    background: var(--color-blush);
+    box-shadow: inset 0 0 0 1.5px #d9705f;
+  }
+  .dtk-grid li[data-state='late'] small,
+  .dtk-grid li[data-state='down'] small {
+    color: #8f241b;
+  }
+  .dtk-grid li[data-state='blocked'] {
+    opacity: 0.55;
+  }
+  .dtk-result {
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+  .dtk-result[data-state='err'] {
+    color: #8f241b;
+  }
+  .dtk-result[data-state='ok'] {
+    color: #14573a;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dtk-grid li {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { demo } from '../demo-kit';
+
+  type State = 'idle' | 'asking' | 'ok' | 'late' | 'down' | 'blocked';
+  type Strings = { device: string; states: Record<State, string>; running: string; hung: string; slow: string; pending: string; done: string };
+  const d = demo<Strings>('tokio');
+  if (d) {
+    const cells = d.$$('[data-device]');
+    const result = d.$('[data-result]');
+    const timeout = d.$<HTMLInputElement>('[data-timeout]');
+    const modes = d.$$('[data-mode]');
+    const idle = result.textContent ?? '';
+    const SILENT = 7;
+    let mode: 'one' | 'all' = 'one';
+
+    const set = (n: number, state: State) => {
+      const cell = cells[n - 1];
+      cell.dataset.state = state;
+      cell.querySelector('[data-note]')!.textContent = d.T.states[state];
+    };
+    const finish = (text: string, state: 'ok' | 'warn' | 'err') => {
+      result.textContent = text;
+      if (state === 'warn') result.removeAttribute('data-state');
+      else result.dataset.state = state;
+      d.say(text);
+    };
+    const clear = () => cells.forEach((_, i) => set(i + 1, 'idle'));
+
+    d.root.addEventListener('click', (event) => {
+      const button = (event.target as Element).closest<HTMLElement>('[data-mode]');
+      if (!button) return;
+      mode = button.dataset.mode as 'one' | 'all';
+      modes.forEach((el) => el.setAttribute('aria-pressed', String(el === button)));
+    });
+
+    d.$('[data-run]').addEventListener('click', async () => {
+      const run = d.newRun();
+      const limit = timeout.checked;
+      clear();
+      result.textContent = d.T.running;
+      result.removeAttribute('data-state');
+      if (mode === 'one') {
+        for (let n = 1; n <= 16; n++) {
+          set(n, 'asking');
+          if (n === SILENT) {
+            await d.wait(limit ? 1500 : 900);
+            if (d.stale(run)) return;
+            if (!limit) {
+              set(n, 'late');
+              for (let rest = n + 1; rest <= 16; rest++) set(rest, 'blocked');
+              return finish(d.T.hung, 'err');
+            }
+            set(n, 'down');
+            continue;
+          }
+          await d.wait(150);
+          if (d.stale(run)) return;
+          set(n, 'ok');
+        }
+        return finish(d.T.slow, 'warn');
+      }
+      // All at once: each one answers when it is ready; nobody waits for anybody.
+      cells.forEach((_, i) => set(i + 1, 'asking'));
+      const answers = cells.map((_, i) => i + 1).filter((n) => n !== SILENT);
+      await Promise.all(
+        answers.map(async (n, i) => {
+          await d.wait(180 + ((i * 7) % 11) * 55);
+          if (!d.stale(run)) set(n, 'ok');
+        }),
+      );
+      if (d.stale(run)) return;
+      if (!limit) {
+        set(SILENT, 'late');
+        return finish(d.T.pending, 'warn');
+      }
+      await d.wait(700);
+      if (d.stale(run)) return;
+      set(SILENT, 'down');
+      finish(d.T.done, 'ok');
+    });
+
+    d.onReset(() => {
+      mode = 'one';
+      modes.forEach((el, i) => el.setAttribute('aria-pressed', String(i === 0)));
+      timeout.checked = false;
+      clear();
+      result.textContent = idle;
+      result.removeAttribute('data-state');
+      d.say('');
+    });
+  }
+</script>

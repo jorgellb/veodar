@@ -93,6 +93,56 @@ const en: Record<string, FigureText> = {
       "A notification board on a plate: on the left, a console with three event keys and, in front, an audience selector; in the middle, two relays with aerials, one for each family of phones; on the right, three phones standing on a dock. When a key is pressed, the alert passes through the relays and lights a banner on the screen of the two phones that allowed it; the third, with no permission, gets it in the app's inbox, a tray in front of it. A tap on the banner opens the order.",
     texts: { DESTINO: 'AUDIENCE', 'EVENTO · PERMISO · PANTALLA': 'EVENT · PERMISSION · SCREEN' },
   },
+  // ── Desktop technology scenes ──
+  gaugeline: {
+    label:
+      'An assembly line on a plate. On the left, a height gauge over the track: the piece that fits goes under it and the faulty one, taller, is turned aside onto a tray. In the middle, a cell with two arms and a single key on a rail: only the arm that holds the key comes down on the piece. A solid block leaves the end of the track. On the right, a cartridge that slots into a machine that already exists, and a port wired to a scale.',
+    texts: { '1 EJECUTABLE': '1 EXECUTABLE', 'CALIBRE · LLAVE ÚNICA · UN BLOQUE': 'GAUGE · SINGLE KEY · ONE BLOCK', PUERTO: 'PORT' },
+  },
+  shellbench: {
+    label:
+      'A two-layer bench on a plate. Below, the core: a long solid body with a drum, two data platters and a port with a cable running to a printer. On top, to the left, the window: a screen with four buttons. Between the two, a bridge carries each command to a row of sockets under a permission board with four switches; the fourth socket is capped and that command never reaches the core. In front, a press that turns out three installers, one per system.',
+    texts: { 'LEER ARCHIVOS': 'READ FILES', IMPRIMIR: 'PRINT', 'PUERTO USB': 'USB PORT', 'BORRAR DISCO': 'WIPE DISK', 'NÚCLEO · RUST': 'CORE · RUST', 'VENTANA · PERMISOS · NÚCLEO': 'WINDOW · PERMISSIONS · CORE' },
+  },
+  roundhouse: {
+    label:
+      'A roundhouse on a plate: five numbered tracks fan out from a round pit, each with a wagon and a light at its end. In the pit, a single turntable bridge points at the track whose light is on. At the back, beside the track that does not answer, a clock with its hand and, further right, a stop lever. In front, a channel carries the tokens of the finished tasks to a box that receives them.',
+    texts: { PARADA: 'STOP', 'UN PUENTE · MUCHAS VÍAS': 'ONE BRIDGE · MANY TRACKS' },
+  },
+  sievetower: {
+    label:
+      'A tower of three stepped layers on a plate: access at the top, limit in the middle and shape at the bottom, with a hopper on top. A cable comes down step by step; on each there is a light and, to its right, a sign with the answer for whoever does not pass: 401, 429 and 422. At the foot, a round router with a pointer shares out what arrives among three handlers in a row. From the third one a line runs to a screen showing live data.',
+    texts: { ACCESO: 'ACCESS', 'LÍMITE': 'LIMIT', FORMA: 'SHAPE', 'ACCESO · LÍMITE · FORMA · RUTA': 'ACCESS · LIMIT · SHAPE · ROUTE', '/pedidos': '/orders', '/clientes': '/customers', 'en vivo': 'live' },
+  },
+  capsule: {
+    label:
+      'An encapsulating press on a plate. On the left, a press with its ram over the start of a lane: a capsule comes out of it. The lane runs along the front and has three round docks; behind each one stand, in order, a screen with a web page, another with a desktop application and a server. On the right, a capsule inside a glass box with two ports: data goes in by one and the result comes out by the other.',
+    texts: { 'UNA CÁPSULA · TRES BASES': 'ONE CAPSULE · THREE DOCKS' },
+  },
+  enginecase: {
+    label:
+      'An open case with two chambers on a plate. In the left one, the engine room: an engine with its flywheel, two file platters and a port. In the right one, the window: a screen with a save button and a frame for a foreign add-on. A wall separates them, with a single narrow bridge and a barrier. On the right, two scales: on one, the shipping crate with the application and its engine; on the other, a small parcel with the application alone.',
+    texts: {
+      'añadido': 'add-on',
+      Guardar: 'Save',
+      'guardar · imprimir': 'save · print',
+      'SOLO PASAN': 'ONLY THESE',
+      'PRINCIPAL · NODE': 'MAIN · NODE',
+      'VENTANA · WEB': 'WINDOW · WEB',
+      'APP + MOTOR': 'APP + ENGINE',
+      'PRINCIPAL · PUENTE · VENTANA': 'MAIN · BRIDGE · WINDOW',
+    },
+  },
+  cascade: {
+    label:
+      'A desk of windows on a plate: three cascaded windows, stock, customers and, in front, an order form with one field marked. On the left, a directory tower with a card in its slot; at the back right, a data server. Beside the desk, a printer with a report coming out. In front, to the right, a jack lifts an old module up to the level of a new base.',
+    texts: { 'almacén': 'stock', clientes: 'customers', pedido: 'order', DIRECTORIO: 'DIRECTORY', ANTIGUO: 'LEGACY', '.NET ACTUAL': 'CURRENT .NET', 'FORMULARIO · INFORME · MIGRACIÓN': 'FORM · REPORT · MIGRATION' },
+  },
+  sealgate: {
+    label:
+      'A seal and handover station on a plate. On the left, a press over the start of a lane and, in front of it, a strongbox with the key. Next, a rack with two compartments, test and stable. The lane goes on to a verifier with a lens and a tray for what it turns down, and ends at a workstation with two bays, new and current, a sliding switch in front and a screen behind that shows the version in use.',
+    texts: { PRUEBAS: 'TEST', ESTABLE: 'STABLE', NUEVA: 'NEW', ACTUAL: 'CURRENT', 'SELLO · CANAL · VERIFICACIÓN': 'SEAL · CHANNEL · VERIFICATION' },
+  },
   configurator: {
     label:
       'A product configurator: a modular cabinet grows from one to three modules and gains a second height, doors and a finish as four controls move; a screen recalculates the price and at the end the quote is printed.',

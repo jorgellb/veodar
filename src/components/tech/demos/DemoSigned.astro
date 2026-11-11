@@ -1,0 +1,195 @@
+---
+// Signed updates: version 2.5 is published and followed to a workstation that runs
+// 2.4. Three endings: it installs; the file was altered on the way and is discarded;
+// it installs but does not start, and the workstation goes back by itself.
+import DemoFrame from '../DemoFrame.astro';
+import DemoWindow from '../DemoWindow.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    what: 'Qué se publica',
+    cases: ['Una versión correcta', 'Un archivo alterado por el camino', 'Una versión que no arranca'],
+    publish: 'Publicar la 2.5',
+    path: 'El recorrido',
+    stages: ['Firmada con la clave de la empresa', 'Canal de pruebas', 'Canal estable', 'Descargada en el puesto', 'Firma comprobada', 'Instalada en la segunda ranura', 'Arranque'],
+    station: 'Puesto de trabajo',
+    stationLabel: 'Ventana de la aplicación en el puesto de trabajo',
+    inUse: 'Versión en uso',
+    js: {
+      idle: 'Al día',
+      running: 'Buscando actualizaciones…',
+      updated: 'Actualizada a la 2.5. La 2.4 se conserva por si hay que volver.',
+      discarded: 'La firma no coincide con el archivo: se descarta sin instalar. Sigue la 2.4.',
+      rolledBack: 'La 2.5 no arranca: el puesto vuelve solo a la 2.4 y la 2.5 queda retirada para los demás.',
+      notes: { tampered: 'no coincide', failed: 'no arranca', kept: 'vuelta atrás', group: 'un grupo primero', skipped: 'no se llega' },
+      versions: ['2.4', '2.5'],
+    },
+  },
+  en: {
+    what: 'What gets published',
+    cases: ['A correct version', 'A file altered on the way', 'A version that does not start'],
+    publish: 'Publish 2.5',
+    path: 'The journey',
+    stages: ['Signed with the company’s key', 'Test channel', 'Stable channel', 'Downloaded at the workstation', 'Signature checked', 'Installed in the second bay', 'Start'],
+    station: 'Workstation',
+    stationLabel: 'Application window at the workstation',
+    inUse: 'Version in use',
+    js: {
+      idle: 'Up to date',
+      running: 'Looking for updates…',
+      updated: 'Updated to 2.5. Version 2.4 is kept in case it has to go back.',
+      discarded: 'The signature does not match the file: it is discarded without installing. Version 2.4 stays.',
+      rolledBack: 'Version 2.5 does not start: the workstation goes back to 2.4 by itself and 2.5 is withdrawn for everyone else.',
+      notes: { tampered: 'no match', failed: 'does not start', kept: 'rolled back', group: 'one group first', skipped: 'never reached' },
+      versions: ['2.4', '2.5'],
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="actualizaciones-firmadas" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--wide">
+    <div class="dsg-side">
+      <div class="dm-panel">
+        <p class="dm-cap" id="dsg-what">{T.what}</p>
+        <div class="dsg-cases" role="group" aria-labelledby="dsg-what">
+          {T.cases.map((name, i) => <button class="dm-btn dm-btn--ghost" type="button" data-case={['good', 'tampered', 'faulty'][i]} aria-pressed={i === 0 ? 'true' : 'false'}>{name}</button>)}
+        </div>
+        <div class="dm-row">
+          <button class="dm-btn" type="button" data-publish>{T.publish}</button>
+        </div>
+      </div>
+      <DemoWindow title={T.station} label={T.stationLabel} status={T.js.idle}>
+        <p class="dsg-version">
+          <span>{T.inUse}</span>
+          <strong data-version>2.4</strong>
+        </p>
+      </DemoWindow>
+    </div>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.path}</p>
+      <ol class="dm-steps">
+        {T.stages.map((stage, i) => <li data-step={i} data-state="idle">{stage}<small></small></li>)}
+      </ol>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  .dsg-side {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    min-width: 0;
+  }
+  .dsg-cases {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .dsg-cases .dm-btn {
+    justify-content: flex-start;
+    border-radius: 12px;
+    text-align: left;
+  }
+  .dsg-version {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+  .dsg-version strong {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--color-ink);
+  }
+</style>
+
+<script>
+  import { demo, setStep } from '../demo-kit';
+
+  type Kind = 'good' | 'tampered' | 'faulty';
+  type Strings = { idle: string; running: string; updated: string; discarded: string; rolledBack: string; notes: { tampered: string; failed: string; kept: string; group: string; skipped: string }; versions: string[] };
+  const d = demo<Strings>('actualizaciones-firmadas');
+  if (d) {
+    const steps = d.$$('[data-step]');
+    const cases = d.$$('[data-case]');
+    const version = d.$('[data-version]');
+    const status = d.$('[data-status]');
+    let kind: Kind = 'good';
+    const show = (text: string, state?: 'ok' | 'err') => {
+      status.textContent = text;
+      if (state) status.dataset.state = state;
+      else status.removeAttribute('data-state');
+    };
+    const clear = () => {
+      steps.forEach((step) => setStep(step, 'idle'));
+      version.textContent = d.T.versions[0];
+      show(d.T.idle);
+    };
+
+    d.root.addEventListener('click', (event) => {
+      const button = (event.target as Element).closest<HTMLElement>('[data-case]');
+      if (!button) return;
+      kind = button.dataset.case as Kind;
+      cases.forEach((el) => el.setAttribute('aria-pressed', String(el === button)));
+      d.newRun();
+      clear();
+    });
+
+    d.$('[data-publish]').addEventListener('click', async () => {
+      const run = d.newRun();
+      clear();
+      show(d.T.running);
+      const pass = async (i: number, note = '') => {
+        setStep(steps[i], 'run');
+        await d.wait(460);
+        if (d.stale(run)) return false;
+        setStep(steps[i], 'ok', note);
+        return true;
+      };
+      // Signed, one group first, then everyone, and down to the workstation.
+      if (!(await pass(0)) || !(await pass(1, d.T.notes.group)) || !(await pass(2)) || !(await pass(3))) return;
+      setStep(steps[4], 'run');
+      await d.wait(560);
+      if (d.stale(run)) return;
+      if (kind === 'tampered') {
+        setStep(steps[4], 'err', d.T.notes.tampered);
+        setStep(steps[5], 'warn', d.T.notes.skipped);
+        setStep(steps[6], 'warn', d.T.notes.skipped);
+        show(d.T.discarded, 'err');
+        return d.say(d.T.discarded);
+      }
+      setStep(steps[4], 'ok');
+      if (!(await pass(5))) return;
+      setStep(steps[6], 'run');
+      version.textContent = d.T.versions[1];
+      await d.wait(700);
+      if (d.stale(run)) return;
+      if (kind === 'faulty') {
+        setStep(steps[6], 'err', d.T.notes.failed);
+        await d.wait(500);
+        if (d.stale(run)) return;
+        version.textContent = d.T.versions[0];
+        setStep(steps[5], 'warn', d.T.notes.kept);
+        show(d.T.rolledBack, 'err');
+        return d.say(d.T.rolledBack);
+      }
+      setStep(steps[6], 'ok');
+      show(d.T.updated, 'ok');
+      d.say(d.T.updated);
+    });
+
+    d.onReset(() => {
+      kind = 'good';
+      cases.forEach((el, i) => el.setAttribute('aria-pressed', String(i === 0)));
+      clear();
+      d.say('');
+    });
+  }
+</script>

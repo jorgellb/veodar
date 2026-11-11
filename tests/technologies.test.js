@@ -14,12 +14,13 @@ const file = (path) => new URL(`../${path}`, import.meta.url);
 const LANGS = ['es', 'en'];
 const WEB = ['wordpress', 'astro', 'react', 'nextjs', 'nodejs', 'python', 'ia-generativa', 'javascript'];
 const MOBILE = ['react-native', 'expo', 'swift', 'swiftui', 'kotlin', 'jetpack-compose', 'sqlite', 'notificaciones-push'];
+const DESKTOP = ['rust', 'tauri', 'tokio', 'axum', 'webassembly', 'electron', 'dotnet', 'actualizaciones-firmadas'];
 // The page title gets " | Veodar" appended; the audit warns outside these bounds.
 const SUFFIX = ' | Veodar'.length;
 
 describe('routes', () => {
-  it('lists the web technologies in the order of the brief, then the mobile ones', () => {
-    assert.deepEqual([...TECH_IDS], [...WEB, ...MOBILE]);
+  it('lists the web technologies in the order of the brief, then the mobile and the desktop ones', () => {
+    assert.deepEqual([...TECH_IDS], [...WEB, ...MOBILE, ...DESKTOP]);
     assert.deepEqual(Object.keys(TECH_SLUGS), [...TECH_IDS]);
   });
 
@@ -32,6 +33,8 @@ describe('routes', () => {
     assert.equal(techHref('react-native', 'es'), '/tecnologias/react-native/');
     assert.equal(techHref('notificaciones-push', 'es'), '/tecnologias/notificaciones-push/');
     assert.equal(techHref('notificaciones-push', 'en'), '/en/technologies/push-notifications/');
+    assert.equal(techHref('dotnet', 'es'), '/tecnologias/dotnet/');
+    assert.equal(techHref('actualizaciones-firmadas', 'en'), '/en/technologies/signed-updates/');
   });
 
   it('gives each group a way into the index: the first at the top, the rest at their section', () => {
@@ -39,6 +42,8 @@ describe('routes', () => {
     assert.equal(techGroupHref('web', 'en'), '/en/technologies/');
     assert.equal(techGroupHref('movil', 'es'), '/tecnologias/#apps-moviles');
     assert.equal(techGroupHref('movil', 'en'), '/en/technologies/#mobile-apps');
+    assert.equal(techGroupHref('escritorio', 'es'), '/tecnologias/#apps-escritorio');
+    assert.equal(techGroupHref('escritorio', 'en'), '/en/technologies/#desktop-apps');
   });
 
   it('finds the id behind a slug in either language', () => {
@@ -46,6 +51,7 @@ describe('routes', () => {
     assert.equal(techIdOf('ia-generativa', 'es'), 'ia-generativa');
     assert.equal(techIdOf('nothing', 'en'), undefined);
     assert.equal(techIdOf('push-notifications', 'en'), 'notificaciones-push');
+    assert.equal(techIdOf('signed-updates', 'en'), 'actualizaciones-firmadas');
     assert.equal(techIdOf('notificaciones-push', 'en'), undefined, 'the Spanish slug is not an English page');
   });
 
@@ -71,12 +77,13 @@ describe('the data of each technology', () => {
     assert.deepEqual(en.map((tech) => tech.id), [...TECH_IDS]);
   });
 
-  it('sorts them into two groups of eight, each hanging from a service', () => {
-    assert.deepEqual([...TECH_GROUPS], ['web', 'movil']);
+  it('sorts them into three groups of eight, each hanging from a service', () => {
+    assert.deepEqual([...TECH_GROUPS], ['web', 'movil', 'escritorio']);
     const services = new Set(servicesFor('es').map((service) => service.slug));
     for (const lang of LANGS) {
       assert.deepEqual(techsOf('web', lang).map((tech) => tech.id), WEB);
       assert.deepEqual(techsOf('movil', lang).map((tech) => tech.id), MOBILE);
+      assert.deepEqual(techsOf('escritorio', lang).map((tech) => tech.id), DESKTOP);
       const groups = groupsFor(lang);
       assert.deepEqual(groups.map((group) => group.id), [...TECH_GROUPS]);
       for (const group of groups) {
@@ -89,11 +96,13 @@ describe('the data of each technology', () => {
       }
       assert.equal(new Set(groups.map((group) => group.anchor)).size, groups.length, 'one section each on the index');
     }
-    assert.deepEqual(groupsFor('es').map((group) => group.service), ['desarrollo-web', 'aplicaciones-moviles']);
+    assert.deepEqual(groupsFor('es').map((group) => group.service), ['desarrollo-web', 'aplicaciones-moviles', 'aplicaciones-escritorio']);
   });
 
   it('numbers each technology inside its group', () => {
     assert.deepEqual(techsOf('movil', 'es').map((tech) => tech.number), ['01', '02', '03', '04', '05', '06', '07', '08']);
+    assert.equal(techsOf('escritorio', 'es')[0].id, 'rust', 'Rust opens its group');
+    assert.equal(techsOf('escritorio', 'en').at(-1).number, '08');
     assert.equal(techsFor('es').find((tech) => tech.id === 'javascript').number, '08');
   });
 
@@ -106,6 +115,11 @@ describe('the data of each technology', () => {
     // Every name the mobile service lists has a page.
     const mobile = servicesFor('es').find((service) => service.slug === 'aplicaciones-moviles');
     assert.deepEqual(mobile.stack.map(techOfStack), MOBILE);
+    // And so does every name the desktop service lists, in both languages.
+    for (const lang of LANGS) {
+      const desktop = servicesFor(lang).find((service) => service.slug === 'aplicaciones-escritorio');
+      assert.deepEqual(desktop.stack.map(techOfStack), ['tauri', 'rust', 'electron', 'dotnet', 'sqlite', 'actualizaciones-firmadas'], lang);
+    }
   });
 
   it('uses the headings agreed for the Spanish pages', () => {
@@ -168,6 +182,42 @@ describe('the data of each technology', () => {
       techsOf('movil', 'en').map((tech) => tech.name),
       ['React Native', 'Expo', 'Swift', 'SwiftUI', 'Kotlin', 'Jetpack Compose', 'SQLite', 'Push notifications'],
     );
+  });
+
+  it('names the technology in the heading of every desktop page, Rust first', () => {
+    assert.deepEqual(
+      techsOf('escritorio', 'es').map((tech) => tech.h1),
+      [
+        'Desarrollo de software en Rust',
+        'Desarrollo de apps de escritorio con Tauri',
+        'Servicios concurrentes en Rust con Tokio',
+        'APIs y backends en Rust con Axum',
+        'Rust en el navegador con WebAssembly',
+        'Desarrollo de apps de escritorio con Electron',
+        'Desarrollo de aplicaciones de escritorio con .NET',
+        'Firma y actualización automática de apps de escritorio',
+      ],
+    );
+    assert.deepEqual(
+      techsOf('escritorio', 'es').map((tech) => tech.card.title),
+      [
+        'Desarrollo en Rust',
+        'Apps de escritorio con Tauri',
+        'Servicios concurrentes con Tokio',
+        'APIs y backends en Rust con Axum',
+        'Rust en el navegador con WebAssembly',
+        'Apps de escritorio con Electron',
+        'Aplicaciones de escritorio con .NET',
+        'Firma y actualización automática',
+      ],
+    );
+    assert.deepEqual(
+      techsOf('escritorio', 'en').map((tech) => tech.name),
+      ['Rust', 'Tauri', 'Tokio', 'Axum', 'WebAssembly', 'Electron', '.NET', 'Signed updates'],
+    );
+    // The emphasis of the group: most of its pages are Rust or built on it.
+    const onRust = techsOf('escritorio', 'es').filter((tech) => tech.id === 'rust' || tech.techs.includes('rust'));
+    assert.ok(onRust.length >= 6, `${onRust.length} of 8 pages are Rust or combine with it`);
   });
 
   for (const lang of LANGS) {
@@ -332,6 +382,26 @@ describe('links to technologies in running text', () => {
     assert.match(native, /href="\/tecnologias\/swift\/">Swift<\/a>/);
     assert.match(native, /href="\/tecnologias\/kotlin\/">Kotlin<\/a>/);
     assert.match(native, /href="\/tecnologias\/sqlite\/">SQLite<\/a>/);
+  });
+
+  it('links the desktop technologies by name, and leaves look-alikes alone', () => {
+    const desktop = '/servicios/aplicaciones-escritorio/';
+    startLinks(desktop);
+    const html = linkify('El núcleo va en Rust con Tauri; la app antigua está en Electron y la de gestión en .NET.', 'es', desktop, 1);
+    assert.match(html, /href="\/tecnologias\/rust\/">Rust<\/a>/);
+    assert.match(html, /href="\/tecnologias\/tauri\/">Tauri<\/a>/);
+    assert.match(html, /href="\/tecnologias\/electron\/">Electron<\/a>/);
+    startLinks(desktop);
+    assert.match(linkify('La aplicación de gestión está hecha en .NET.', 'es', desktop, 1), /href="\/tecnologias\/dotnet\/">\.NET<\/a>/);
+    startLinks(desktop);
+    assert.doesNotMatch(linkify('Un portal en ASP.NET, un viaje a Tokio y metal con rust.', 'es', desktop, 1), /ctx-tech/);
+    startLinks(desktop);
+    assert.match(linkify('El instalador lleva firma de código y la API usa Axum.', 'es', desktop, 1), /href="\/tecnologias\/actualizaciones-firmadas\/">firma de código<\/a>/);
+    startLinks('/en/services/desktop-app-development/');
+    const en = linkify('The service runs on Tokio, compiles to WebAssembly and ships with signed updates.', 'en', '/en/services/desktop-app-development/', 1);
+    assert.match(en, /href="\/en\/technologies\/tokio\/">Tokio<\/a>/);
+    assert.match(en, /href="\/en\/technologies\/webassembly\/">WebAssembly<\/a>/);
+    assert.match(en, /href="\/en\/technologies\/signed-updates\/">signed updates<\/a>/);
   });
 
   it('links the phrase a mobile technology is known by, in each language', () => {

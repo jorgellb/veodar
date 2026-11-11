@@ -1,0 +1,177 @@
+---
+// Tauri: the window of an app asks for four things; the board beside it says which of
+// them the core will do. What is switched off is refused, and one of the four is
+// simply not offered: the core has no such command.
+import DemoFrame from '../DemoFrame.astro';
+import DemoWindow from '../DemoWindow.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    window: 'Partes de trabajo',
+    windowLabel: 'Ventana de la aplicación',
+    ask: 'Lo que la ventana intenta',
+    actions: ['Leer partes.csv', 'Guardar el informe en Documentos', 'Imprimir la etiqueta', 'Borrar la carpeta del sistema'],
+    board: 'Cuadro de permisos',
+    perms: ['Leer en la carpeta de la app', 'Escribir en Documentos', 'Imprimir'],
+    absent: 'Borrar fuera de la app',
+    absentNote: 'No hay interruptor: el núcleo no ofrece esa orden.',
+    log: 'Entre la ventana y el núcleo',
+    ready: 'Sin datos cargados.',
+    js: {
+      commands: ['leer_partes', 'guardar_informe', 'imprimir_etiqueta', 'borrar_carpeta'],
+      asked: 'ventana → núcleo: {cmd}',
+      allowed: '{cmd} · permitido, el núcleo lo ejecuta',
+      denied: '{cmd} · denegado: no está activado en el cuadro',
+      unknown: '{cmd} · esa orden no existe: no hay nada que activar',
+      results: ['3 partes leídos de partes.csv', 'Informe guardado en Documentos', 'Etiqueta enviada a la impresora'],
+      refused: ['No se ha podido leer: falta el permiso', 'No se ha guardado: falta el permiso', 'No se ha impreso: falta el permiso', 'La app no puede hacer eso'],
+      ready: 'Sin datos cargados.',
+    },
+  },
+  en: {
+    window: 'Job reports',
+    windowLabel: 'Application window',
+    ask: 'What the window tries',
+    actions: ['Read reports.csv', 'Save the summary to Documents', 'Print the label', 'Delete the system folder'],
+    board: 'Permission board',
+    perms: ['Read in the app folder', 'Write to Documents', 'Print'],
+    absent: 'Delete outside the app',
+    absentNote: 'There is no switch: the core does not offer that command.',
+    log: 'Between the window and the core',
+    ready: 'No data loaded.',
+    js: {
+      commands: ['read_reports', 'save_summary', 'print_label', 'delete_folder'],
+      asked: 'window → core: {cmd}',
+      allowed: '{cmd} · allowed, the core runs it',
+      denied: '{cmd} · denied: it is not switched on at the board',
+      unknown: '{cmd} · no such command: there is nothing to switch on',
+      results: ['3 reports read from reports.csv', 'Summary saved to Documents', 'Label sent to the printer'],
+      refused: ['Could not read: the permission is missing', 'Not saved: the permission is missing', 'Not printed: the permission is missing', 'The app cannot do that'],
+      ready: 'No data loaded.',
+    },
+  },
+}[lang];
+// Reading and printing are on from the start; writing is the one to try switching.
+const ON = [true, false, true];
+---
+
+<DemoFrame id="tauri" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--2">
+    <DemoWindow title={T.window} label={T.windowLabel} status={T.ready}>
+      <p class="dm-cap" id="dta-ask">{T.ask}</p>
+      <div class="dta-actions" role="group" aria-labelledby="dta-ask">
+        {T.actions.map((action, i) => <button class:list={['dm-btn', i > 0 && 'dm-btn--ghost']} type="button" data-ask={i}>{action}</button>)}
+      </div>
+    </DemoWindow>
+    <div class="dm-panel">
+      <p class="dm-cap" id="dta-board">{T.board}</p>
+      <div class="dta-board" role="group" aria-labelledby="dta-board">
+        {
+          T.perms.map((perm, i) => (
+            <label class="dm-switch">
+              <input type="checkbox" data-perm={i} checked={ON[i]} />
+              <span>{perm}</span>
+            </label>
+          ))
+        }
+        <p class="dta-absent">
+          <strong>{T.absent}</strong>
+          <span>{T.absentNote}</span>
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="dm-panel dm-panel--dark" style="margin-top:12px">
+    <p class="dm-cap">{T.log}</p>
+    <ol class="dm-log" data-log aria-live="polite"></ol>
+  </div>
+</DemoFrame>
+
+<style>
+  .dta-actions {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .dta-actions .dm-btn {
+    justify-content: flex-start;
+    border-radius: 12px;
+    text-align: left;
+  }
+  .dta-board {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .dta-absent {
+    display: grid;
+    gap: 0.15rem;
+    margin-top: 0.5rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 12px;
+    background: rgb(22 20 44 / 0.05);
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+  .dta-absent span {
+    color: var(--color-muted);
+  }
+</style>
+
+<script>
+  import { demo, fill } from '../demo-kit';
+
+  type Strings = { commands: string[]; asked: string; allowed: string; denied: string; unknown: string; results: string[]; refused: string[]; ready: string };
+  const d = demo<Strings>('tauri');
+  if (d) {
+    const log = d.$('[data-log]');
+    const status = d.$('[data-status]');
+    const perms = d.$$<HTMLInputElement>('[data-perm]');
+    const start = perms.map((perm) => perm.checked);
+    const write = (text: string, state?: 'ok' | 'warn' | 'err') => {
+      const li = document.createElement('li');
+      if (state) li.dataset.state = state;
+      li.textContent = text;
+      log.append(li);
+      while (log.children.length > 6) log.firstElementChild!.remove();
+    };
+    const show = (text: string, state?: 'ok' | 'err') => {
+      status.textContent = text;
+      if (state) status.dataset.state = state;
+      else status.removeAttribute('data-state');
+    };
+
+    d.root.addEventListener('click', async (event) => {
+      const button = (event.target as Element).closest<HTMLElement>('[data-ask]');
+      if (!button) return;
+      const i = Number(button.dataset.ask);
+      const run = d.newRun();
+      const cmd = d.T.commands[i];
+      write(fill(d.T.asked, { cmd }));
+      await d.wait(380);
+      if (d.stale(run)) return;
+      if (i === 3) {
+        write(fill(d.T.unknown, { cmd }), 'err');
+        show(d.T.refused[3], 'err');
+        d.say(`${fill(d.T.unknown, { cmd })}. ${d.T.refused[3]}`);
+        return;
+      }
+      if (!perms[i].checked) {
+        write(fill(d.T.denied, { cmd }), 'err');
+        show(d.T.refused[i], 'err');
+        d.say(`${fill(d.T.denied, { cmd })}. ${d.T.refused[i]}`);
+        return;
+      }
+      write(fill(d.T.allowed, { cmd }), 'ok');
+      show(d.T.results[i], 'ok');
+      d.say(`${fill(d.T.allowed, { cmd })}. ${d.T.results[i]}`);
+    });
+
+    d.onReset(() => {
+      perms.forEach((perm, i) => (perm.checked = start[i]));
+      log.innerHTML = '';
+      show(d.T.ready);
+      d.say('');
+    });
+  }
+</script>

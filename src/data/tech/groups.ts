@@ -14,7 +14,7 @@ export type GroupText = {
   index: { title: string; lead: string; service: string };
 };
 
-export const groupText: Record<Lang, Record<'web' | 'movil', GroupText>> = {
+export const groupText: Record<Lang, Record<'web' | 'movil' | 'escritorio', GroupText>> = {
   es: {
     web: {
       name: 'Web y servidor',
@@ -44,6 +44,21 @@ export const groupText: Record<Lang, Record<'web' | 'movil', GroupText>> = {
         title: 'Qué desarrollamos para iPhone y Android',
         lead: 'El lenguaje propio de cada sistema, una sola base de código para los dos y las dos piezas que casi toda app acaba necesitando: datos sin conexión y avisos.',
         service: 'Apps móviles a medida',
+      },
+    },
+    escritorio: {
+      name: 'Escritorio y Rust',
+      menu: { name: 'Escritorio por tecnología', desc: 'Rust, Tauri, Tokio, Axum, WebAssembly, Electron, .NET…' },
+      block: {
+        title: 'Apps de escritorio a medida, con Rust donde importa',
+        lead: 'Creamos aplicaciones para Windows, macOS y Linux y continuamos las que ya existen. El núcleo lo escribimos en Rust cuando hacen falta velocidad, poco consumo o hablar con aparatos; si tu aplicación ya está en Electron o en .NET, trabajamos sobre ella.',
+        list: 'Tecnologías con las que desarrollamos apps de escritorio',
+        contact: 'Cuéntanos qué aplicación necesitas',
+      },
+      index: {
+        title: 'Qué desarrollamos con Rust y para el escritorio',
+        lead: 'Rust y su ecosistema, del núcleo de una app a los servicios que la acompañan, junto a las tecnologías de escritorio que ya están en uso y la forma de repartir cada versión.',
+        service: 'Apps de escritorio a medida',
       },
     },
   },
@@ -76,6 +91,21 @@ export const groupText: Record<Lang, Record<'web' | 'movil', GroupText>> = {
         title: 'What we build for iPhone and Android',
         lead: "Each system's own language, one codebase for both, and the two pieces almost every app ends up needing: offline data and notifications.",
         service: 'Custom mobile apps',
+      },
+    },
+    escritorio: {
+      name: 'Desktop and Rust',
+      menu: { name: 'Desktop by technology', desc: 'Rust, Tauri, Tokio, Axum, WebAssembly, Electron, .NET…' },
+      block: {
+        title: 'Custom desktop apps, with Rust where it matters',
+        lead: 'We build applications for Windows, macOS and Linux and continue the ones that already exist. We write the core in Rust when speed, low resource use or talking to devices is needed; if your application is already in Electron or .NET, we work on it.',
+        list: 'Technologies we build desktop apps with',
+        contact: 'Tell us what application you need',
+      },
+      index: {
+        title: 'What we build with Rust and for the desktop',
+        lead: 'Rust and its ecosystem, from the core of an app to the services around it, alongside the desktop technologies already in use and the way each version is shipped.',
+        service: 'Custom desktop apps',
       },
     },
   },

@@ -1,0 +1,259 @@
+---
+// Axum: an order is sent and goes through the layers in order: access, limit, shape,
+// handler. Each way of getting it wrong stops at its own layer, with its own answer.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    request: 'La petición',
+    token: 'Enviar con token de acceso',
+    customer: 'Cliente',
+    customers: ['Talleres Ejemplo', 'Ferretería de Muestra', '(sin elegir)'],
+    quantity: 'Cantidad',
+    quantityHelp: 'Prueba con letras, con 0 o dejándola vacía.',
+    send: 'Enviar pedido',
+    burst: 'Enviar cinco seguidas',
+    layers: 'Por dónde pasa',
+    stages: ['Acceso', 'Límite', 'Forma', 'Manejador'],
+    left: 'Peticiones que admite ahora',
+    response: 'Respuesta (simulada)',
+    idle: 'Todavía no se ha enviado nada.',
+    js: {
+      sent: 'POST /pedidos',
+      noToken: '401 · falta el token: no se sabe quién llama',
+      tooMany: '429 · demasiadas peticiones seguidas: prueba dentro de un momento',
+      noCustomer: '422 · cliente: falta',
+      badQuantity: '422 · cantidad: se esperaba un entero mayor que 0 y llegó «{value}»',
+      created: '201 · pedido {id} creado · {customer} · cantidad {n}',
+      notes: { noToken: 'sin token', tooMany: 'agotado', shape: 'no encaja', ok: 'respondido' },
+      refilled: 'El límite se ha recuperado.',
+      idle: 'Todavía no se ha enviado nada.',
+    },
+  },
+  en: {
+    request: 'The request',
+    token: 'Send with an access token',
+    customer: 'Customer',
+    customers: ['Example Workshops', 'Sample Hardware', '(not chosen)'],
+    quantity: 'Quantity',
+    quantityHelp: 'Try letters, 0 or leaving it empty.',
+    send: 'Send order',
+    burst: 'Send five in a row',
+    layers: 'What it goes through',
+    stages: ['Access', 'Limit', 'Shape', 'Handler'],
+    left: 'Requests it accepts right now',
+    response: 'Response (simulated)',
+    idle: 'Nothing has been sent yet.',
+    js: {
+      sent: 'POST /orders',
+      noToken: '401 · the token is missing: nobody knows who is calling',
+      tooMany: '429 · too many requests in a row: try again in a moment',
+      noCustomer: '422 · customer: missing',
+      badQuantity: '422 · quantity: expected a whole number above 0 and got “{value}”',
+      created: '201 · order {id} created · {customer} · quantity {n}',
+      notes: { noToken: 'no token', tooMany: 'used up', shape: 'does not fit', ok: 'answered' },
+      refilled: 'The limit has recovered.',
+      idle: 'Nothing has been sent yet.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="axum" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--2">
+    <div class="dm-panel">
+      <p class="dm-cap">{T.request}</p>
+      <label class="dm-switch">
+        <input type="checkbox" data-token checked />
+        <span>{T.token}</span>
+      </label>
+      <label class="dm-field">
+        <span>{T.customer}</span>
+        <select class="dm-input" data-customer>
+          {T.customers.map((name, i) => <option value={i === 2 ? '' : name}>{name}</option>)}
+        </select>
+      </label>
+      <label class="dm-field">
+        <span>{T.quantity}</span>
+        <input class="dm-input" type="text" inputmode="numeric" autocomplete="off" value="3" data-quantity aria-describedby="dax-help" />
+        <small class="dm-help" id="dax-help">{T.quantityHelp}</small>
+      </label>
+      <div class="dm-row">
+        <button class="dm-btn" type="button" data-send="1">{T.send}</button>
+        <button class="dm-btn dm-btn--ghost" type="button" data-send="5">{T.burst}</button>
+      </div>
+    </div>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.layers}</p>
+      <ol class="dm-steps">
+        {T.stages.map((stage, i) => <li data-step={i} data-state="idle">{stage}<small></small></li>)}
+      </ol>
+      <p class="dax-left">
+        <span>{T.left}</span>
+        <span class="dax-dots" data-left aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="sr-only" data-left-text>3</span>
+      </p>
+    </div>
+  </div>
+  <div class="dm-panel dm-panel--dark" style="margin-top:12px">
+    <p class="dm-cap">{T.response}</p>
+    <ol class="dm-log" data-log aria-live="polite"><li>{T.idle}</li></ol>
+  </div>
+</DemoFrame>
+
+<style>
+  .dax-left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 13.5px;
+    color: var(--color-muted);
+  }
+  .dax-dots {
+    display: inline-flex;
+    gap: 5px;
+  }
+  .dax-dots i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--color-ink);
+    transition: opacity 0.2s;
+  }
+  .dax-dots i[data-used] {
+    opacity: 0.16;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dax-dots i {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { demo, fill, setStep } from '../demo-kit';
+
+  type Strings = {
+    sent: string;
+    noToken: string;
+    tooMany: string;
+    noCustomer: string;
+    badQuantity: string;
+    created: string;
+    notes: { noToken: string; tooMany: string; shape: string; ok: string };
+    refilled: string;
+    idle: string;
+  };
+  const d = demo<Strings>('axum');
+  if (d) {
+    const steps = d.$$('[data-step]');
+    const log = d.$('[data-log]');
+    const token = d.$<HTMLInputElement>('[data-token]');
+    const customer = d.$<HTMLSelectElement>('[data-customer]');
+    const quantity = d.$<HTMLInputElement>('[data-quantity]');
+    const dots = d.$$('[data-left] i');
+    const leftText = d.$('[data-left-text]');
+    const LIMIT = 3;
+    let left = LIMIT;
+    let next = 2041;
+    let refill = 0;
+
+    const write = (text: string, state?: 'ok' | 'warn' | 'err') => {
+      const li = document.createElement('li');
+      if (state) li.dataset.state = state;
+      li.textContent = text;
+      log.append(li);
+      while (log.children.length > 10) log.firstElementChild!.remove();
+    };
+    const drawLeft = () => {
+      dots.forEach((dot, i) => dot.toggleAttribute('data-used', i >= left));
+      leftText.textContent = String(left);
+    };
+    // After a quiet while the limit gives its requests back, as a real one would.
+    const rest = () => {
+      clearTimeout(refill);
+      refill = window.setTimeout(() => {
+        if (left === LIMIT) return;
+        left = LIMIT;
+        drawLeft();
+        write(d.T.refilled, 'warn');
+      }, 6000);
+    };
+
+    const one = async (run: number): Promise<string> => {
+      steps.forEach((step) => setStep(step, 'idle'));
+      write(d.T.sent);
+      setStep(steps[0], 'run');
+      await d.wait(260);
+      if (d.stale(run)) return '';
+      if (!token.checked) {
+        setStep(steps[0], 'err', d.T.notes.noToken);
+        write(d.T.noToken, 'err');
+        return d.T.noToken;
+      }
+      setStep(steps[0], 'ok');
+      setStep(steps[1], 'run');
+      await d.wait(260);
+      if (d.stale(run)) return '';
+      if (left === 0) {
+        setStep(steps[1], 'err', d.T.notes.tooMany);
+        write(d.T.tooMany, 'err');
+        return d.T.tooMany;
+      }
+      left--;
+      drawLeft();
+      setStep(steps[1], 'ok');
+      setStep(steps[2], 'run');
+      await d.wait(260);
+      if (d.stale(run)) return '';
+      const raw = quantity.value.trim();
+      const n = /^\d+$/.test(raw) ? Number(raw) : NaN;
+      const problem = !customer.value ? d.T.noCustomer : !(n > 0) ? fill(d.T.badQuantity, { value: raw }) : '';
+      quantity.setAttribute('aria-invalid', String(Boolean(customer.value) && !(n > 0)));
+      if (problem) {
+        setStep(steps[2], 'err', d.T.notes.shape);
+        write(problem, 'err');
+        return problem;
+      }
+      setStep(steps[2], 'ok');
+      setStep(steps[3], 'run');
+      await d.wait(320);
+      if (d.stale(run)) return '';
+      setStep(steps[3], 'ok', d.T.notes.ok);
+      const done = fill(d.T.created, { id: next++, customer: customer.value, n });
+      write(done, 'ok');
+      return done;
+    };
+
+    d.root.addEventListener('click', async (event) => {
+      const button = (event.target as Element).closest<HTMLElement>('[data-send]');
+      if (!button) return;
+      const run = d.newRun();
+      if (log.children.length === 1 && !log.firstElementChild!.hasAttribute('data-state') && log.textContent === d.T.idle) log.innerHTML = '';
+      let last = '';
+      for (let i = 0; i < Number(button.dataset.send); i++) {
+        last = await one(run);
+        if (d.stale(run)) return;
+      }
+      d.say(last);
+      rest();
+    });
+
+    d.onReset(() => {
+      clearTimeout(refill);
+      left = LIMIT;
+      next = 2041;
+      token.checked = true;
+      customer.selectedIndex = 0;
+      quantity.value = '3';
+      quantity.removeAttribute('aria-invalid');
+      steps.forEach((step) => setStep(step, 'idle'));
+      log.innerHTML = `<li>${d.T.idle}</li>`;
+      drawLeft();
+      d.say('');
+    });
+  }
+</script>

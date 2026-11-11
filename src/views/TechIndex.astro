@@ -25,9 +25,9 @@ const T = {
     crumbs: 'Migas de pan',
     title: 'Tecnologías: desarrollo y programación a medida',
     description:
-      'Desarrollo a medida por tecnología: WordPress, Astro, React, Next.js, Node.js y Python en web; React Native, Swift, Kotlin y SQLite en apps móviles.',
+      'Desarrollo a medida por tecnología: WordPress, React, Node.js y Python en web; React Native, Swift y Kotlin en móvil; Rust, Tauri y .NET en escritorio.',
     h1: 'Desarrollo y programación por tecnología',
-    lead: 'A veces el encargo ya viene con nombre: una web en WordPress que hay que ampliar, una app en React Native que continuar, un proceso que alguien empezó en Python. Aquí está lo que desarrollamos con cada tecnología, qué problemas resuelve y cómo sería el encargo.',
+    lead: 'A veces el encargo ya viene con nombre: una web en WordPress que hay que ampliar, una app en React Native que continuar, un programa de escritorio que conviene pasar a Rust. Aquí está lo que desarrollamos con cada tecnología, qué problemas resuelve y cómo sería el encargo.',
     cta: 'Cuéntanos tu proyecto',
     scene: 'Banco de trabajo',
     caption: 'Cuatro módulos, contenido, interfaz, conexiones y datos, esperan al fondo del banco. Cada proyecto trae al frente los que necesita y los une.',
@@ -81,6 +81,29 @@ const T = {
           { id: 'nodejs', role: 'recibe los cambios y los reparte a tus sistemas.' },
         ],
       },
+      {
+        title: 'Una app de escritorio ligera, del núcleo al instalador',
+        pieces: [
+          { id: 'tauri', role: 'pone la ventana con tecnología web y reparte los permisos.' },
+          { id: 'rust', role: 'hace el trabajo: archivos, cálculo y aparatos.' },
+          { id: 'actualizaciones-firmadas', role: 'la firman y la mantienen al día en cada puesto.' },
+        ],
+      },
+      {
+        title: 'Un servicio en Rust que no se queda esperando',
+        pieces: [
+          { id: 'tokio', role: 'lleva muchas tareas a la vez sin que una frene a otra.' },
+          { id: 'axum', role: 'recibe las peticiones y deja pasar solo las bien formadas.' },
+        ],
+      },
+      {
+        title: 'La misma regla en la web, el escritorio y el servidor',
+        pieces: [
+          { id: 'rust', role: 'escribe la regla una sola vez.' },
+          { id: 'webassembly', role: 'la lleva al navegador y a donde haga falta.' },
+          { id: 'javascript', role: 'la conecta con la pantalla.' },
+        ],
+      },
     ] as Combo[],
     comboNote: 'El cometido de cada pieza es el mismo en todos los proyectos; la combinación, no. A veces basta una sola.',
     startKicker: 'Si aún no hay tecnología',
@@ -93,6 +116,7 @@ const T = {
       ['Desarrollo web a medida', 'desarrollo-web'],
       ['Automatizaciones con IA', 'automatizaciones-ia'],
       ['Apps móviles', 'aplicaciones-moviles'],
+      ['Apps de escritorio', 'aplicaciones-escritorio'],
     ],
     allServices: 'Todos los servicios',
     ctaTitle: '¿No sabes qué tecnología necesita tu proyecto?',
@@ -105,9 +129,9 @@ const T = {
     crumbs: 'Breadcrumb',
     title: 'Technologies: Custom Development and Programming',
     description:
-      'Custom development by technology: WordPress, Astro, React, Next.js, Node.js and Python for the web; React Native, Swift, Kotlin and SQLite for apps.',
+      'Custom development by technology: WordPress, React, Node.js and Python on the web; React Native, Swift and Kotlin on mobile; Rust, Tauri and .NET on desktop.',
     h1: 'Development and programming by technology',
-    lead: 'Sometimes the job arrives with a name: a WordPress site to extend, a React Native app to continue, a process someone started in Python. Here is what we build with each technology, which problems it solves and what the job would look like.',
+    lead: 'Sometimes the job arrives with a name: a WordPress site to extend, a React Native app to continue, a desktop program worth moving to Rust. Here is what we build with each technology, the problems it solves and how the job would go.',
     cta: 'Tell us about your project',
     scene: 'Workbench',
     caption: 'Four modules, content, interface, connections and data, wait at the back of the bench. Each project pulls forward the ones it needs and joins them.',
@@ -161,6 +185,29 @@ const T = {
           { id: 'nodejs', role: 'receives the changes and hands them to your systems.' },
         ],
       },
+      {
+        title: 'A light desktop app, from the core to the installer',
+        pieces: [
+          { id: 'tauri', role: 'provides the window in web technology and hands out the permissions.' },
+          { id: 'rust', role: 'does the work: files, calculation and devices.' },
+          { id: 'actualizaciones-firmadas', role: 'sign it and keep it current on every workstation.' },
+        ],
+      },
+      {
+        title: 'A Rust service that is never left waiting',
+        pieces: [
+          { id: 'tokio', role: 'runs many tasks at once without one holding up another.' },
+          { id: 'axum', role: 'receives the requests and lets through only the well-formed ones.' },
+        ],
+      },
+      {
+        title: 'The same rule on the web, the desktop and the server',
+        pieces: [
+          { id: 'rust', role: 'writes the rule once.' },
+          { id: 'webassembly', role: 'takes it to the browser and wherever it is needed.' },
+          { id: 'javascript', role: 'connects it to the screen.' },
+        ],
+      },
     ] as Combo[],
     comboNote: "Each piece does the same job in every project; the combination doesn't. Sometimes one is enough.",
     startKicker: 'If there is no technology yet',
@@ -173,6 +220,7 @@ const T = {
       ['Custom web development', 'desarrollo-web'],
       ['AI automation', 'automatizaciones-ia'],
       ['Mobile apps', 'aplicaciones-moviles'],
+      ['Desktop apps', 'aplicaciones-escritorio'],
     ],
     allServices: 'All services',
     ctaTitle: "Not sure which technology your project needs?",
