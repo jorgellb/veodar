@@ -1,15 +1,13 @@
-# After every production deployment on Vercel, tell IndexNow which pages changed
-# (see scripts/indexnow.mjs). Vercel announces each deployment to GitHub with a
-# repository_dispatch event; "promoted" is the one sent when a deployment starts
-# serving veodar.com, whether a push or a manual promotion put it there. Preview
-# deployments are ignored. It can also be run by hand from the Actions tab.
+# After every push to main, tell IndexNow which pages changed (scripts/indexnow.mjs).
+# The push is also what makes Vercel deploy, so the script first waits until veodar.com
+# serves this commit (it reads /version.txt) and only then reads the live sitemap.
+# The sitemap announced last time is kept in the Actions cache, so a deployment that
+# changes no page announces nothing. It can also be run by hand from the Actions tab.
 name: IndexNow
-run-name: IndexNow · ${{ github.event.client_payload.git.shortSha || 'a mano' }}
 
 on:
-  repository_dispatch:
-    types:
-      - 'vercel.deployment.promoted'
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       all:
@@ -20,17 +18,29 @@ on:
 permissions:
   contents: read
 
+# A newer push replaces the one still waiting: its run announces both.
+concurrency:
+  group: indexnow
+  cancel-in-progress: true
+
 jobs:
   ping:
-    if: github.event_name == 'workflow_dispatch' || github.event.client_payload.environment == 'production'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
-      # Pinned to a commit (v7.0.1) so a moved tag cannot change what runs here.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      # Actions are pinned to a commit so a moved tag cannot change what runs here.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # Restores the last saved memory and, if the job succeeds, saves the new one.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .indexnow
+          key: indexnow-${{ github.run_id }}
+          restore-keys: indexnow-
       # The runner image already ships a Node with fetch; the script needs nothing else.
       - run: node scripts/indexnow.mjs
         env:
           INDEXNOW_ALL: ${{ inputs.all }}
+          INDEXNOW_STATE: .indexnow/sitemap.json
+          INDEXNOW_WAIT_FOR: ${{ github.event_name == 'push' && github.sha || '' }}
