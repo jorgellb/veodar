@@ -16,10 +16,17 @@ export async function openPage() {
   const chrome = spawn(binary, ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--hide-scrollbars', 'about:blank'], {
     stdio: ['ignore', 'ignore', 'pipe'],
   });
-  const stop = () => {
-    chrome.kill('SIGKILL');
-    rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
-  };
+  /** Ends Chrome and, once it is gone, removes its profile (deleting it sooner leaves files behind). */
+  const stop = () =>
+    new Promise((done) => {
+      const clean = () => {
+        rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+        done();
+      };
+      if (chrome.exitCode !== null || chrome.signalCode !== null) return clean();
+      chrome.once('exit', clean);
+      chrome.kill('SIGKILL');
+    });
   try {
     const port = await new Promise((done, fail) => {
       let log = '';
@@ -83,13 +90,14 @@ export async function openPage() {
         if (exceptionDetails) throw new Error(exceptionDetails.exception?.description ?? exceptionDetails.text);
         return result.value;
       },
+      /** Closes the browser. Await it before the script ends so the temporary profile is removed. */
       close() {
         socket.close();
-        stop();
+        return stop();
       },
     };
   } catch (error) {
-    stop();
+    await stop();
     throw error;
   }
 }

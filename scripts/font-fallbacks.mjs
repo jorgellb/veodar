@@ -164,7 +164,7 @@ async function measure(previous, files) {
       body: { ...previous.body, ...found.body },
     };
   } finally {
-    page.close();
+    await page.close();
   }
 }
 
