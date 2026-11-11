@@ -111,6 +111,15 @@
       ]
     },
     {
+      "source": "/version.txt",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    },
+    {
       "source": "/(sitemap.xml|llms.txt|robots.txt)",
       "headers": [
         {
