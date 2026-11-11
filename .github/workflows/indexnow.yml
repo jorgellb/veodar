@@ -1,20 +1,36 @@
 # After every production deployment on Vercel, tell IndexNow which pages changed
-# (see scripts/indexnow.mjs). Nothing runs on preview deployments.
+# (see scripts/indexnow.mjs). Vercel announces each deployment to GitHub with a
+# repository_dispatch event; "promoted" is the one sent when a deployment starts
+# serving veodar.com, whether a push or a manual promotion put it there. Preview
+# deployments are ignored. It can also be run by hand from the Actions tab.
 name: IndexNow
+run-name: IndexNow · ${{ github.event.client_payload.git.shortSha || 'a mano' }}
 
 on:
-  deployment_status:
+  repository_dispatch:
+    types:
+      - 'vercel.deployment.promoted'
+  workflow_dispatch:
+    inputs:
+      all:
+        description: 'Enviar todas las URL del sitemap, no solo las que cambiaron'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
   ping:
-    if: github.event.deployment_status.state == 'success' && startsWith(github.event.deployment.environment, 'Production')
+    if: github.event_name == 'workflow_dispatch' || github.event.client_payload.environment == 'production'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Pinned to a commit (v7.0.1) so a moved tag cannot change what runs here.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          node-version: 22
+          persist-credentials: false
+      # The runner image already ships a Node with fetch; the script needs nothing else.
       - run: node scripts/indexnow.mjs
+        env:
+          INDEXNOW_ALL: ${{ inputs.all }}
