@@ -6,7 +6,8 @@ import LangSwitch from './LangSwitch.astro';
 import { servicesFor, serviceHref } from '../data/services';
 import { sectorsFor } from '../data/sectors';
 import { askAiFor } from '../data/site';
-import { langOf, pathTo, sectorHref } from '../i18n';
+import { groupsFor, techById } from '../data/technologies';
+import { langOf, pathTo, sectorHref, techIdOf } from '../i18n';
 
 interface Props {
   tone?: 'light' | 'dark';
@@ -22,6 +23,9 @@ const engineering = services.filter((service) => service.group === 'ingenieria')
 const studio = services.filter((service) => service.group === 'estudio');
 const featured = engineering[0];
 const engineeringRest = engineering.slice(1);
+// The groups of technologies: each hangs, as a second way in, from the service it belongs to.
+const techGroups = groupsFor(lang);
+const techGroupOf = new Map(techGroups.map((group) => [group.service, group]));
 
 const T = {
   es: {
@@ -149,8 +153,11 @@ const resources = [
 
 // Phone menu: the four rows on the fibre, and what each one opens.
 const path = Astro.url.pathname;
+// On a technology page, the group it belongs to; on the index, the first.
+const techSlug = path.match(/^\/(?:en\/technologies|tecnologias)\/(?:([^/]+)\/)?$/);
+const hereGroup = techSlug ? (techSlug[1] ? techById(techIdOf(techSlug[1], lang) ?? '', lang)?.group : techGroups[0].id) : undefined;
 const here =
-  /^\/(en\/services|servicios)\//.test(path) ? 'servicios'
+  /^\/(en\/services|servicios|en\/technologies|tecnologias)\//.test(path) ? 'servicios'
   : /^\/(en\/solutions|soluciones)\//.test(path) ? 'soluciones'
   : /^\/(en\/industries|sectores)\//.test(path) ? 'sectores'
   : /^\/(en\/pricing|precios)\//.test(path) ? 'precios'
@@ -284,6 +291,14 @@ const tintBg: Record<string, string> = {
                         <span class="mega-desc">{service.menu}</span>
                       </span>
                     </a>
+                    {techGroupOf.get(service.slug) && (
+                      <a href={techGroupOf.get(service.slug)!.href} class="mega-sub">
+                        <span class="mega-sub-name">
+                          {techGroupOf.get(service.slug)!.menu.name} <Icon name="arrow" size={13} />
+                        </span>
+                        <span class="mega-sub-desc">{techGroupOf.get(service.slug)!.menu.desc}</span>
+                      </a>
+                    )}
                   </li>
                 ))
               }
@@ -503,6 +518,17 @@ const tintBg: Record<string, string> = {
             ))
           }
         </ul>
+        {
+          techGroups.map((group) => (
+            <a href={group.href} class="ms-sub" aria-current={group.id === hereGroup ? 'page' : undefined}>
+              <span>
+                <span class="ms-sub-name">{group.menu.name}</span>
+                <span class="ms-sub-desc">{group.menu.desc}</span>
+              </span>
+              <Icon name="arrow" size={17} />
+            </a>
+          ))
+        }
         <p class="ms-head-cap ms-head-cap--sub">{T.studio} · {studio.length}</p>
         <ul class="ms-tiles">
           {
@@ -807,6 +833,45 @@ const tintBg: Record<string, string> = {
     margin-top: 2px;
     font-size: 13.5px;
     line-height: 1.4;
+    color: var(--color-muted);
+  }
+  /* A second way in, hanging from the service it belongs to. */
+  .mega-sub {
+    position: relative;
+    display: block;
+    margin: 0 0 4px 29px;
+    padding: 6px 10px 7px 31px;
+    border-radius: 12px;
+    transition: background-color 0.2s;
+  }
+  .mega-sub::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -4px;
+    width: 20px;
+    height: 20px;
+    border-left: 1.5px solid var(--color-line-strong);
+    border-bottom: 1.5px solid var(--color-line-strong);
+    border-bottom-left-radius: 8px;
+  }
+  .mega-sub:hover {
+    background: rgb(22 20 44 / 0.045);
+  }
+  .mega-sub-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    font-weight: 560;
+    line-height: 1.25;
+    color: var(--color-ink);
+  }
+  .mega-sub-desc {
+    display: block;
+    margin-top: 1px;
+    font-size: 12.5px;
+    line-height: 1.35;
     color: var(--color-muted);
   }
   .mega-foot {
@@ -1432,7 +1497,7 @@ const tintBg: Record<string, string> = {
   .msheet:is([data-view='servicios'], [data-view='soluciones'], [data-view='sectores'], [data-view='recursos']) .ms-level:not([data-level='root']):not([inert]) .ms-head > span {
     animation: ms-rise 0.8s var(--ease-out-soft) 0.12s both;
   }
-  .msheet:is([data-view='servicios'], [data-view='soluciones'], [data-view='sectores'], [data-view='recursos']) .ms-level:not([inert]) :is(.ms-tile, .ms-row, .ms-card, .ms-head-cap) {
+  .msheet:is([data-view='servicios'], [data-view='soluciones'], [data-view='sectores'], [data-view='recursos']) .ms-level:not([inert]) :is(.ms-tile, .ms-row, .ms-card, .ms-head-cap, .ms-sub) {
     animation: ms-tile 0.6s var(--ease-out-soft) both;
     animation-delay: calc(0.18s + var(--i, 0) * 0.04s);
   }
@@ -1539,6 +1604,35 @@ const tintBg: Record<string, string> = {
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+  .ms-sub {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 10px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    color: var(--color-paper);
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.2);
+  }
+  .ms-sub:active {
+    background: rgb(244 240 230 / 0.08);
+  }
+  .ms-sub-name {
+    display: block;
+    font-size: 15.5px;
+    font-weight: 560;
+  }
+  .ms-sub-desc {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    color: rgb(244 240 230 / 0.6);
+  }
+  .ms-sub :global(svg) {
+    flex: none;
+    color: var(--color-accent);
   }
   .ms-all {
     display: inline-flex;

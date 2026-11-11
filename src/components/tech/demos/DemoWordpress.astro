@@ -1,0 +1,184 @@
+---
+// WordPress: a form saves a request as an entry and then sends it to the CRM, which
+// may not answer. Nothing leaves the browser.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    form: 'Formulario de la web',
+    name: 'Nombre',
+    sample: 'Marta Ruiz',
+    service: 'Qué necesita',
+    services: ['Presupuesto de reforma', 'Visita técnica', 'Información general'],
+    crm: 'El CRM responde',
+    crmHelp: 'Desmárcalo para ver qué pasa cuando el otro sistema no contesta.',
+    send: 'Enviar solicitud',
+    flow: 'Qué ocurre con el dato',
+    steps: ['Formulario validado', 'Guardado en WordPress', 'Enviado al CRM'],
+    entries: 'Entradas guardadas en WordPress',
+    cols: ['N.º', 'Nombre', 'CRM'],
+    none: 'Todavía no hay entradas. Envía la primera.',
+    retry: 'Reintentar los pendientes',
+    js: {
+      missing: 'Falta el nombre: no se guarda nada',
+      valid: 'campos completos',
+      saved: 'entrada n.º {id}',
+      sending: 'esperando al CRM…',
+      sent: 'contacto creado',
+      pending: 'sin respuesta · queda pendiente y se reintentará',
+      ok: 'enviado',
+      wait: 'pendiente',
+      doneSay: 'Solicitud {id} guardada y enviada al CRM.',
+      pendingSay: 'Solicitud {id} guardada. El CRM no responde: queda pendiente.',
+      retriedSay: 'Pendientes enviados al CRM.',
+      stillDown: 'El CRM sigue sin responder.',
+    },
+  },
+  en: {
+    form: 'Form on the website',
+    name: 'Name',
+    sample: 'Martha Reed',
+    service: 'What they need',
+    services: ['Renovation quote', 'Site visit', 'General information'],
+    crm: 'The CRM answers',
+    crmHelp: "Untick it to see what happens when the other system doesn't reply.",
+    send: 'Send request',
+    flow: 'What happens to the data',
+    steps: ['Form validated', 'Saved in WordPress', 'Sent to the CRM'],
+    entries: 'Entries saved in WordPress',
+    cols: ['No.', 'Name', 'CRM'],
+    none: 'No entries yet. Send the first one.',
+    retry: 'Retry the pending ones',
+    js: {
+      missing: 'The name is missing: nothing is saved',
+      valid: 'all fields complete',
+      saved: 'entry no. {id}',
+      sending: 'waiting for the CRM…',
+      sent: 'contact created',
+      pending: 'no answer · left pending, to be retried',
+      ok: 'sent',
+      wait: 'pending',
+      doneSay: 'Request {id} saved and sent to the CRM.',
+      pendingSay: 'Request {id} saved. The CRM is not answering: left pending.',
+      retriedSay: 'Pending entries sent to the CRM.',
+      stillDown: 'The CRM is still not answering.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="wordpress" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--2">
+    <form class="dm-panel" data-form novalidate>
+      <p class="dm-cap">{T.form}</p>
+      <label class="dm-field"><span>{T.name}</span><input class="dm-input" name="name" value={T.sample} autocomplete="off" /></label>
+      <label class="dm-field">
+        <span>{T.service}</span>
+        <select class="dm-input" name="service">{T.services.map((item) => <option>{item}</option>)}</select>
+      </label>
+      <label class="dm-check"><input type="checkbox" name="crm" checked /> <span>{T.crm}</span></label>
+      <p class="dm-help">{T.crmHelp}</p>
+      <div class="dm-row"><button class="dm-btn" type="submit">{T.send}</button></div>
+    </form>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.flow}</p>
+      <ol class="dm-steps">
+        {T.steps.map((step, i) => <li data-step={i} data-state="idle">{step}<small></small></li>)}
+      </ol>
+      <p class="dm-cap">{T.entries}</p>
+      <p class="dm-empty" data-none>{T.none}</p>
+      <table class="dm-table" data-entries hidden>
+        <thead><tr>{T.cols.map((col) => <th scope="col">{col}</th>)}</tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="dm-row"><button class="dm-btn dm-btn--ghost" type="button" data-retry hidden>{T.retry}</button></div>
+    </div>
+  </div>
+</DemoFrame>
+
+<script>
+  import { demo, escapeHtml, fill, setStep } from '../demo-kit';
+
+  const d = demo<Record<string, string>>('wordpress');
+  if (d) {
+    const form = d.$<HTMLFormElement>('[data-form]');
+    const steps = d.$$('[data-step]');
+    const table = d.$<HTMLTableElement>('[data-entries]');
+    const none = d.$('[data-none]');
+    const retry = d.$<HTMLButtonElement>('[data-retry]');
+    const crm = form.elements.namedItem('crm') as HTMLInputElement;
+    const name = form.elements.namedItem('name') as HTMLInputElement;
+    let entries: { id: number; name: string; sent: boolean }[] = [];
+    let next = 218;
+
+    const draw = () => {
+      table.hidden = entries.length === 0;
+      none.hidden = entries.length > 0;
+      table.tBodies[0].innerHTML = entries
+        .map((entry) => `<tr><td>${entry.id}</td><td>${escapeHtml(entry.name)}</td><td><span class="dm-pill" data-state="${entry.sent ? 'ok' : 'warn'}">${entry.sent ? d.T.ok : d.T.wait}</span></td></tr>`)
+        .join('');
+      retry.hidden = entries.every((entry) => entry.sent);
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const run = d.newRun();
+      steps.forEach((step) => setStep(step, 'idle'));
+      const who = name.value.trim();
+      name.setAttribute('aria-invalid', String(!who));
+      if (!who) {
+        setStep(steps[0], 'err', d.T.missing);
+        d.say(d.T.missing);
+        name.focus();
+        return;
+      }
+      setStep(steps[0], 'run');
+      await d.wait(450);
+      if (d.stale(run)) return;
+      setStep(steps[0], 'ok', d.T.valid);
+      setStep(steps[1], 'run');
+      await d.wait(550);
+      if (d.stale(run)) return;
+      const entry = { id: next++, name: who, sent: false };
+      entries = [entry, ...entries].slice(0, 4);
+      setStep(steps[1], 'ok', fill(d.T.saved, entry));
+      draw();
+      setStep(steps[2], 'run', d.T.sending);
+      await d.wait(900);
+      if (d.stale(run)) return;
+      if (crm.checked) {
+        entry.sent = true;
+        setStep(steps[2], 'ok', d.T.sent);
+        d.say(fill(d.T.doneSay, entry));
+      } else {
+        setStep(steps[2], 'warn', d.T.pending);
+        d.say(fill(d.T.pendingSay, entry));
+      }
+      draw();
+    });
+
+    retry.addEventListener('click', () => {
+      if (!crm.checked) {
+        setStep(steps[2], 'warn', d.T.stillDown);
+        d.say(d.T.stillDown);
+        return;
+      }
+      entries.forEach((entry) => (entry.sent = true));
+      setStep(steps[2], 'ok', d.T.sent);
+      d.say(d.T.retriedSay);
+      draw();
+    });
+
+    d.onReset(() => {
+      entries = [];
+      next = 218;
+      form.reset();
+      name.removeAttribute('aria-invalid');
+      steps.forEach((step) => setStep(step, 'idle'));
+      draw();
+      d.say('');
+    });
+  }
+</script>

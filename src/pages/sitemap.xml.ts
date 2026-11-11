@@ -2,9 +2,10 @@ import type { APIRoute } from 'astro';
 import { servicesFor } from '../data/services';
 import { sectorsFor } from '../data/sectors';
 import { site } from '../data/site';
-import { UPDATED } from '../data/updated';
+import { UPDATED, serviceUpdated } from '../data/updated';
+import { techsFor } from '../data/technologies';
 import { termsFor } from '../data/glossary';
-import { LANGS, PAGES, sectorHref, serviceHref, termHref, type Lang } from '../i18n';
+import { LANGS, PAGES, sectorHref, serviceHref, techHref, termHref, type Lang } from '../i18n';
 
 // Every page in both languages, each listing its counterpart (hreflang) so search
 // engines treat them as translations of one page, not as duplicates.
@@ -19,7 +20,13 @@ export const GET: APIRoute = ({ site: astroSite }) => {
     ...servicesFor('es').map((service) => ({
       paths: { es: serviceHref(service.slug, 'es'), en: serviceHref(service.slug, 'en') },
       priority: '0.8',
-      updated: UPDATED.services,
+      updated: serviceUpdated(service.slug),
+    })),
+    { paths: PAGES.tecnologias, priority: '0.8', updated: UPDATED.tech },
+    ...techsFor('es').map((tech) => ({
+      paths: { es: techHref(tech.id, 'es'), en: techHref(tech.id, 'en') },
+      priority: '0.7',
+      updated: UPDATED.tech,
     })),
     { paths: PAGES.soluciones, priority: '0.7', updated: UPDATED.pages },
     { paths: PAGES.sectores, priority: '0.8', updated: UPDATED.sectors },

@@ -1,0 +1,251 @@
+---
+// React: filter a list, open a record, change it and save. One record fails on its
+// first save, to show the error state and the retry.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    filters: 'Filtrar por estado',
+    list: 'Pedidos',
+    detail: 'Detalle del pedido',
+    pick: 'Elige un pedido de la lista para verlo y editarlo.',
+    status: 'Estado',
+    note: 'Nota interna',
+    save: 'Guardar cambios',
+    js: {
+      all: 'Todos',
+      pending: 'Pendiente',
+      shipped: 'Enviado',
+      pendingPlural: 'Pendientes',
+      shippedPlural: 'Enviados',
+      count: '{n} de {total} pedidos',
+      none: 'Ningún pedido con ese estado.',
+      saving: 'Guardando…',
+      saved: 'Guardado',
+      failed: 'No se pudo guardar: el servidor no respondió. Tus cambios siguen aquí.',
+      retry: 'Reintentar',
+      order: 'Pedido',
+      customers: ['Talleres Ibáñez', 'Clínica Norte', 'Frutas Levante', 'Estudio Mar', 'Hotel Alcazaba'],
+      unsaved: 'Cambios sin guardar',
+    },
+  },
+  en: {
+    filters: 'Filter by status',
+    list: 'Orders',
+    detail: 'Order detail',
+    pick: 'Pick an order from the list to view and edit it.',
+    status: 'Status',
+    note: 'Internal note',
+    save: 'Save changes',
+    js: {
+      all: 'All',
+      pending: 'Pending',
+      shipped: 'Shipped',
+      pendingPlural: 'Pending',
+      shippedPlural: 'Shipped',
+      count: '{n} of {total} orders',
+      none: 'No orders with that status.',
+      saving: 'Saving…',
+      saved: 'Saved',
+      failed: "Couldn't save: the server didn't answer. Your changes are still here.",
+      retry: 'Retry',
+      order: 'Order',
+      customers: ['Ibanez Garage', 'North Clinic', 'Levante Produce', 'Studio Mar', 'Alcazaba Hotel'],
+      unsaved: 'Unsaved changes',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="react" strings={T.js}>
+  <div class="dm-grid dm-grid--wide">
+    <div class="dm-panel">
+      <p class="dm-cap" id="dr-filters">{T.filters}</p>
+      <div class="dm-row" role="group" aria-labelledby="dr-filters" data-filters></div>
+      <p class="dm-cap">{T.list} · <span data-count></span></p>
+      <ul class="dr-list" data-list></ul>
+      <p class="dm-empty" data-none hidden>{T.js.none}</p>
+    </div>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.detail}</p>
+      <p class="dm-empty" data-pick>{T.pick}</p>
+      <form data-form hidden novalidate>
+        <p class="dr-id" data-id></p>
+        <label class="dm-field">
+          <span>{T.status}</span>
+          <select class="dm-input" name="status">
+            <option value="pending">{T.js.pending}</option>
+            <option value="shipped">{T.js.shipped}</option>
+          </select>
+        </label>
+        <label class="dm-field"><span>{T.note}</span><input class="dm-input" name="note" autocomplete="off" /></label>
+        <div class="dm-row">
+          <button class="dm-btn" type="submit" data-save>{T.save}</button>
+          <span class="dm-pill" data-state="idle" data-feedback hidden></span>
+        </div>
+        <p class="dm-error" data-error role="alert" hidden></p>
+      </form>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  .dr-list {
+    display: grid;
+    gap: 6px;
+  }
+  .dr-list :global(button) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    background: #fff;
+    font-size: 14.5px;
+    text-align: left;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    cursor: pointer;
+  }
+  .dr-list :global(button[aria-current='true']) {
+    box-shadow: inset 0 0 0 2px var(--color-ink);
+  }
+  .dr-list :global(small) {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--color-muted);
+  }
+  form[data-form] {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .dr-id {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml, fill } from '../demo-kit';
+
+  type Order = { id: string; who: string; status: 'pending' | 'shipped'; note: string; failsOnce: boolean };
+  const d = demo<Record<string, string> & { customers: string[] }>('react');
+  if (d) {
+    const fresh = (): Order[] =>
+      ['0138', '0139', '0140', '0141', '0142'].map((id, i) => ({ id, who: d.T.customers[i], status: i === 0 || i === 3 ? 'pending' : 'shipped', note: '', failsOnce: id === '0141' }));
+    let orders = fresh();
+    let filter: 'all' | 'pending' | 'shipped' = 'all';
+    let open: string | null = null;
+
+    const filters = d.$('[data-filters]');
+    const list = d.$('[data-list]');
+    const count = d.$('[data-count]');
+    const none = d.$('[data-none]');
+    const pick = d.$('[data-pick]');
+    const form = d.$<HTMLFormElement>('[data-form]');
+    const idLine = d.$('[data-id]');
+    const feedback = d.$('[data-feedback]');
+    const error = d.$('[data-error]');
+    const save = d.$<HTMLButtonElement>('[data-save]');
+    const status = form.elements.namedItem('status') as HTMLSelectElement;
+    const note = form.elements.namedItem('note') as HTMLInputElement;
+    const labels = { all: d.T.all, pending: d.T.pendingPlural, shipped: d.T.shippedPlural };
+
+    const tell = (state: 'idle' | 'ok' | 'warn' | 'err', text: string) => {
+      feedback.hidden = !text;
+      feedback.dataset.state = state;
+      feedback.textContent = text;
+    };
+    // The whole interface is drawn again from the state, the way a component would be.
+    const render = () => {
+      filters.innerHTML = (['all', 'pending', 'shipped'] as const)
+        .map((key) => `<button type="button" class="dm-btn dm-btn--ghost" data-filter="${key}" aria-pressed="${filter === key}">${labels[key]}</button>`)
+        .join('');
+      const shown = orders.filter((order) => filter === 'all' || order.status === filter);
+      count.textContent = fill(d.T.count, { n: shown.length, total: orders.length });
+      none.hidden = shown.length > 0;
+      list.innerHTML = shown
+        .map(
+          (order) =>
+            `<li><button type="button" data-open="${order.id}" aria-current="${open === order.id}"><span>${d.T.order} ${order.id}<small>${escapeHtml(order.who)}</small></span>` +
+            `<span class="dm-pill" data-state="${order.status === 'pending' ? 'warn' : 'ok'}">${order.status === 'pending' ? d.T.pending : d.T.shipped}</span></button></li>`,
+        )
+        .join('');
+      const order = orders.find((item) => item.id === open);
+      pick.hidden = Boolean(order);
+      form.hidden = !order;
+      if (order) idLine.textContent = `${d.T.order} ${order.id} · ${order.who}`;
+    };
+    const load = (id: string) => {
+      const order = orders.find((item) => item.id === id)!;
+      open = id;
+      status.value = order.status;
+      note.value = order.note;
+      error.hidden = true;
+      save.textContent = save.dataset.label ?? save.textContent;
+      tell('idle', '');
+      render();
+    };
+    save.dataset.label = save.textContent ?? '';
+
+    filters.addEventListener('click', (event) => {
+      const key = (event.target as Element).closest<HTMLElement>('[data-filter]')?.dataset.filter as typeof filter | undefined;
+      if (!key) return;
+      filter = key;
+      render();
+      filters.querySelector<HTMLElement>(`[data-filter="${key}"]`)?.focus();
+    });
+    list.addEventListener('click', (event) => {
+      const id = (event.target as Element).closest<HTMLElement>('[data-open]')?.dataset.open;
+      if (!id) return;
+      load(id);
+      list.querySelector<HTMLElement>(`[data-open="${id}"]`)?.focus();
+    });
+    form.addEventListener('input', () => tell('warn', d.T.unsaved));
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const order = orders.find((item) => item.id === open);
+      if (!order) return;
+      const run = d.newRun();
+      error.hidden = true;
+      save.disabled = true;
+      tell('warn', d.T.saving);
+      await d.wait(900);
+      if (d.stale(run)) return;
+      save.disabled = false;
+      if (order.failsOnce) {
+        order.failsOnce = false;
+        tell('err', '');
+        error.textContent = d.T.failed;
+        error.hidden = false;
+        save.textContent = d.T.retry;
+        return;
+      }
+      order.status = status.value as Order['status'];
+      order.note = note.value;
+      save.textContent = save.dataset.label ?? '';
+      render();
+      tell('ok', d.T.saved);
+      d.say(`${d.T.order} ${order.id}: ${d.T.saved}`);
+    });
+
+    d.onReset(() => {
+      orders = fresh();
+      filter = 'all';
+      open = null;
+      save.disabled = false;
+      save.textContent = save.dataset.label ?? '';
+      error.hidden = true;
+      tell('idle', '');
+      render();
+      d.say('');
+    });
+    render();
+  }
+</script>

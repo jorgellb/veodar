@@ -195,3 +195,10 @@
 .nx-bead{fill:#fff1e6;stroke:#ff5a1f;stroke-width:1.4px;filter:drop-shadow(0 0 4px #ff5a1f)}
 .nx-bead[data-dim]{fill:#ff8a5c;stroke:none;filter:none;opacity:.75}
 [data-step]{transition:opacity .35s}
+/* The AI core on a light plate (technology scenes): an orb between two rings */
+.ai-orb{stroke:#a8350b;stroke-width:.8px;vector-effect:non-scaling-stroke}
+.ai-ring{fill:none;stroke:var(--anatomy-hi);stroke-width:1.4px;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.ai-ring[data-back]{stroke-opacity:.35}
+.ai-ring[data-acc]{stroke:#ff5a1f}
+.veo-bead[data-dim]{fill:#16142c;stroke:#fff;filter:none}
+.veo-trace[data-on] .iso-line{stroke:#ff5a1f;stroke-width:1.3px}

@@ -1,0 +1,378 @@
+---
+// SQLite: three work reports and a phone that loses coverage. Every change is written
+// to the local database and queued; the queue empties, in order, when coverage returns.
+// If the office touched the same report meanwhile, the written rule decides.
+import DemoFrame from '../DemoFrame.astro';
+import DemoPhone from '../DemoPhone.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    phone: 'Teléfono del técnico',
+    link: 'Conexión',
+    coverage: 'Cobertura',
+    office: 'La oficina, mientras tanto',
+    officeChange: 'Anular el parte 0143',
+    rule: 'Regla si hay conflicto',
+    rules: [
+      { id: 'office', label: 'Gana la oficina' },
+      { id: 'ask', label: 'Preguntar al técnico' },
+    ],
+    local: 'En el teléfono (SQLite)',
+    queue: 'Cola de cambios',
+    server: 'En la oficina (simulada)',
+    cols: ['Parte', 'Estado', 'Enviado'],
+    js: {
+      app: 'Partes',
+      add: 'Añadir un parte',
+      close: 'Cerrar',
+      open: 'Abierto',
+      closed: 'Cerrado',
+      void: 'Anulado',
+      yes: 'sí',
+      pending: 'pendiente',
+      empty: 'Nada pendiente.',
+      offline: 'Sin cobertura · se guarda aquí',
+      online: 'Con cobertura',
+      opClose: 'cerrar {id}',
+      opCreate: 'crear {id}',
+      ask: 'El parte {id} se anuló en la oficina. ¿Qué versión conservas?',
+      mine: 'La mía',
+      theirs: 'La de la oficina',
+      saySaved: 'Guardado en el teléfono: {op}. Sin cobertura, espera en la cola con {n} cambios.',
+      saySent: 'Enviado a la oficina: {op}.',
+      sayFlush: 'Vuelve la cobertura: la cola se vacía en orden.',
+      sayOffice: 'Con la regla «gana la oficina», el parte {id} queda anulado; tu cambio se conserva en el historial.',
+      sayAsk: 'Conflicto en el parte {id}: la app pregunta antes de decidir.',
+      sayKept: 'Parte {id}: se conserva {which}.',
+      sayRemote: 'La oficina ha anulado el parte 0143. El teléfono lo sabrá al sincronizar.',
+      sayRemoteOnline: 'La oficina ha anulado el parte 0143 y el teléfono lo recibe al momento.',
+    },
+  },
+  en: {
+    phone: "The technician's phone",
+    link: 'Connection',
+    coverage: 'Coverage',
+    office: 'The office, meanwhile',
+    officeChange: 'Void report 0143',
+    rule: 'Rule on a conflict',
+    rules: [
+      { id: 'office', label: 'The office wins' },
+      { id: 'ask', label: 'Ask the technician' },
+    ],
+    local: 'On the phone (SQLite)',
+    queue: 'Change queue',
+    server: 'At the office (simulated)',
+    cols: ['Report', 'Status', 'Sent'],
+    js: {
+      app: 'Reports',
+      add: 'Add a report',
+      close: 'Close',
+      open: 'Open',
+      closed: 'Closed',
+      void: 'Voided',
+      yes: 'yes',
+      pending: 'pending',
+      empty: 'Nothing pending.',
+      offline: 'No coverage · saved here',
+      online: 'Coverage',
+      opClose: 'close {id}',
+      opCreate: 'create {id}',
+      ask: 'Report {id} was voided at the office. Which version do you keep?',
+      mine: 'Mine',
+      theirs: "The office's",
+      saySaved: 'Saved on the phone: {op}. With no coverage it waits in the queue, {n} changes.',
+      saySent: 'Sent to the office: {op}.',
+      sayFlush: 'Coverage is back: the queue empties in order.',
+      sayOffice: 'With the rule “the office wins”, report {id} stays voided; your change is kept in the history.',
+      sayAsk: 'Conflict on report {id}: the app asks before deciding.',
+      sayKept: 'Report {id}: {which} is kept.',
+      sayRemote: 'The office voided report 0143. The phone will learn of it on syncing.',
+      sayRemoteOnline: 'The office voided report 0143 and the phone gets it at once.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="sqlite" strings={T.js} kind="real">
+  <div class="dm-grid dm-grid--wide">
+    <div class="dm-panel dsq-stage">
+      <DemoPhone kind="b" name="tech" label={T.phone} />
+    </div>
+    <div class="dsq-side">
+      <div class="dm-panel">
+        <p class="dm-cap">{T.link}</p>
+        <div class="dm-row"><button type="button" class="dm-btn dm-btn--ghost dsq-toggle" data-coverage aria-pressed="true">{T.coverage}</button></div>
+        <p class="dm-cap" style="margin-top:.4rem">{T.office}</p>
+        <div class="dm-row"><button type="button" class="dm-btn dm-btn--ghost" data-remote>{T.officeChange}</button></div>
+        <p class="dm-cap" id="dsq-rule" style="margin-top:.4rem">{T.rule}</p>
+        <div class="dm-row" role="group" aria-labelledby="dsq-rule">
+          {T.rules.map((rule, i) => <button type="button" class="dm-btn dm-btn--ghost" data-rule={rule.id} aria-pressed={i === 0 ? 'true' : 'false'}>{rule.label}</button>)}
+        </div>
+      </div>
+      <div class="dm-panel">
+        <p class="dm-cap">{T.queue}</p>
+        <ol class="dsq-queue" data-queue></ol>
+      </div>
+    </div>
+  </div>
+  <div class="dm-grid dm-grid--2" style="margin-top:12px">
+    {
+      [
+        ['local', T.local],
+        ['server', T.server],
+      ].map(([name, title]) => (
+        <div class="dm-panel">
+          <p class="dm-cap">{title}</p>
+          <table class="dm-table">
+            <thead>
+              <tr>{T.cols.slice(0, name === 'local' ? 3 : 2).map((col) => <th scope="col">{col}</th>)}</tr>
+            </thead>
+            <tbody data-table={name}></tbody>
+          </table>
+        </div>
+      ))
+    }
+  </div>
+</DemoFrame>
+
+<style is:global>
+  .dsq-stage {
+    justify-content: center;
+    background: var(--color-paper-2);
+    box-shadow: none;
+  }
+  .dsq-side {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+  .dsq-toggle::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1.5px currentcolor;
+  }
+  .dsq-toggle[aria-pressed='true'] {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .dsq-toggle[aria-pressed='true']::before {
+    background: #8fe3b6;
+    box-shadow: none;
+  }
+  .dsq-queue {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    min-height: 1.9rem;
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+  .dsq-net {
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: var(--color-mint);
+    color: #14573a;
+    font-size: 12px;
+    font-weight: 560;
+  }
+  .dsq-net[data-off] {
+    background: var(--color-butter);
+    color: #5f4900;
+  }
+  .dsq-row {
+    justify-content: space-between;
+    min-height: 44px;
+  }
+  .dsq-row small {
+    display: block;
+    font-size: 11px;
+    color: var(--color-muted);
+  }
+  .dsq-row button {
+    flex: none;
+    min-height: 30px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-size: 12px;
+    font-weight: 560;
+    cursor: pointer;
+  }
+  .dsq-row[data-void] {
+    opacity: 0.6;
+  }
+  .dsq-ask {
+    display: grid;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--color-butter);
+    color: #5f4900;
+    font-size: 12.5px;
+  }
+  .dsq-ask div {
+    display: flex;
+    gap: 6px;
+  }
+  .dsq-ask button {
+    flex: 1;
+    min-height: 32px;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--color-ink);
+    font-size: 12px;
+    font-weight: 560;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml, fill, redraw } from '../demo-kit';
+
+  type Status = 'open' | 'closed' | 'void';
+  type Row = { id: string; status: Status; synced: boolean };
+  type Op = { kind: 'close' | 'create'; id: string };
+  const d = demo<Record<string, string>>('sqlite');
+  if (d) {
+    const T = d.T;
+    const body = d.$('[data-phone="tech"] [data-body]');
+    const tables = { local: d.$('[data-table="local"]'), server: d.$('[data-table="server"]') };
+    const queueList = d.$('[data-queue]');
+    const coverage = d.$<HTMLButtonElement>('[data-coverage]');
+    const remote = d.$<HTMLButtonElement>('[data-remote]');
+    const rules = d.$$<HTMLButtonElement>('[data-rule]');
+    const e = escapeHtml;
+    const fresh = () => ({
+      online: true,
+      rule: 'office' as 'office' | 'ask',
+      local: ['0142', '0143', '0144'].map((id) => ({ id, status: 'open' as Status, synced: true })),
+      server: new Map<string, Status>([['0142', 'open'], ['0143', 'open'], ['0144', 'open']]),
+      queue: [] as Op[],
+      next: 145,
+      asking: '',
+      busy: false,
+    });
+    let state = fresh();
+    let run = 0;
+    const name = (op: Op) => fill(op.kind === 'close' ? T.opClose : T.opCreate, { id: op.id });
+    const label = (status: Status) => ({ open: T.open, closed: T.closed, void: T.void })[status];
+
+    const draw = (focus?: string) => {
+      redraw(body, () => (body.innerHTML = html()), '[data-add]');
+      tables.local.innerHTML = state.local.map((row) => `<tr${row.synced ? '' : ' data-flag'}><td>${e(row.id)}</td><td>${e(label(row.status))}</td><td>${e(row.synced ? T.yes : T.pending)}</td></tr>`).join('');
+      tables.server.innerHTML = [...state.server].map(([id, status]) => `<tr><td>${e(id)}</td><td>${e(label(status))}</td></tr>`).join('');
+      queueList.innerHTML = state.queue.length ? state.queue.map((op) => `<li class="dm-pill" data-state="warn">${e(name(op))}</li>`).join('') : `<li>${e(T.empty)}</li>`;
+      coverage.setAttribute('aria-pressed', String(state.online));
+      remote.setAttribute('aria-disabled', String(state.server.get('0143') === 'void'));
+      rules.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.rule === state.rule)));
+      if (focus) body.querySelector<HTMLElement>(focus)?.focus();
+    };
+    const html = () =>
+        `<p class="dm-phone-title">${e(T.app)}</p><p class="dsq-net"${state.online ? '' : ' data-off'}>${e(state.online ? T.online : T.offline)}</p>` +
+        (state.asking ? `<div class="dsq-ask" role="alertdialog" aria-label="${e(fill(T.ask, { id: state.asking }))}">${e(fill(T.ask, { id: state.asking }))}<div><button type="button" data-keep="mine">${e(T.mine)}</button><button type="button" data-keep="theirs">${e(T.theirs)}</button></div></div>` : '') +
+        state.local.map((row) => `<div class="dm-phone-row dsq-row"${row.status === 'void' ? ' data-void' : ''}><span>${e(row.id)}<small>${e(label(row.status))}${row.synced ? '' : ` · ${e(T.pending)}`}</small></span>${row.status === 'open' ? `<button type="button" data-close="${row.id}">${e(T.close)}</button>` : ''}</div>`).join('') +
+        `<button type="button" class="dm-phone-btn" data-tone="ghost" data-add style="margin-top:auto"${state.local.length >= 5 ? ' aria-disabled="true"' : ''}>${e(T.add)}</button>`;
+
+    const row = (id: string) => state.local.find((entry) => entry.id === id)!;
+    // Sends the queue to the office, oldest first. A change to a report the office has
+    // voided is a conflict: the rule in force decides, or the technician is asked.
+    const flush = async () => {
+      if (state.busy || !state.online || state.asking) return;
+      state.busy = true;
+      const mine = ++run;
+      while (state.queue.length && state.online && !state.asking) {
+        await d.wait(650);
+        if (mine !== run) return;
+        if (!state.online) break;
+        const op = state.queue[0];
+        if (op.kind === 'close' && state.server.get(op.id) === 'void') {
+          if (state.rule === 'ask') {
+            state.asking = op.id;
+            d.say(fill(T.sayAsk, { id: op.id }));
+            break;
+          }
+          state.queue.shift();
+          Object.assign(row(op.id), { status: 'void', synced: true });
+          d.say(fill(T.sayOffice, { id: op.id }));
+        } else {
+          state.queue.shift();
+          state.server.set(op.id, op.kind === 'close' ? 'closed' : 'open');
+          row(op.id).synced = true;
+          d.say(fill(T.saySent, { op: name(op) }));
+        }
+        draw();
+      }
+      state.busy = false;
+      draw(state.asking ? '[data-keep]' : undefined);
+    };
+    const enqueue = (op: Op) => {
+      state.queue.push(op);
+      if (!state.online) d.say(fill(T.saySaved, { op: name(op), n: state.queue.length }));
+      draw();
+      flush();
+    };
+
+    body.addEventListener('click', (event) => {
+      const target = (event.target as Element).closest<HTMLElement>('button');
+      if (!target) return;
+      if (target.dataset.close) {
+        Object.assign(row(target.dataset.close), { status: 'closed', synced: false });
+        enqueue({ kind: 'close', id: target.dataset.close });
+      } else if (target.hasAttribute('data-add')) {
+        if (state.local.length >= 5) return;
+        const id = `0${state.next++}`;
+        state.local.push({ id, status: 'open', synced: false });
+        enqueue({ kind: 'create', id });
+      } else if (target.dataset.keep) {
+        const id = state.asking;
+        const keepMine = target.dataset.keep === 'mine';
+        state.asking = '';
+        state.queue.shift();
+        if (keepMine) state.server.set(id, 'closed');
+        Object.assign(row(id), { status: keepMine ? 'closed' : 'void', synced: true });
+        d.say(fill(T.sayKept, { id, which: (keepMine ? T.mine : T.theirs).toLowerCase() }));
+        draw();
+        flush();
+      }
+    });
+    coverage.addEventListener('click', () => {
+      state.online = !state.online;
+      if (state.online) {
+        // What the office changed meanwhile comes down first, unless a local change is waiting on it.
+        for (const [id, status] of state.server) if (status === 'void' && !state.queue.some((op) => op.id === id)) Object.assign(row(id), { status: 'void', synced: true });
+        if (state.queue.length) d.say(T.sayFlush);
+      } else {
+        run++;
+        state.busy = false;
+      }
+      draw();
+      flush();
+    });
+    remote.addEventListener('click', () => {
+      if (state.server.get('0143') === 'void') return;
+      state.server.set('0143', 'void');
+      if (state.online && !state.queue.some((op) => op.id === '0143')) Object.assign(row('0143'), { status: 'void', synced: true });
+      d.say(state.online ? T.sayRemoteOnline : T.sayRemote);
+      draw();
+    });
+    rules.forEach((button) =>
+      button.addEventListener('click', () => {
+        state.rule = button.dataset.rule as 'office' | 'ask';
+        draw();
+      }),
+    );
+
+    d.onReset(() => {
+      run++;
+      state = fresh();
+      draw();
+      d.say('');
+    });
+    draw();
+  }
+</script>

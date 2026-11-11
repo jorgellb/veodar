@@ -194,7 +194,7 @@ export const pages: Page[] = [
         nav: 'En la calle',
         heading: 'Cobertura, permisos y avisos que merecen interrumpir.',
         paragraphs: [
-          'La calle no tiene la red de la oficina. La app guarda el parte y lo envía cuando puede, y lo dice en la pantalla. Un parte marcado como enviado que no salió es peor que un parte pendiente: la oficina da el trabajo por hecho y el cliente espera una visita que no está registrada.',
+          'La calle no tiene la red de la oficina. La app guarda el parte en el propio teléfono, en una base de datos SQLite, lo envía cuando puede y lo dice en la pantalla. Un parte marcado como enviado que no salió es peor que un parte pendiente: la oficina da el trabajo por hecho y el cliente espera una visita que no está registrada.',
           'Cámara, ubicación y notificaciones se piden si la tarea las usa, en el momento en que hacen falta, con una frase en castellano que explica para qué. Pedirlas al abrir “por si acaso” es cómo la gente niega el permiso y la app deja de servir. Cada permiso que no tiene esa frase se quita.',
           'Un aviso tiene que merecer interrumpir. “Tienes un parte nuevo en tu zona” sí. “Novedades en la app” no. El texto del aviso, a quién llega y a qué hora deja de tener sentido forman parte del producto. No son una campaña que se añade al final.',
         ],
@@ -215,6 +215,7 @@ export const pages: Page[] = [
         heading: 'Se prueba en los teléfonos que el equipo tiene, no en el anuncio.',
         paragraphs: [
           'Si la flota es Android de hace tres años, se prueba ahí. Si la dirección usa iPhone y el campo usa Android, los dos entran en el plan y se mira qué pantalla se rompe en el pequeño, con el sol de cara y una mano ocupada. El último modelo del anuncio no es el criterio.',
+          'La tecnología se elige por lo que la app tiene que hacer, no al revés. Si casi todo son pantallas y datos, una sola base de código en React Native sirve para iPhone y para Android. Si la app vive del aparato, del reloj o de un terminal de almacén, se hace nativa, en Swift o en Kotlin. Se decide con el parque delante y queda escrito en el alcance.',
           'Las tiendas cambian normas. Si el encargo incluye publicación, el acompañamiento de la ficha y de las versiones va escrito. Si no, la empresa sabe que el binario queda en sus manos y que la ficha no se mantiene sola. Repartir por el sistema interno de la empresa es una opción, y se elige al principio.',
           'La IA, si entra, entra en una tarea con nombre: dictar el parte, sugerir la pieza, clasificar la foto. No es un chat abierto con los datos de todos los clientes en el bolsillo. Qué puede leer el modelo se escribe junto al resto del alcance, en la misma lista que ve seguridad.',
         ],
@@ -283,6 +284,7 @@ export const pages: Page[] = [
         heading: 'No hace falta cambiar de ERP para empezar.',
         paragraphs: [
           'El flujo se apoya en lo que el sistema deja hacer de verdad. Si el ERP solo exporta un archivo por la noche, la automatización trabaja con ese ritmo y no promete magia en el minuto. Comprobar ese límite es parte del alcance, no una sorpresa de la semana cuatro.',
+          'Por dentro, el flujo son piezas pequeñas con un cometido cada una. Un servicio en Node.js recibe el correo o el aviso del otro sistema y lo deja en cola. Un proceso en Python limpia y cruza los datos antes de que nadie los lea. Y la parte de IA generativa lee, clasifica y redacta el borrador. Ninguna de las tres decide sola qué se publica.',
           'Tampoco pedimos un lago de datos “para estar preparados”. La primera bandeja usa los campos de esa bandeja. Ampliar a otro equipo es otro encargo, cuando el primero se haya usado una semana seguida y no se haya vuelto al método viejo.',
         ],
       },

@@ -1,0 +1,160 @@
+---
+// Astro: an entry is edited in a content manager, published, and the page that
+// visitors see is rebuilt. Until then the public page keeps the old text.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    cms: 'Gestor de contenidos',
+    title: 'Título de la entrada',
+    body: 'Texto',
+    sampleTitle: 'Horario de verano',
+    sampleBody: 'Del 1 de julio al 31 de agosto abrimos de 8:00 a 15:00.',
+    publish: 'Publicar',
+    pipeline: 'De la edición a la página',
+    steps: ['Entrada guardada en el gestor', 'Aviso al servidor de páginas', 'Página regenerada', 'Publicada'],
+    page: 'Lo que ve un visitante',
+    address: 'ejemplo.com/novedades/horario-de-verano',
+    js: {
+      draft: 'Hay cambios sin publicar: la página sigue mostrando la versión anterior.',
+      live: 'La página muestra la última versión publicada.',
+      empty: 'El título no puede quedar vacío',
+      saved: 'versión {n}',
+      hook: 'un cambio: esta entrada',
+      built: '1 página de 48 · el resto no se toca',
+      done: 'visible para todos',
+      say: 'Publicado. La página ya muestra el cambio.',
+    },
+  },
+  en: {
+    cms: 'Content management system',
+    title: 'Entry title',
+    body: 'Text',
+    sampleTitle: 'Summer opening hours',
+    sampleBody: 'From July 1 to August 31 we open from 8 a.m. to 3 p.m.',
+    publish: 'Publish',
+    pipeline: 'From the edit to the page',
+    steps: ['Entry saved in the CMS', 'Notification to the page server', 'Page rebuilt', 'Published'],
+    page: 'What a visitor sees',
+    address: 'example.com/news/summer-opening-hours',
+    js: {
+      draft: 'There are unpublished changes: the page still shows the previous version.',
+      live: 'The page shows the latest published version.',
+      empty: "The title can't be left empty",
+      saved: 'version {n}',
+      hook: 'one change: this entry',
+      built: '1 page of 48 · the rest untouched',
+      done: 'visible to everyone',
+      say: 'Published. The page now shows the change.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="astro" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--3">
+    <form class="dm-panel" data-form novalidate>
+      <p class="dm-cap">{T.cms}</p>
+      <label class="dm-field"><span>{T.title}</span><input class="dm-input" name="title" value={T.sampleTitle} autocomplete="off" /></label>
+      <label class="dm-field"><span>{T.body}</span><textarea class="dm-input" name="body" rows="3">{T.sampleBody}</textarea></label>
+      <div class="dm-row"><button class="dm-btn" type="submit">{T.publish}</button></div>
+    </form>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.pipeline}</p>
+      <ol class="dm-steps">
+        {T.steps.map((step, i) => <li data-step={i} data-state="idle">{step}<small></small></li>)}
+      </ol>
+    </div>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.page}</p>
+      <div class="dm-window">
+        <div class="dm-window-bar">{T.address}</div>
+        <div class="dm-window-body">
+          <p class="da-title" data-out="title">{T.sampleTitle}</p>
+          <p class="da-body" data-out="body">{T.sampleBody}</p>
+        </div>
+      </div>
+      <p class="dm-help" data-state-note>{T.js.live}</p>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  .da-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+  }
+  .da-body {
+    margin-top: 0.6rem;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--color-ink-2);
+    overflow-wrap: anywhere;
+  }
+</style>
+
+<script>
+  import { demo, fill, setStep } from '../demo-kit';
+
+  const d = demo<Record<string, string>>('astro');
+  if (d) {
+    const form = d.$<HTMLFormElement>('[data-form]');
+    const title = form.elements.namedItem('title') as HTMLInputElement;
+    const body = form.elements.namedItem('body') as HTMLTextAreaElement;
+    const steps = d.$$('[data-step]');
+    const outTitle = d.$('[data-out="title"]');
+    const outBody = d.$('[data-out="body"]');
+    const note = d.$('[data-state-note]');
+    const first = { title: title.value, body: body.value };
+    let version = 1;
+
+    const dirty = () => title.value !== outTitle.textContent || body.value !== outBody.textContent;
+    const mark = () => (note.textContent = dirty() ? d.T.draft : d.T.live);
+    form.addEventListener('input', mark);
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const run = d.newRun();
+      steps.forEach((step) => setStep(step, 'idle'));
+      const empty = !title.value.trim();
+      title.setAttribute('aria-invalid', String(empty));
+      if (empty) {
+        setStep(steps[0], 'err', d.T.empty);
+        d.say(d.T.empty);
+        title.focus();
+        return;
+      }
+      const notes = [fill(d.T.saved, { n: ++version }), d.T.hook, d.T.built, d.T.done];
+      for (let i = 0; i < steps.length; i++) {
+        setStep(steps[i], 'run');
+        await d.wait(i === 2 ? 900 : 480);
+        if (d.stale(run)) return;
+        setStep(steps[i], 'ok', notes[i]);
+        // The visitor's page changes only when the rebuilt page is out.
+        if (i === 3) {
+          outTitle.textContent = title.value.trim();
+          outBody.textContent = body.value.trim();
+        }
+      }
+      mark();
+      d.say(d.T.say);
+    });
+
+    d.onReset(() => {
+      version = 1;
+      title.value = first.title;
+      body.value = first.body;
+      outTitle.textContent = first.title;
+      outBody.textContent = first.body;
+      title.removeAttribute('aria-invalid');
+      steps.forEach((step) => setStep(step, 'idle'));
+      mark();
+      d.say('');
+    });
+  }
+</script>

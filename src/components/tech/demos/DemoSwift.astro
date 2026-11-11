@@ -1,0 +1,322 @@
+---
+// Swift: what the app does when it is told no. It asks for location and for face
+// recognition the way the system would; each answer, including the refusals, has its
+// own way through.
+import DemoFrame from '../DemoFrame.astro';
+import DemoPhone from '../DemoPhone.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    phone: 'Teléfono con la app de inspecciones',
+    knows: 'Lo que la app sabe ahora',
+    location: 'Ubicación',
+    signature: 'Firma',
+    why: 'Por qué importa',
+    whyText: 'Un permiso denegado no es un error: es una respuesta. La app tiene que seguir siendo útil con ella, y decir cómo cambiarla sin insistir.',
+    js: {
+      title: 'Inspección 27',
+      sub: 'Extintores · planta 2',
+      find: 'Buscar el centro más cercano',
+      sign: 'Firmar la inspección',
+      askLocation: '¿Permitir que «Inspecciones» use tu ubicación?',
+      askLocationWhy: 'Para proponerte el centro más cercano.',
+      once: 'Permitir una vez',
+      whileUsing: 'Permitir mientras se usa la app',
+      deny: 'No permitir',
+      near: 'Centro más cercano: Nave 2 · Polígono Sur',
+      onceNote: 'La próxima vez volverá a preguntar.',
+      pick: 'Elige el centro a mano',
+      centres: ['Nave 2 · Polígono Sur', 'Almacén Norte', 'Oficina central'],
+      settings: 'Puedes activar la ubicación en Ajustes cuando quieras.',
+      chosen: 'Centro elegido: {centre}',
+      askFace: 'Mira al teléfono para firmar',
+      faceOk: 'Rostro reconocido',
+      faceNo: 'No reconocido',
+      code: 'Código de la app',
+      codeHint: 'Código de ejemplo: 2468',
+      codeBad: 'Ese no es el código. El de ejemplo es 2468.',
+      confirm: 'Firmar con código',
+      signed: 'Inspección firmada',
+      stateNone: 'sin preguntar',
+      stateOnce: 'concedida una vez',
+      stateWhile: 'concedida mientras se usa',
+      stateDenied: 'denegada · centro elegido a mano',
+      signNone: 'pendiente',
+      signFace: 'con reconocimiento facial',
+      signCode: 'con el código de la app',
+      sayOnce: 'Ubicación concedida una vez: la app propone el centro más cercano y volverá a preguntar la próxima vez.',
+      sayWhile: 'Ubicación concedida mientras se usa la app: la app propone el centro más cercano.',
+      sayDenied: 'Ubicación denegada: la app deja elegir el centro a mano y no vuelve a insistir.',
+      sayFaceNo: 'Rostro no reconocido: la app ofrece firmar con el código.',
+      saySigned: 'Inspección firmada {how}.',
+    },
+  },
+  en: {
+    phone: 'Phone with the inspections app',
+    knows: 'What the app knows now',
+    location: 'Location',
+    signature: 'Signature',
+    why: 'Why it matters',
+    whyText: "A denied permission is not an error: it is an answer. The app has to stay useful with it, and say how to change it without nagging.",
+    js: {
+      title: 'Inspection 27',
+      sub: 'Extinguishers · floor 2',
+      find: 'Find the nearest site',
+      sign: 'Sign the inspection',
+      askLocation: 'Allow “Inspections” to use your location?',
+      askLocationWhy: 'To suggest the nearest site.',
+      once: 'Allow once',
+      whileUsing: 'Allow while using the app',
+      deny: "Don't allow",
+      near: 'Nearest site: Unit 2 · South Park',
+      onceNote: 'It will ask again next time.',
+      pick: 'Choose the site by hand',
+      centres: ['Unit 2 · South Park', 'North Warehouse', 'Head office'],
+      settings: 'You can turn location on in Settings whenever you like.',
+      chosen: 'Site chosen: {centre}',
+      askFace: 'Look at the phone to sign',
+      faceOk: 'Face recognized',
+      faceNo: 'Not recognized',
+      code: 'App passcode',
+      codeHint: 'Sample code: 2468',
+      codeBad: "That's not the code. The sample one is 2468.",
+      confirm: 'Sign with the code',
+      signed: 'Inspection signed',
+      stateNone: 'not asked yet',
+      stateOnce: 'granted once',
+      stateWhile: 'granted while in use',
+      stateDenied: 'denied · site chosen by hand',
+      signNone: 'pending',
+      signFace: 'with face recognition',
+      signCode: 'with the app passcode',
+      sayOnce: 'Location granted once: the app suggests the nearest site and will ask again next time.',
+      sayWhile: 'Location granted while the app is in use: the app suggests the nearest site.',
+      sayDenied: 'Location denied: the app lets you choose the site by hand and does not ask again.',
+      sayFaceNo: 'Face not recognized: the app offers signing with the passcode.',
+      saySigned: 'Inspection signed {how}.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="swift" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--wide">
+    <div class="dm-panel dsw-stage">
+      <DemoPhone kind="a" name="app" label={T.phone} />
+    </div>
+    <div class="dsw-side">
+      <div class="dm-panel">
+        <p class="dm-cap">{T.knows}</p>
+        <dl class="dsw-facts">
+          <div><dt>{T.location}</dt><dd data-fact="location"></dd></div>
+          <div><dt>{T.signature}</dt><dd data-fact="signature"></dd></div>
+        </dl>
+      </div>
+      <div class="dm-panel">
+        <p class="dm-cap">{T.why}</p>
+        <p class="dsw-why">{T.whyText}</p>
+      </div>
+    </div>
+  </div>
+</DemoFrame>
+
+<style is:global>
+  .dsw-stage {
+    justify-content: center;
+    background: var(--color-paper-2);
+    box-shadow: none;
+  }
+  .dsw-side {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+  .dsw-facts {
+    display: grid;
+    gap: 0.7rem;
+  }
+  .dsw-facts dt {
+    font-size: 12.5px;
+    color: var(--color-muted);
+  }
+  .dsw-facts dd {
+    font-size: 15px;
+    font-weight: 540;
+  }
+  .dsw-why {
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+  /* The system's own sheet, over the app. */
+  .dsw-sheet {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 14px;
+    background: rgb(22 20 44 / 0.36);
+  }
+  .dsw-sheet > div {
+    width: 100%;
+    padding: 14px 0 0;
+    border-radius: 16px;
+    background: var(--color-paper);
+    text-align: center;
+    font-size: 12px;
+    overflow: hidden;
+  }
+  .dsw-sheet strong {
+    display: block;
+    padding-inline: 12px;
+    font-size: 13.5px;
+    line-height: 1.3;
+  }
+  .dsw-sheet p {
+    padding: 4px 12px 10px;
+    color: var(--color-muted);
+  }
+  .dsw-sheet button {
+    display: block;
+    width: 100%;
+    min-height: 38px;
+    padding: 0 10px;
+    border-top: 1px solid var(--color-line);
+    font-size: 13px;
+    color: var(--color-accent-ink);
+    cursor: pointer;
+  }
+  .dsw-sheet button:hover {
+    background: #fff;
+  }
+  .dsw-note {
+    font-size: 12px;
+    color: var(--color-muted);
+  }
+  .dsw-ok {
+    padding: 9px 10px;
+    border-radius: 12px;
+    background: var(--color-mint);
+    color: #14573a;
+    font-size: 12.5px;
+    font-weight: 560;
+  }
+  .dsw-field {
+    display: grid;
+    gap: 4px;
+    font-size: 12px;
+  }
+  .dsw-field :is(select, input) {
+    width: 100%;
+    min-height: 38px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    font-size: 13px;
+  }
+  .dsw-field input[aria-invalid='true'] {
+    box-shadow: inset 0 0 0 2px #c2422f;
+  }
+  .dsw-err {
+    font-size: 12px;
+    color: #8f241b;
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml, fill, redraw } from '../demo-kit';
+
+  type Strings = Record<string, string> & { centres: string[] };
+  const d = demo<Strings>('swift');
+  if (d) {
+    const T = d.T;
+    const body = d.$('[data-phone="app"] [data-body]');
+    const facts = { location: d.$('[data-fact="location"]'), signature: d.$('[data-fact="signature"]') };
+    type State = { location: 'none' | 'once' | 'while' | 'denied'; centre: string; sheet: '' | 'location' | 'face'; signature: 'none' | 'face' | 'code'; wantCode: boolean; badCode: boolean };
+    const fresh = (): State => ({ location: 'none', centre: '', sheet: '', signature: 'none', wantCode: false, badCode: false });
+    let state = fresh();
+    const e = escapeHtml;
+
+    const draw = (focus?: string) => {
+      const parts = [`<p class="dm-phone-title">${e(T.title)}</p><p class="dm-phone-sub">${e(T.sub)}</p>`];
+      // Location: asked, granted or refused; refused still leaves a way to say where.
+      if (state.location === 'none') parts.push(`<button type="button" class="dm-phone-btn" data-tone="ghost" data-act="ask-location">${e(T.find)}</button>`);
+      else if (state.location === 'denied') {
+        parts.push(
+          `<label class="dsw-field">${e(T.pick)}<select data-centre>${['', ...T.centres].map((name) => `<option value="${e(name)}"${name === state.centre ? ' selected' : ''}>${e(name || '—')}</option>`).join('')}</select></label>` +
+            (state.centre ? `<p class="dsw-ok">${e(fill(T.chosen, { centre: state.centre }))}</p>` : `<p class="dsw-note">${e(T.settings)}</p>`),
+        );
+      } else parts.push(`<p class="dsw-ok">${e(T.near)}</p>` + (state.location === 'once' ? `<p class="dsw-note">${e(T.onceNote)}</p>` : ''));
+      // Signature: the face, or the passcode when the face is not recognized.
+      parts.push('<div style="margin-top:auto;display:grid;gap:6px">');
+      if (state.signature !== 'none') parts.push(`<p class="dsw-ok" tabindex="-1" data-signed>${e(T.signed)}</p>`);
+      else if (state.wantCode) {
+        parts.push(
+          `<label class="dsw-field">${e(T.code)}<input data-code inputmode="numeric" autocomplete="off" maxlength="4" aria-describedby="dsw-hint"${state.badCode ? ' aria-invalid="true"' : ''} /></label>` +
+            `<p class="${state.badCode ? 'dsw-err' : 'dsw-note'}" id="dsw-hint"${state.badCode ? ' role="alert"' : ''}>${e(state.badCode ? T.codeBad : T.codeHint)}</p>` +
+            `<button type="button" class="dm-phone-btn" data-act="code">${e(T.confirm)}</button>`,
+        );
+      } else parts.push(`<button type="button" class="dm-phone-btn" data-act="ask-face">${e(T.sign)}</button>`);
+      parts.push('</div>');
+      if (state.sheet === 'location') {
+        parts.push(
+          `<div class="dsw-sheet" role="alertdialog" aria-label="${e(T.askLocation)}"><div><strong>${e(T.askLocation)}</strong><p>${e(T.askLocationWhy)}</p>` +
+            `<button type="button" data-act="once">${e(T.once)}</button><button type="button" data-act="while">${e(T.whileUsing)}</button><button type="button" data-act="deny">${e(T.deny)}</button></div></div>`,
+        );
+      } else if (state.sheet === 'face') {
+        parts.push(`<div class="dsw-sheet" role="alertdialog" aria-label="${e(T.askFace)}"><div><strong>${e(T.askFace)}</strong><p>&nbsp;</p><button type="button" data-act="face-ok">${e(T.faceOk)}</button><button type="button" data-act="face-no">${e(T.faceNo)}</button></div></div>`);
+      }
+      redraw(body, () => (body.innerHTML = parts.join('')), '[data-signed], [data-act], select, input');
+      facts.location.textContent = { none: T.stateNone, once: T.stateOnce, while: T.stateWhile, denied: T.stateDenied }[state.location];
+      facts.signature.textContent = { none: T.signNone, face: T.signFace, code: T.signCode }[state.signature];
+      const next = focus ? body.querySelector<HTMLElement>(focus) : null;
+      next?.focus();
+    };
+
+    body.addEventListener('click', (event) => {
+      const act = (event.target as Element).closest<HTMLElement>('[data-act]')?.dataset.act;
+      if (!act) return;
+      let focus = '';
+      if (act === 'ask-location') [state.sheet, focus] = ['location', '.dsw-sheet button'];
+      else if (act === 'once' || act === 'while' || act === 'deny') {
+        state.location = act === 'deny' ? 'denied' : act;
+        state.sheet = '';
+        focus = act === 'deny' ? '[data-centre]' : '[data-act="ask-face"], [data-code]';
+        d.say(act === 'once' ? T.sayOnce : act === 'while' ? T.sayWhile : T.sayDenied);
+      } else if (act === 'ask-face') [state.sheet, focus] = ['face', '.dsw-sheet button'];
+      else if (act === 'face-ok') {
+        [state.sheet, state.signature, focus] = ['', 'face', '[data-signed]'];
+        d.say(fill(T.saySigned, { how: T.signFace }));
+      } else if (act === 'face-no') {
+        [state.sheet, state.wantCode, focus] = ['', true, '[data-code]'];
+        d.say(T.sayFaceNo);
+      } else if (act === 'code') {
+        const typed = body.querySelector<HTMLInputElement>('[data-code]')!.value.trim();
+        if (typed === '2468') {
+          [state.signature, focus] = ['code', '[data-signed]'];
+          d.say(fill(T.saySigned, { how: T.signCode }));
+        } else [state.badCode, focus] = [true, '[data-code]'];
+      }
+      draw(focus);
+    });
+    body.addEventListener('change', (event) => {
+      const select = (event.target as Element).closest<HTMLSelectElement>('[data-centre]');
+      if (!select) return;
+      state.centre = select.value;
+      if (state.centre) d.say(fill(T.chosen, { centre: state.centre }));
+      draw('[data-centre]');
+    });
+    body.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && (event.target as Element).matches('[data-code]')) body.querySelector<HTMLElement>('[data-act="code"]')?.click();
+    });
+
+    d.onReset(() => {
+      state = fresh();
+      draw();
+      d.say('');
+    });
+    draw();
+  }
+</script>

@@ -1,0 +1,169 @@
+---
+// Python: two sample files are normalized, matched by email and merged into one
+// ordered list. The rules are real and run in the browser on invented data.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    files: ['tienda.csv', 'crm.csv'],
+    cols: ['Nombre', 'Correo', 'Ciudad'],
+    steps: ['1 · Normalizar', '2 · Cruzar por correo', '3 · Ordenar y exportar'],
+    out: 'clientes_unificados.csv',
+    outCols: ['Nombre', 'Correo', 'Ciudad', 'Origen'],
+    js: {
+      idle: 'Dos ficheros con los mismos clientes escritos de formas distintas.',
+      normalized: 'Normalizados: nombres con mayúscula inicial, correos en minúsculas y sin espacios.',
+      matched: 'Cruzados: {n} clientes aparecen dos veces (marcados). Se conserva una fila de cada uno.',
+      exported: 'Exportado: {rows} clientes únicos, ordenados por nombre. {n} duplicados fusionados.',
+      both: 'tienda + crm',
+      shop: 'tienda',
+      crm: 'crm',
+    },
+  },
+  en: {
+    files: ['store.csv', 'crm.csv'],
+    cols: ['Name', 'Email', 'City'],
+    steps: ['1 · Normalize', '2 · Match by email', '3 · Sort and export'],
+    out: 'customers_merged.csv',
+    outCols: ['Name', 'Email', 'City', 'Source'],
+    js: {
+      idle: 'Two files with the same customers written in different ways.',
+      normalized: 'Normalized: names capitalized, emails in lower case with no spaces.',
+      matched: 'Matched: {n} customers appear twice (flagged). One row of each is kept.',
+      exported: 'Exported: {rows} unique customers, sorted by name. {n} duplicates merged.',
+      both: 'store + crm',
+      shop: 'store',
+      crm: 'crm',
+    },
+  },
+}[lang];
+// Invented people, written the way real exports arrive: stray spaces, shouting, mixed case.
+const shop = [
+  ['  LUCÍA  ortega ', 'Lucia.Ortega@Ejemplo.com ', 'almería'],
+  ['pablo MARÍN', 'pablo.marin@ejemplo.com', 'Vera'],
+  ['Inés Carmona', ' INES@EJEMPLO.COM', 'GRANADA'],
+  ['david  soler', 'd.soler@ejemplo.com', 'murcia'],
+];
+const crm = [
+  ['Carmona, Inés', 'ines@ejemplo.com', 'Granada'],
+  ['NOELIA VEGA', 'noelia.vega@ejemplo.com', 'Almería'],
+  ['Lucía Ortega', 'lucia.ortega@ejemplo.com', 'Almería'],
+  ['Raúl Peña', 'raul.pena@ejemplo.com ', 'vera'],
+];
+---
+
+<DemoFrame id="python" strings={{ ...T.js, shopRows: shop, crmRows: crm }} kind="real">
+  <div class="dm-grid dm-grid--2">
+    {
+      [shop, crm].map((rows, at) => (
+        <div class="dm-panel">
+          <p class="dm-cap">{T.files[at]}</p>
+          <table class="dm-table" data-source={at}>
+            <thead><tr>{T.cols.map((col) => <th scope="col">{col}</th>)}</tr></thead>
+            <tbody>{rows.map((row) => <tr>{row.map((cell) => <td><span class="dp-raw">{cell}</span></td>)}</tr>)}</tbody>
+          </table>
+        </div>
+      ))
+    }
+  </div>
+  <div class="dm-panel" style="margin-top:12px">
+    <div class="dm-row">
+      {T.steps.map((step, i) => <button class="dm-btn dm-btn--ghost" type="button" data-run={i} aria-disabled={i > 0 ? 'true' : 'false'}>{step}</button>)}
+    </div>
+    <p class="dm-help" data-summary aria-live="polite">{T.js.idle}</p>
+    <div data-output hidden>
+      <p class="dm-cap">{T.out}</p>
+      <table class="dm-table">
+        <thead><tr>{T.outCols.map((col) => <th scope="col">{col}</th>)}</tr></thead>
+        <tbody data-out></tbody>
+      </table>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  /* Raw cells keep their stray spaces visible: that is the point. */
+  .dp-raw {
+    white-space: pre-wrap;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml, fill } from '../demo-kit';
+
+  type Row = { name: string; email: string; city: string; from: 0 | 1; twin?: boolean };
+  const d = demo<Record<string, string> & { shopRows: string[][]; crmRows: string[][] }>('python');
+  if (d) {
+    const tables = d.$$<HTMLTableElement>('[data-source]');
+    const buttons = d.$$<HTMLButtonElement>('[data-run]');
+    const summary = d.$('[data-summary]');
+    const output = d.$('[data-output]');
+    const out = d.$('[data-out]');
+    const raw = (): Row[] => [d.T.shopRows, d.T.crmRows].flatMap((rows, from) => rows.map(([name, email, city]) => ({ name, email, city, from: from as 0 | 1 })));
+    let rows = raw();
+    let stage = 0;
+
+    // The rules, written the way they would be in the Python script.
+    const capital = (text: string) => text.toLowerCase().replace(/(^|[\s-])(\p{L})/gu, (_, gap, letter) => gap + letter.toUpperCase());
+    const normalize = (row: Row): Row => {
+      const flipped = row.name.includes(',') ? row.name.split(',').reverse().join(' ') : row.name;
+      return { ...row, name: capital(flipped.trim().replace(/\s+/g, ' ')), email: row.email.trim().toLowerCase(), city: capital(row.city.trim()) };
+    };
+    const twins = (list: Row[]) => {
+      const seen = new Map<string, number>();
+      for (const row of list) seen.set(row.email, (seen.get(row.email) ?? 0) + 1);
+      return list.map((row) => ({ ...row, twin: (seen.get(row.email) ?? 0) > 1 }));
+    };
+
+    const draw = () => {
+      tables.forEach((table, from) => {
+        table.tBodies[0].innerHTML = rows
+          .filter((row) => row.from === from)
+          .map((row) => `<tr${row.twin ? ' data-flag' : ''}>${[row.name, row.email, row.city].map((cell) => `<td><span class="${stage ? '' : 'dp-raw'}">${escapeHtml(cell)}</span></td>`).join('')}</tr>`)
+          .join('');
+      });
+      buttons.forEach((button, i) => {
+        button.setAttribute('aria-disabled', String(i !== stage));
+        button.setAttribute('aria-pressed', String(i < stage));
+      });
+    };
+
+    d.root.addEventListener('click', (event) => {
+      const button = (event.target as Element).closest<HTMLButtonElement>('[data-run]');
+      if (!button || Number(button.dataset.run) !== stage) return;
+      if (stage === 0) {
+        rows = rows.map(normalize);
+        summary.textContent = d.T.normalized;
+      } else if (stage === 1) {
+        rows = twins(rows);
+        summary.textContent = fill(d.T.matched, { n: new Set(rows.filter((row) => row.twin).map((row) => row.email)).size });
+      } else {
+        const merged = new Map<string, Row & { both: boolean }>();
+        for (const row of rows) merged.set(row.email, merged.has(row.email) ? { ...merged.get(row.email)!, both: true } : { ...row, both: false });
+        const list = [...merged.values()].sort((a, b) => a.name.localeCompare(b.name, document.documentElement.lang));
+        out.innerHTML = list
+          .map((row) => `<tr${row.both ? ' data-new' : ''}><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.email)}</td><td>${escapeHtml(row.city)}</td><td>${row.both ? d.T.both : row.from ? d.T.crm : d.T.shop}</td></tr>`)
+          .join('');
+        output.hidden = false;
+        summary.textContent = fill(d.T.exported, { rows: list.length, n: rows.length - list.length });
+      }
+      stage++;
+      draw();
+      d.say(summary.textContent ?? '');
+      buttons[Math.min(stage, buttons.length - 1)].focus();
+    });
+
+    d.onReset(() => {
+      rows = raw();
+      stage = 0;
+      output.hidden = true;
+      summary.textContent = d.T.idle;
+      draw();
+      d.say('');
+    });
+  }
+</script>

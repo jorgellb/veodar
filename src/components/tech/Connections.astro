@@ -1,0 +1,318 @@
+---
+// What a technology connects to, as a diagram with real text: what comes in on the
+// left, the piece we build in the middle, where it delivers on the right. A box that
+// leads to another page of the site is a link. On a phone the three stack.
+import Icon from '../Icon.astro';
+import { servicesFor } from '../../data/services';
+import { techById, type TechNode } from '../../data/technologies';
+import { langOf, serviceHref, techHref } from '../../i18n';
+
+interface Props {
+  name: string;
+  inputs: TechNode[];
+  core: { label: string; note: string };
+  outputs: TechNode[];
+}
+const { name, inputs, core, outputs } = Astro.props;
+const lang = langOf(Astro.url);
+const T = {
+  es: { label: `Esquema de conexiones de ${name}`, in: 'De dónde viene', out: 'A dónde llega', see: 'Ver la ficha de', seeService: 'Ver el servicio de' },
+  en: { label: `Connection diagram for ${name}`, in: 'Where it comes from', out: 'Where it goes', see: 'See the page on', seeService: 'See the service:' },
+}[lang];
+const services = servicesFor(lang);
+// A box links to the page that explains it, when the site has one.
+const linkOf = (node: TechNode) => {
+  if (node.tech) {
+    const tech = techById(node.tech, lang)!;
+    return { href: techHref(tech.id, lang), title: `${T.see} ${tech.name}` };
+  }
+  if (node.service) {
+    const service = services.find((item) => item.slug === node.service)!;
+    return { href: serviceHref(service.slug, lang), title: `${T.seeService} ${service.name}` };
+  }
+  return null;
+};
+const columns = [
+  { side: 'in', caption: T.in, nodes: inputs },
+  { side: 'out', caption: T.out, nodes: outputs },
+] as const;
+---
+
+<div class="cx" role="group" aria-label={T.label}>
+  {
+    columns.map((column, at) => (
+      <>
+        {at === 1 && (
+          <div class="cx-core">
+            <span class="cx-core-tag">{name}</span>
+            <strong class="cx-core-label">{core.label}</strong>
+            <span class="cx-core-note">{core.note}</span>
+          </div>
+        )}
+        <div class:list={['cx-col', `cx-col--${column.side}`]}>
+          <p class="cx-cap">{column.caption}</p>
+          <ul>
+            {column.nodes.map((node) => {
+              const link = linkOf(node);
+              return (
+                <li class:list={['cx-node', link && 'cx-node--link']}>
+                  {link ? (
+                    <a href={link.href} class="cx-label" title={link.title}>
+                      {node.label} <Icon name="arrow" size={14} />
+                    </a>
+                  ) : (
+                    <span class="cx-label">{node.label}</span>
+                  )}
+                  <span class="cx-flow">{node.flow}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </>
+    ))
+  }
+</div>
+
+<style>
+  .cx {
+    --wire: var(--color-line-strong);
+    --gap: 28px;
+    display: grid;
+    gap: 0;
+  }
+  .cx-cap {
+    margin-bottom: 0.8rem;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .cx-col ul {
+    display: grid;
+    gap: 10px;
+  }
+  .cx-node {
+    position: relative;
+    display: grid;
+    gap: 3px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  .cx-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 15.5px;
+    font-weight: 560;
+    line-height: 1.25;
+  }
+  a.cx-label {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+    text-underline-offset: 3px;
+  }
+  a.cx-label::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .cx-node--link {
+    transition: box-shadow 0.3s;
+  }
+  .cx-node--link:hover {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+  a.cx-label:focus-visible {
+    outline: none;
+  }
+  .cx-node--link:has(a:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  .cx-flow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.01em;
+    color: var(--color-muted);
+  }
+  .cx-flow::before {
+    content: '→ ';
+    color: var(--color-accent-ink);
+  }
+  .cx-core {
+    position: relative;
+    display: grid;
+    gap: 6px;
+    align-content: center;
+    padding: 22px 22px 24px;
+    border-radius: 20px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .cx-core-tag {
+    justify-self: start;
+    padding: 0.22rem 0.6rem;
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: #1a0a03;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .cx-core-label {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+  .cx-core-note {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: rgb(244 240 230 / 0.7);
+  }
+
+  /* Phone and tablet: one column, joined by a wire down the left. */
+  @media (max-width: 899px) {
+    .cx-col,
+    .cx-core {
+      margin-left: 22px;
+    }
+    .cx-col {
+      position: relative;
+    }
+    .cx-col::before {
+      content: '';
+      position: absolute;
+      left: -22px;
+      top: 0;
+      bottom: 0;
+      border-left: 1.5px solid var(--wire);
+    }
+    .cx-col--in::before {
+      top: 30px;
+      bottom: -24px;
+    }
+    .cx-col--out::before {
+      top: -24px;
+      bottom: 26px;
+    }
+    .cx-node::before {
+      content: '';
+      position: absolute;
+      left: -22px;
+      top: 50%;
+      width: 22px;
+      border-top: 1.5px solid var(--wire);
+    }
+    .cx-core {
+      margin-block: 24px;
+    }
+    .cx-core::before {
+      content: '';
+      position: absolute;
+      left: -22px;
+      top: 50%;
+      width: 22px;
+      border-top: 1.5px solid var(--color-accent);
+    }
+    .cx-col--out .cx-cap {
+      padding-top: 2px;
+    }
+  }
+
+  /* Desk: three columns. Every box reaches a bus beside the centre piece. */
+  @media (min-width: 900px) {
+    .cx {
+      --gap: 34px;
+      grid-template-columns: minmax(0, 1fr) minmax(220px, 0.82fr) minmax(0, 1fr);
+      column-gap: calc(var(--gap) * 2);
+      align-items: center;
+    }
+    .cx-cap {
+      position: absolute;
+      bottom: calc(100% + 0.3rem);
+      left: 2px;
+    }
+    .cx-col {
+      position: relative;
+    }
+    /* From each box to the bus… */
+    .cx-node::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: var(--gap);
+      border-top: 1.5px solid var(--wire);
+    }
+    .cx-col--in .cx-node::after {
+      left: 100%;
+    }
+    .cx-col--out .cx-node::after {
+      right: 100%;
+    }
+    /* …and the bus itself, from the middle of the first box to the middle of the last. */
+    .cx-node::before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      bottom: -5px;
+      border-left: 1.5px solid var(--wire);
+    }
+    .cx-col--in .cx-node::before {
+      left: calc(100% + var(--gap));
+    }
+    .cx-col--out .cx-node::before {
+      right: calc(100% + var(--gap));
+    }
+    .cx-node:first-child::before {
+      top: 50%;
+    }
+    .cx-node:last-child::before {
+      bottom: 50%;
+    }
+    /* The centre piece takes the two buses, in accent: that is the part we build. */
+    .cx-core::before,
+    .cx-core::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: var(--gap);
+      border-top: 1.5px solid var(--color-accent);
+    }
+    .cx-core::before {
+      right: 100%;
+    }
+    .cx-core::after {
+      left: 100%;
+    }
+    /* An arrowhead where each wire arrives. */
+    .cx-col--out .cx-label::before,
+    .cx-core-tag::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 7px;
+      height: 7px;
+      border-top: 1.5px solid var(--wire);
+      border-right: 1.5px solid var(--wire);
+      transform: translate(0, -50%) rotate(45deg);
+      translate: 0 -0.5px;
+    }
+    .cx-col--out .cx-label::before {
+      right: calc(100% + 1px);
+    }
+    .cx-core-tag::before {
+      right: calc(100% + 1px);
+      border-color: var(--color-accent);
+    }
+  }
+</style>

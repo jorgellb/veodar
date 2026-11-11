@@ -38,6 +38,14 @@ interface Props {
   stack?: string[];
   /** Label for the stack chips (defaults to "Technologies"). */
   stackLabel?: string;
+  /** Stack names that have a page of their own, and where it is. */
+  stackHrefs?: Record<string, string>;
+  /**
+   * Width of the headline in `ch`, when 14 is too close to one of its lines: a headline
+   * that fits in two lines by a few pixels takes three while the web fonts load, and the
+   * page jumps when they arrive. A narrower box breaks it the same way in both.
+   */
+  h1Max?: number;
   tint?: Tint;
   extraLd?: Record<string, unknown>[];
   /** schema.org type of the page (WebPage, ContactPage, CollectionPage…). */
@@ -48,6 +56,10 @@ interface Props {
   relatedNotes?: Record<string, string | undefined>;
   /** Blocks of internal links with context, after the related services. */
   cross?: { id: string; title: string; kicker?: string; items: CrossItem[]; allHref?: string; allLabel?: string; columns?: 2 | 3; compact?: boolean }[];
+  /** The page fills the "after-detail" slot: a block under the detail column, beside the page index. */
+  afterDetail?: boolean;
+  /** Entries of the page index for that block, between what is handed over and the questions. */
+  tocExtra?: { id: string; label: string }[];
   /** Previous and next page of the same kind. */
   pager?: { prev: { href: string; label: string }; next: { href: string; label: string }; prevLabel: string; nextLabel: string; ariaLabel: string };
 }
@@ -133,7 +145,9 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
       <div class:list={['mt-10 grid gap-12 lg:gap-14', aside ? 'hero-aside items-start lg:grid-cols-[1fr_1.12fr]' : 'items-center lg:grid-cols-[1fr_1.05fr]']}>
         <div class="hero-text">
           <p class="eyebrow" data-reveal>{p.kicker}</p>
-          <h1 class="display h-xl mt-5 max-w-[14ch]" data-reveal style="--d:60ms">{p.h1}</h1>
+          <h1 class="display h-xl mt-5 max-w-[14ch]" data-reveal style={`--d:60ms${p.h1Max ? `;max-width:${p.h1Max}ch` : ''}`}>
+            {p.h1}
+          </h1>
           <p class="lead mt-7 max-w-[56ch]" data-reveal style="--d:120ms" set:html={linkify(p.lead, lang, Astro.url.pathname, 1, false)} />
           {
             !aside && (
@@ -152,9 +166,17 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
               <div class="mt-10" data-reveal style="--d:240ms">
                 {p.stackLabel && <p class="mb-3 font-mono text-[11px] tracking-[0.12em] text-muted uppercase">{p.stackLabel}</p>}
                 <ul class="flex flex-wrap gap-1.5" aria-label={p.stackLabel ?? T.tech}>
-                  {p.stack.map((tech) => (
-                    <li class="chip">{tech}</li>
-                  ))}
+                  {p.stack.map((tech) =>
+                    p.stackHrefs?.[tech] ? (
+                      <li>
+                        <a href={p.stackHrefs[tech]} class="chip chip-link">
+                          {tech}
+                        </a>
+                      </li>
+                    ) : (
+                      <li class="chip">{tech}</li>
+                    ),
+                  )}
                 </ul>
               </div>
             )
@@ -182,7 +204,7 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
 
   <section id="detalle" class="border-t border-line py-20 md:py-28" data-spine="0.226">
     <div class="wrap grid gap-12 lg:grid-cols-[240px_1fr] lg:gap-20">
-      <aside class="hidden lg:block">
+      <aside class:list={['hidden lg:block', p.afterDetail && 'lg:row-span-2']}>
         <nav class="sticky top-28" aria-label={T.onPage}>
           <p class="font-mono text-[11.5px] tracking-[0.12em] text-muted uppercase">{T.onPage}</p>
           <ul class="mt-4 grid gap-1 border-l border-line" data-toc>
@@ -196,6 +218,7 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
               ))
             }
             <li><a href="#entregables" class="toc-link">{T.get}</a></li>
+            {(p.tocExtra ?? []).map((item) => <li><a href={`#${item.id}`} class="toc-link">{item.label}</a></li>)}
             <li><a href="#preguntas" class="toc-link">{T.questions}</a></li>
           </ul>
         </nav>
@@ -233,6 +256,13 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
           </ul>
         </div>
       </div>
+      {
+        p.afterDetail && (
+          <div class="min-w-0 lg:col-start-2">
+            <slot name="after-detail" />
+          </div>
+        )
+      }
     </div>
   </section>
 

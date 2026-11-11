@@ -1,0 +1,11 @@
+---
+import TechPage from '../../views/TechPage.astro';
+import { techsFor } from '../../data/technologies';
+
+export function getStaticPaths() {
+  return techsFor('es').map((tech) => ({ params: { slug: tech.id }, props: { tech } }));
+}
+const { tech } = Astro.props;
+---
+
+<TechPage tech={tech} />

@@ -1,0 +1,285 @@
+---
+// SwiftUI: change the state and watch the screen. Nothing on the phone is edited by
+// hand: the screen and the widget are both drawn again from the same description every
+// time the state changes.
+import DemoFrame from '../DemoFrame.astro';
+import DemoPhone from '../DemoPhone.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    state: 'El estado',
+    orders: 'Pedidos pendientes',
+    less: 'Un pedido menos',
+    more: 'Un pedido más',
+    large: 'Letra grande',
+    dark: 'Modo oscuro',
+    phone: 'Pantalla de pedidos',
+    widget: 'Widget de la pantalla de inicio',
+    description: 'La descripción de la pantalla',
+    lines: ['Pantalla «Pedidos», con el número en la cabecera', 'Si no hay pedidos: un aviso de que está todo al día', 'Si los hay: una fila por pedido', 'Con letra grande: el nombre pasa debajo del número', 'Colores: los del sistema, claros u oscuros'],
+    js: {
+      title: 'Pedidos',
+      empty: 'No hay pedidos pendientes',
+      emptySub: 'Todo al día.',
+      customers: ['Talleres Ribera', 'Clínica Olmo', 'Hotel Bahía', 'Forja Lucero'],
+      states: ['En reparto', 'Preparando', 'Recibido', 'Recibido'],
+      order: 'Pedido',
+      next: 'Siguiente: {customer}',
+      none: 'Nada pendiente',
+      say: 'Pedidos pendientes: {n}{extra}. La pantalla y el widget se han redibujado solos.',
+      sayLarge: ', letra grande',
+      sayDark: ', modo oscuro',
+    },
+  },
+  en: {
+    state: 'The state',
+    orders: 'Pending orders',
+    less: 'One order fewer',
+    more: 'One more order',
+    large: 'Large text',
+    dark: 'Dark mode',
+    phone: 'Orders screen',
+    widget: 'Home screen widget',
+    description: 'The description of the screen',
+    lines: ['“Orders” screen, with the number in its header', 'If there are no orders: a note that all is up to date', 'If there are: one row per order', 'With large text: the name moves below the number', "Colors: the system's, light or dark"],
+    js: {
+      title: 'Orders',
+      empty: 'No pending orders',
+      emptySub: 'All up to date.',
+      customers: ['Ribera Garage', 'Olmo Clinic', 'Bahía Hotel', 'Lucero Forge'],
+      states: ['Out for delivery', 'Being prepared', 'Received', 'Received'],
+      order: 'Order',
+      next: 'Next: {customer}',
+      none: 'Nothing pending',
+      say: 'Pending orders: {n}{extra}. The screen and the widget redrew themselves.',
+      sayLarge: ', large text',
+      sayDark: ', dark mode',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="swiftui" strings={T.js} kind="real">
+  <div class="dm-grid dsu-grid">
+    <div class="dsu-side">
+      <div class="dm-panel">
+        <p class="dm-cap">{T.state}</p>
+        <div class="dsu-count" role="group" aria-label={T.orders}>
+          <button type="button" class="dm-btn dm-btn--ghost dsu-step" data-step="-1" aria-label={T.less}>−</button>
+          <p><output data-count>3</output><span>{T.orders}</span></p>
+          <button type="button" class="dm-btn dm-btn--ghost dsu-step" data-step="1" aria-label={T.more}>+</button>
+        </div>
+        <label class="dm-check"><input type="checkbox" data-large /> {T.large}</label>
+        <label class="dm-check"><input type="checkbox" data-dark /> {T.dark}</label>
+      </div>
+      <div class="dm-panel">
+        <p class="dm-cap">{T.description}</p>
+        <ol class="dsu-lines">{T.lines.map((line, i) => <li data-line={i}>{line}</li>)}</ol>
+      </div>
+    </div>
+    <div class="dm-panel dsu-stage">
+      <DemoPhone kind="a" name="orders" label={T.phone} />
+      <div class="dsu-widget" data-widget role="group" aria-label={T.widget}></div>
+    </div>
+  </div>
+</DemoFrame>
+
+<style is:global>
+  @media (min-width: 860px) {
+    .dsu-grid {
+      grid-template-columns: 0.95fr 1.05fr;
+    }
+  }
+  .dsu-side {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+  .dsu-count {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .dsu-count p {
+    display: grid;
+    justify-items: center;
+    font-size: 12.5px;
+    color: var(--color-muted);
+  }
+  .dsu-count output {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    line-height: 1;
+    color: var(--color-ink);
+  }
+  .dsu-step {
+    width: 44px;
+    padding: 0;
+    font-size: 20px;
+  }
+  .dsu-lines {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 13.5px;
+    line-height: 1.45;
+    counter-reset: line;
+  }
+  .dsu-lines li {
+    padding: 0.3rem 0.6rem;
+    border-radius: 8px;
+    color: var(--color-muted);
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+  /* The lines of the description that are at work right now. */
+  .dsu-lines li[data-on] {
+    background: rgb(255 90 31 / 0.12);
+    color: var(--color-ink);
+  }
+  .dsu-stage {
+    display: grid;
+    gap: 16px;
+    justify-items: center;
+    align-content: center;
+    background: var(--color-paper-2);
+    box-shadow: none;
+  }
+  .dsu-widget {
+    width: 148px;
+    padding: 14px;
+    border-radius: 26px;
+    background: var(--color-card);
+    box-shadow:
+      inset 0 0 0 1px var(--color-line),
+      0 14px 26px -20px rgb(22 20 44 / 0.5);
+    font-size: 12px;
+  }
+  .dsu-widget[data-dark] {
+    background: #16142c;
+    color: var(--color-paper);
+    box-shadow: none;
+  }
+  .dsu-widget strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 2.6rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .dsu-widget span {
+    display: block;
+    margin-top: 0.3rem;
+    opacity: 0.7;
+  }
+  .dsu-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .dsu-badge {
+    min-width: 24px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: #1a0a03;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .dsu-order {
+    justify-content: space-between;
+  }
+  .dsu-order small {
+    font-size: 11px;
+    opacity: 0.65;
+  }
+  /* Large text: the row stops fitting on one line and stacks instead. */
+  [data-large] .dsu-order {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: 16px;
+  }
+  [data-large] .dsu-order small {
+    font-size: 13.5px;
+  }
+  [data-large] .dm-phone-title {
+    font-size: 26px;
+  }
+  .dsu-empty {
+    display: grid;
+    gap: 4px;
+    place-items: center;
+    padding: 26px 10px;
+    border-radius: 14px;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    text-align: center;
+  }
+  .dm-phone-screen[data-dark] .dsu-empty {
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.25);
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml, fill } from '../demo-kit';
+
+  type Strings = Record<string, string> & { customers: string[]; states: string[] };
+  const d = demo<Strings>('swiftui');
+  if (d) {
+    const T = d.T;
+    const screen = d.$('[data-phone="orders"] [data-screen]');
+    const body = d.$('[data-phone="orders"] [data-body]');
+    const widget = d.$('[data-widget]');
+    const count = d.$('[data-count]');
+    const large = d.$<HTMLInputElement>('[data-large]');
+    const dark = d.$<HTMLInputElement>('[data-dark]');
+    const lines = d.$$('[data-line]');
+    const steps = d.$$<HTMLButtonElement>('[data-step]');
+    let orders = 3;
+    const e = escapeHtml;
+
+    // The one function that draws everything, from the state and nothing else.
+    const draw = (announce = false) => {
+      const list = T.customers.slice(0, orders);
+      body.innerHTML =
+        `<div class="dsu-head"><p class="dm-phone-title">${e(T.title)}</p>${orders ? `<span class="dsu-badge">${orders}</span>` : ''}</div>` +
+        (orders
+          ? list.map((customer, i) => `<div class="dm-phone-row dsu-order"><span>${e(T.order)} ${1042 + i} · ${e(customer)}</span><small>${e(T.states[i])}</small></div>`).join('')
+          : `<div class="dsu-empty"><strong>${e(T.empty)}</strong><span class="dm-phone-sub">${e(T.emptySub)}</span></div>`);
+      screen.toggleAttribute('data-dark', dark.checked);
+      body.toggleAttribute('data-large', large.checked);
+      widget.toggleAttribute('data-dark', dark.checked);
+      widget.innerHTML = `<p>${e(T.title)}</p><strong>${orders}</strong><span>${e(orders ? fill(T.next, { customer: list[0] }) : T.none)}</span>`;
+      count.textContent = String(orders);
+      steps[0].setAttribute('aria-disabled', String(orders === 0));
+      steps[1].setAttribute('aria-disabled', String(orders === T.customers.length));
+      const active = [true, orders === 0, orders > 0, large.checked, dark.checked];
+      lines.forEach((line, i) => line.toggleAttribute('data-on', active[i]));
+      if (announce) d.say(fill(T.say, { n: orders, extra: (large.checked ? T.sayLarge : '') + (dark.checked ? T.sayDark : '') }));
+    };
+
+    steps.forEach((button) =>
+      button.addEventListener('click', () => {
+        const next = orders + Number(button.dataset.step);
+        if (next < 0 || next > T.customers.length) return;
+        orders = next;
+        draw(true);
+      }),
+    );
+    [large, dark].forEach((input) => input.addEventListener('change', () => draw(true)));
+
+    d.onReset(() => {
+      orders = 3;
+      large.checked = false;
+      dark.checked = false;
+      draw();
+      d.say('');
+    });
+    draw();
+  }
+</script>

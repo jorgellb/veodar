@@ -1,0 +1,367 @@
+---
+// Kotlin: five photos to upload and a phone that is not always in a state to do it. The
+// task only runs on Wi-Fi with enough battery; it does not care whether the screen is
+// on, and it is still there after a restart.
+import DemoFrame from '../DemoFrame.astro';
+import DemoPhone from '../DemoPhone.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    phone: 'Teléfono con Android',
+    conditions: 'El teléfono',
+    wifi: 'Wifi',
+    battery: 'Batería suficiente',
+    screen: 'Pantalla encendida',
+    start: 'Programar la subida',
+    restart: 'Reiniciar el teléfono',
+    rule: 'La regla de la tarea',
+    ruleText: 'Subir las fotos pendientes solo con wifi y con batería suficiente. La pantalla no cuenta.',
+    queue: 'Fotos del parte',
+    log: 'Registro de la tarea',
+    js: {
+      app: 'Parte 0142',
+      photo: 'Foto {n}',
+      waiting: 'pendiente',
+      sending: 'subiendo',
+      sent: 'subida',
+      statusIdle: '{total} fotos sin enviar',
+      statusRun: 'Subiendo {n} de {total}',
+      statusDone: 'Las {total} fotos están subidas',
+      statusWifi: 'En espera: falta el wifi',
+      statusBattery: 'En espera: batería baja',
+      screenOff: 'Pantalla apagada',
+      booting: 'Reiniciando…',
+      logStart: 'Tarea programada: {total} fotos',
+      logSent: 'Foto {n} subida',
+      logWifi: 'Sin wifi: la tarea espera, no falla',
+      logBattery: 'Batería baja: la tarea espera',
+      logResume: 'Se cumplen las condiciones: continúa por la foto {n}',
+      logScreen: 'Pantalla apagada: la tarea sigue',
+      logRestart: 'Reinicio: la tarea seguía programada · pendientes: {n}',
+      logDone: 'Tarea terminada',
+      sayDone: 'Las {total} fotos están subidas.',
+      whyWifi: 'falta el wifi',
+      whyBattery: 'la batería está baja',
+      sayWait: 'La tarea espera: {why}. Fotos pendientes: {n}.',
+      sayResume: 'Se cumplen las condiciones: la tarea continúa por la foto {n}.',
+      sayRestart: 'El teléfono se ha reiniciado y la tarea continúa sola. Fotos pendientes: {n}.',
+    },
+  },
+  en: {
+    phone: 'Phone running Android',
+    conditions: 'The phone',
+    wifi: 'Wi-Fi',
+    battery: 'Enough battery',
+    screen: 'Screen on',
+    start: 'Schedule the upload',
+    restart: 'Restart the phone',
+    rule: "The task's rule",
+    ruleText: "Upload the pending photos only on Wi-Fi and with enough battery. The screen doesn't count.",
+    queue: "The report's photos",
+    log: 'Task log',
+    js: {
+      app: 'Report 0142',
+      photo: 'Photo {n}',
+      waiting: 'pending',
+      sending: 'uploading',
+      sent: 'uploaded',
+      statusIdle: '{total} photos not sent yet',
+      statusRun: 'Uploading {n} of {total}',
+      statusDone: 'All {total} photos are uploaded',
+      statusWifi: 'Waiting: no Wi-Fi',
+      statusBattery: 'Waiting: low battery',
+      screenOff: 'Screen off',
+      booting: 'Restarting…',
+      logStart: 'Task scheduled: {total} photos',
+      logSent: 'Photo {n} uploaded',
+      logWifi: "No Wi-Fi: the task waits, it doesn't fail",
+      logBattery: 'Low battery: the task waits',
+      logResume: 'Conditions met: it continues with photo {n}',
+      logScreen: 'Screen off: the task goes on',
+      logRestart: 'Restart: the task was still scheduled · pending: {n}',
+      logDone: 'Task finished',
+      sayDone: 'All {total} photos are uploaded.',
+      whyWifi: 'no Wi-Fi',
+      whyBattery: 'the battery is low',
+      sayWait: 'The task is waiting: {why}. Photos pending: {n}.',
+      sayResume: 'Conditions met: the task continues with photo {n}.',
+      sayRestart: 'The phone restarted and the task carries on by itself. Photos pending: {n}.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="kotlin" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--wide">
+    <div class="dkt-side">
+      <div class="dm-panel">
+        <p class="dm-cap" id="dkt-cond">{T.conditions}</p>
+        <div class="dkt-toggles" role="group" aria-labelledby="dkt-cond">
+          <button type="button" class="dm-btn dm-btn--ghost" data-toggle="wifi" aria-pressed="true">{T.wifi}</button>
+          <button type="button" class="dm-btn dm-btn--ghost" data-toggle="battery" aria-pressed="true">{T.battery}</button>
+          <button type="button" class="dm-btn dm-btn--ghost" data-toggle="screen" aria-pressed="true">{T.screen}</button>
+        </div>
+        <div class="dm-row">
+          <button type="button" class="dm-btn" data-start>{T.start}</button>
+          <button type="button" class="dm-btn dm-btn--ghost" data-restart>{T.restart}</button>
+        </div>
+      </div>
+      <div class="dm-panel">
+        <p class="dm-cap">{T.rule}</p>
+        <p class="dkt-rule">{T.ruleText}</p>
+      </div>
+    </div>
+    <div class="dm-panel dkt-stage">
+      <DemoPhone kind="b" name="worker" label={T.phone} />
+    </div>
+  </div>
+  <div class="dm-grid dm-grid--wide" style="margin-top:12px">
+    <div class="dm-panel">
+      <p class="dm-cap">{T.queue}</p>
+      <ul class="dkt-photos" data-photos></ul>
+    </div>
+    <div class="dm-panel dm-panel--dark">
+      <p class="dm-cap">{T.log}</p>
+      <ol class="dm-log" data-log aria-live="polite"></ol>
+    </div>
+  </div>
+</DemoFrame>
+
+<style is:global>
+  .dkt-side {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+  .dkt-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  /* A condition that is met is filled; one that is not is an outline. */
+  .dkt-toggles .dm-btn[aria-pressed='true'] {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .dkt-toggles .dm-btn::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1.5px currentcolor;
+  }
+  .dkt-toggles .dm-btn[aria-pressed='true']::before {
+    background: #8fe3b6;
+    box-shadow: none;
+  }
+  .dkt-rule {
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+  .dkt-stage {
+    justify-content: center;
+    background: var(--color-paper-2);
+    box-shadow: none;
+  }
+  .dkt-photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 6px;
+  }
+  .dkt-photos li {
+    display: grid;
+    gap: 2px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  }
+  .dkt-photos small {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-muted);
+  }
+  .dkt-photos li[data-state='sending'] {
+    box-shadow: inset 0 0 0 2px var(--color-accent);
+  }
+  .dkt-photos li[data-state='sent'] {
+    background: var(--color-mint);
+    box-shadow: none;
+  }
+  .dkt-photos li[data-state='sent'] small {
+    color: #14573a;
+  }
+  .dkt-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: rgb(22 20 44 / 0.1);
+    overflow: hidden;
+  }
+  .dkt-bar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-accent);
+    transition: width 0.3s;
+  }
+  .dkt-note {
+    padding: 9px 10px;
+    border-radius: 12px;
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    font-size: 12.5px;
+  }
+  .dkt-note[data-wait] {
+    background: var(--color-butter);
+    box-shadow: none;
+    color: #5f4900;
+  }
+  .dkt-note[data-done] {
+    background: var(--color-mint);
+    box-shadow: none;
+    color: #14573a;
+  }
+  .dkt-off {
+    margin: auto;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.5;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dkt-bar i {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml, fill } from '../demo-kit';
+
+  const TOTAL = 5;
+  const d = demo<Record<string, string>>('kotlin');
+  if (d) {
+    const T = d.T;
+    const screen = d.$('[data-phone="worker"] [data-screen]');
+    const body = d.$('[data-phone="worker"] [data-body]');
+    const photos = d.$('[data-photos]');
+    const log = d.$('[data-log]');
+    const toggles = d.$$<HTMLButtonElement>('[data-toggle]');
+    const start = d.$<HTMLButtonElement>('[data-start]');
+    type State = { scheduled: boolean; wifi: boolean; battery: boolean; screen: boolean; sent: number; sending: boolean; booting: boolean };
+    const fresh = (): State => ({ scheduled: false, wifi: true, battery: true, screen: true, sent: 0, sending: false, booting: false });
+    let state = fresh();
+    let run = 0;
+    const e = escapeHtml;
+    const allowed = () => state.scheduled && state.wifi && state.battery && !state.booting;
+    const why = () => (state.wifi ? T.statusBattery : T.statusWifi);
+    const reason = () => (state.wifi ? T.whyBattery : T.whyWifi);
+
+    const write = (text: string, tone: 'ok' | 'warn' | 'err' = 'ok') => {
+      const line = document.createElement('li');
+      line.dataset.state = tone;
+      line.textContent = text;
+      log.append(line);
+      while (log.children.length > 7) log.firstElementChild!.remove();
+    };
+    const draw = () => {
+      const done = state.sent === TOTAL;
+      const status = state.booting ? T.booting : done ? fill(T.statusDone, { total: TOTAL }) : !state.scheduled ? fill(T.statusIdle, { total: TOTAL }) : allowed() ? fill(T.statusRun, { n: state.sent + 1, total: TOTAL }) : why();
+      screen.toggleAttribute('data-dark', !state.screen || state.booting);
+      body.innerHTML =
+        !state.screen || state.booting
+          ? `<p class="dkt-off">${e(state.booting ? T.booting : T.screenOff)}</p>`
+          : `<p class="dm-phone-title">${e(T.app)}</p><div class="dkt-bar"><i style="width:${(state.sent / TOTAL) * 100}%"></i></div><p class="dkt-note"${done ? ' data-done' : allowed() || !state.scheduled ? '' : ' data-wait'}>${e(status)}</p>`;
+      photos.innerHTML = Array.from({ length: TOTAL }, (_, i) => {
+        const kind = i < state.sent ? 'sent' : i === state.sent && state.sending ? 'sending' : 'waiting';
+        return `<li data-state="${kind}">${e(fill(T.photo, { n: i + 1 }))}<small>${e(T[kind])}</small></li>`;
+      }).join('');
+      toggles.forEach((button) => button.setAttribute('aria-pressed', String(state[button.dataset.toggle as 'wifi' | 'battery' | 'screen'])));
+      start.setAttribute('aria-disabled', String(state.scheduled));
+    };
+
+    // The task: one photo at a time, only while its conditions hold. `mine` stops a
+    // run that a restart or a reset has replaced.
+    const pump = async () => {
+      const mine = ++run;
+      while (state.sent < TOTAL && allowed()) {
+        state.sending = true;
+        draw();
+        await d.wait(950);
+        if (mine !== run) return;
+        if (!allowed()) break;
+        state.sent++;
+        state.sending = false;
+        write(fill(T.logSent, { n: state.sent }));
+      }
+      state.sending = false;
+      draw();
+      if (state.sent === TOTAL) {
+        write(T.logDone);
+        d.say(fill(T.sayDone, { total: TOTAL }));
+      }
+    };
+
+    toggles.forEach((button) =>
+      button.addEventListener('click', () => {
+        const key = button.dataset.toggle as 'wifi' | 'battery' | 'screen';
+        const could = allowed();
+        state[key] = !state[key];
+        if (key === 'screen') {
+          if (!state.screen && state.sent < TOTAL) write(T.logScreen);
+          return draw();
+        }
+        if (state.sent === TOTAL || !state.scheduled) return draw();
+        if (could && !allowed()) {
+          run++;
+          state.sending = false;
+          write(key === 'wifi' ? T.logWifi : T.logBattery, 'warn');
+          d.say(fill(T.sayWait, { why: reason(), n: TOTAL - state.sent }));
+          draw();
+        } else if (!could && allowed()) {
+          write(fill(T.logResume, { n: state.sent + 1 }));
+          d.say(fill(T.sayResume, { n: state.sent + 1 }));
+          pump();
+        } else draw();
+      }),
+    );
+    start.addEventListener('click', () => {
+      if (state.scheduled) return;
+      state.scheduled = true;
+      write(fill(T.logStart, { total: TOTAL }));
+      if (allowed()) pump();
+      else {
+        write(state.wifi ? T.logBattery : T.logWifi, 'warn');
+        d.say(fill(T.sayWait, { why: reason(), n: TOTAL }));
+        draw();
+      }
+    });
+    d.$('[data-restart]').addEventListener('click', async () => {
+      const mine = ++run;
+      state.sending = false;
+      state.booting = true;
+      draw();
+      await d.wait(1100);
+      if (mine !== run) return;
+      state.booting = false;
+      state.screen = true;
+      if (state.scheduled && state.sent < TOTAL) {
+        write(fill(T.logRestart, { n: TOTAL - state.sent }), 'warn');
+        d.say(fill(T.sayRestart, { n: TOTAL - state.sent }));
+      }
+      pump();
+    });
+
+    d.onReset(() => {
+      run++;
+      state = fresh();
+      log.innerHTML = '';
+      d.say('');
+      draw();
+    });
+    draw();
+  }
+</script>
