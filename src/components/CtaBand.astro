@@ -28,6 +28,20 @@ const T = {
   },
 }[lang];
 const { title = T.title, text = T.text, href = pathTo('contacto', lang), label = T.label } = Astro.props;
+// Two more ways forward for whoever is not ready to write: never the page they are on.
+const here = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const more = (
+  [
+    { key: 'precios', es: ['', 'cómo presupuestamos un proyecto'], en: ['', 'how we price a project'] },
+    { key: 'soluciones', es: ['las ', 'soluciones por área de la empresa'], en: ['our ', 'solutions by department'] },
+    { key: 'sectores', es: ['los ', 'sectores con los que trabajamos'], en: ['the ', 'industries we work with'] },
+    { key: 'servicios', es: ['', 'todos nuestros servicios'], en: ['', 'all our services'] },
+  ] as const
+)
+  .filter((item) => pathTo(item.key, lang) !== here)
+  .slice(0, 2)
+  .map((item) => ({ href: pathTo(item.key, lang), lead: item[lang][0], anchor: item[lang][1] }));
+const moreText = { es: ['¿Antes de escribir? Mira ', ' o ', '.'], en: ['Before you write, see ', ' or ', '.'] }[lang];
 ---
 
 <section class="px-3 pb-3 md:px-5 md:pb-5" data-spine="0.544" aria-labelledby="cta-title">
@@ -41,9 +55,12 @@ const { title = T.title, text = T.text, href = pathTo('contacto', lang), label =
           <a href={href} class="btn btn-primary">{label} <Icon name="arrow" size={17} class="arrow" /></a>
           <a href="mailto:info@veodar.com" class="btn btn-ghost">info@veodar.com</a>
         </div>
+        <p class="mt-7 max-w-[52ch] text-[14.5px] leading-relaxed text-ink-2">
+          {moreText[0]}{more[0].lead}<a href={more[0].href} class="ctx-link">{more[0].anchor}</a>{moreText[1]}{more[1].lead}<a href={more[1].href} class="ctx-link">{more[1].anchor}</a>{moreText[2]}
+        </p>
       </div>
       <div data-reveal style="--d:120ms">
-        <Figure name="telegraph" fig="Fig. 07" title={T.figure} hint={lang === 'en' ? 'H · E · L · L · O' : 'H · O · L · A'} bare />
+        <Figure name="telegraph" fig="Fig. 07" title={T.figure} hint={lang === 'en' ? 'H · E · L · L · O' : 'H · O · L · A'} bare lazy />
       </div>
     </div>
   </div>

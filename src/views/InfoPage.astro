@@ -4,7 +4,9 @@ import DocPage from '../components/DocPage.astro';
 import ContactForm from '../components/ContactForm.astro';
 import { pagesFor, extrasFor } from '../data/pages';
 import type { Tint } from '../data/services';
-import { langOf, pathTo, type PageKey } from '../i18n';
+import { sectorsFor } from '../data/sectors';
+import { sectorAnchor } from '../data/crosslinks';
+import { langOf, pathTo, sectorHref, type PageKey } from '../i18n';
 
 interface Props {
   id: 'soluciones' | 'precios' | 'contacto';
@@ -25,6 +27,60 @@ const crumbName: Record<string, Record<'es' | 'en', string>> = {
   contacto: { es: 'Contacto', en: 'Contact' },
 };
 const m = meta[id];
+const X = {
+  es: {
+    sectorKicker: 'Por sector',
+    sectorTitle: 'Las mismas áreas, en cada sector',
+    allSectors: 'Todos los sectores',
+    nextKicker: 'Antes de escribir',
+    nextTitle: 'Tres sitios donde mirar primero',
+    next: [
+      ['soluciones', 'Soluciones por área de la empresa', 'Qué suele encargar TI, finanzas, personas, ventas o legal.', 'layers'],
+      ['sectores', 'Software e IA por sector', 'Qué construimos en cada sector y por dónde se empieza.', 'grid'],
+      ['glosario', 'Glosario de software e IA', 'Las siglas que salen en la primera reunión, explicadas.', 'search'],
+      ['almeria', 'Veodar en Almería', 'Dónde estamos y con qué empresas de la provincia encajamos.', 'compass'],
+    ],
+  },
+  en: {
+    sectorKicker: 'By industry',
+    sectorTitle: 'The same departments, in every industry',
+    allSectors: 'All industries',
+    nextKicker: 'Before you write',
+    nextTitle: 'Three places to look first',
+    next: [
+      ['soluciones', 'Solutions by department', 'What IT, finance, people, sales or legal usually commission.', 'layers'],
+      ['sectores', 'Software and AI by industry', 'What we build in each industry and where to start.', 'grid'],
+      ['glosario', 'Glossary of software and AI', 'The acronyms that come up in the first meeting, explained.', 'search'],
+      ['almeria', 'Veodar in Almería', 'Where we are and which local companies we fit.', 'compass'],
+    ],
+  },
+}[lang];
+// Solutions is organised by department: its natural next step is the same work by sector.
+// Pricing and contact point at the pages someone reads before asking for a quote.
+const cross =
+  id === 'soluciones'
+    ? [
+        {
+          id: 'by-sector',
+          kicker: X.sectorKicker,
+          title: X.sectorTitle,
+          items: sectorsFor(lang).map((sector) => ({ href: sectorHref(sector.id, lang), anchor: sectorAnchor(sector.id, lang, 2), text: sector.menu, icon: sector.icon, tint: sector.tint })),
+          allHref: pathTo('sectores', lang),
+          allLabel: X.allSectors,
+          columns: 3 as const,
+          compact: true,
+        },
+      ]
+    : [
+        {
+          id: 'next-title',
+          kicker: X.nextKicker,
+          title: X.nextTitle,
+          // Contact already knows it wants to talk: it gets the sectors, the glossary and where we are.
+          items: (id === 'contacto' ? X.next.slice(1) : X.next.slice(0, 3)).map(([key, anchor, text, icon]) => ({ href: pathTo(key as PageKey, lang), anchor, text, icon })),
+          columns: 3 as const,
+        },
+      ];
 // The same template for all three; Contacto adds its form beside the headline.
 const props = {
   title: page.title,
@@ -49,6 +105,7 @@ const props = {
   sceneTitle: m.title[lang],
   tint: m.tint,
   pageType: m.type,
+  cross,
 };
 ---
 

@@ -1,0 +1,80 @@
+---
+// Previous / next links between sibling pages (services, sectors, glossary terms),
+// so a crawler and a reader can walk the whole set from any one page.
+import Icon from './Icon.astro';
+
+interface Link {
+  href: string;
+  label: string;
+}
+interface Props {
+  prev: Link;
+  next: Link;
+  prevLabel: string;
+  nextLabel: string;
+  ariaLabel: string;
+}
+const { prev, next, prevLabel, nextLabel, ariaLabel } = Astro.props;
+---
+
+<nav class="border-t border-line" aria-label={ariaLabel}>
+  <div class="wrap grid sm:grid-cols-2">
+    <a href={prev.href} rel="prev" class="pg pg--prev">
+      <span class="pg-kicker"><Icon name="arrow" size={14} class="pg-back" /> {prevLabel}</span>
+      <span class="pg-name">{prev.label}</span>
+    </a>
+    <a href={next.href} rel="next" class="pg pg--next">
+      <span class="pg-kicker">{nextLabel} <Icon name="arrow" size={14} /></span>
+      <span class="pg-name">{next.label}</span>
+    </a>
+  </div>
+</nav>
+
+<style>
+  .pg {
+    display: grid;
+    gap: 8px;
+    padding: 28px 0;
+    transition: color 0.2s;
+  }
+  .pg--next {
+    text-align: right;
+    justify-items: end;
+  }
+  @media (min-width: 640px) {
+    .pg--prev {
+      padding-right: 24px;
+      border-right: 1px solid var(--color-line);
+    }
+    .pg--next {
+      padding-left: 24px;
+    }
+  }
+  @media (max-width: 639px) {
+    .pg--next {
+      border-top: 1px solid var(--color-line);
+    }
+  }
+  .pg-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .pg-back {
+    transform: rotate(180deg);
+  }
+  .pg-name {
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+  .pg:hover .pg-name {
+    color: var(--color-accent-ink);
+  }
+</style>

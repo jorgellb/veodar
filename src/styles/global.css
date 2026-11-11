@@ -235,6 +235,12 @@
     color: var(--color-accent-ink);
     text-decoration-color: var(--color-accent);
   }
+  /* A glossary term: dotted, lighter. It defines; it does not sell. */
+  a.ctx-term {
+    font-weight: inherit;
+    text-decoration-style: dotted;
+    text-decoration-color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  }
 
   .tile {
     border-radius: 22px;
@@ -286,6 +292,21 @@ main [id] {
 .js [data-reveal].is-in {
   opacity: 1;
   transform: none;
+}
+/* The first screen never waits for JavaScript. Its text is painted on the first
+   frame (it is what Core Web Vitals time as LCP) and only eases up into place. */
+.js main > section:first-of-type [data-reveal] {
+  opacity: 1;
+  transform: none;
+  transition: none;
+  animation: reveal-first 0.9s var(--ease-out-soft) both;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes reveal-first {
+  from {
+    opacity: 0.35;
+    transform: translateY(16px);
+  }
 }
 
 @keyframes marquee {

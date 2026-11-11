@@ -3,22 +3,40 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ServiceGrid from '../components/ServiceGrid.astro';
 import CtaBand from '../components/CtaBand.astro';
+import CrossLinks from '../components/CrossLinks.astro';
 import { servicesFor, serviceHref } from '../data/services';
+import { sectorsFor } from '../data/sectors';
+import { sectorAnchor } from '../data/crosslinks';
+import { linkify, startLinks } from '../i18n/links';
 import { breadcrumbLd, site } from '../data/site';
-import { langOf, pathTo } from '../i18n';
+import { langOf, pathTo, sectorHref } from '../i18n';
+import { UPDATED } from '../data/updated';
 
 const lang = langOf(Astro.url);
 const services = servicesFor(lang);
+startLinks(Astro.url.pathname);
+const linked = (text: string) => linkify(text, lang, Astro.url.pathname, 6, false);
+// Each sector under a different name than the one its own hub uses ("Software para…").
+const bySector = sectorsFor(lang).map((sector) => ({ href: sectorHref(sector.id, lang), anchor: sectorAnchor(sector.id, lang, 1), text: sector.menu, icon: sector.icon, tint: sector.tint }));
 const T = {
   es: {
     home: 'Inicio',
     services: 'Servicios',
     title: 'Servicios: IA, desarrollo web, apps, diseño y SEO',
     description:
-      'Doce servicios de un equipo: automatizaciones con IA, desarrollo web, apps móviles y de escritorio, marca, diseño web, 3D, configuradores, vídeo, rediseño y SEO.',
+      'Doce servicios de un equipo: automatizaciones con IA, desarrollo web, apps móviles y de escritorio, marca, diseño web, 3D, configuradores, vídeo y SEO.',
     catalog: 'Servicios de Veodar',
     lead: 'Ingeniería para poner el software y la IA a trabajar. Estudio para que se entienda, se recuerde y se encuentre. Elige un servicio o cuéntanos el problema y proponemos el formato.',
     list: 'Lista de servicios',
+    chooseTitle: 'Cómo elegir',
+    choose: [
+      'Si dudas entre dos formatos, la regla es simple: lo decide el trabajo, no la moda. Web cuando hay cuentas, permisos y un dato que otro sistema lee mañana. Móvil cuando alguien registra el trabajo de pie y sin cobertura. Escritorio cuando el puesto depende de archivos locales, básculas o máquinas. Y una automatización con IA cuando la tarea ya existe, se repite y consiste en leer, clasificar o preparar.',
+      'El estudio entra cuando el problema es otro: que no se entiende, no se recuerda o no se encuentra. Ahí están la identidad de marca, el diseño web, las webs 3D, los vídeos de lanzamiento, el rediseño web y el SEO. Lo habitual es combinar uno de cada lado, y por eso los hace el mismo equipo.',
+      'Si prefieres empezar por el problema, mira lo que suele encargar cada área de la empresa o lo que construimos en cada sector. Y si la pregunta es cuánto cuesta, en la página de precios explicamos cómo se escribe un presupuesto.',
+    ],
+    sectorKicker: 'Por sector',
+    sectorTitle: 'Los mismos servicios, en tu sector',
+    allSectors: 'Todos los sectores',
   },
   en: {
     home: 'Home',
@@ -29,6 +47,15 @@ const T = {
     catalog: 'Veodar services',
     lead: 'Engineering to put software and AI to work. A studio to make it understood, remembered and found. Pick a service, or tell us the problem and we’ll propose the format.',
     list: 'List of services',
+    chooseTitle: 'How to choose',
+    choose: [
+      'If you are torn between two formats, the rule is simple: the work decides, not the trend. Web when there are accounts, permissions and data another system reads tomorrow. Mobile when someone logs work standing up and with no signal. Desktop when the workstation depends on local files, scales or machines. And an AI automation when the task already exists, repeats and consists of reading, sorting or preparing.',
+      'The studio comes in when the problem is a different one: it isn’t understood, remembered or found. That is where brand identity, web design, 3D websites, launch videos, website redesign and SEO belong. The usual project combines one from each side, which is why the same team does both.',
+      'If you would rather start from the problem, see what every department usually commissions or what we build in every industry. And if the question is how much it costs, our pricing page explains how a quote gets written.',
+    ],
+    sectorKicker: 'By industry',
+    sectorTitle: 'The same services, in your industry',
+    allSectors: 'All industries',
   },
 }[lang];
 
@@ -50,7 +77,7 @@ const ld = [
 ];
 ---
 
-<BaseLayout title={T.title} description={T.description} jsonLd={ld} pageType="CollectionPage">
+<BaseLayout title={T.title} description={T.description} jsonLd={ld} pageType="CollectionPage" updated={UPDATED.services}>
   <section class="pt-14 pb-10 md:pt-20">
     <div class="wrap">
       <p class="eyebrow" data-reveal>{T.services}</p>
@@ -65,5 +92,16 @@ const ld = [
       <ServiceGrid headingLevel="h2" />
     </div>
   </section>
+
+  <section class="border-t border-line py-16 md:py-24" data-spine="0.331" aria-labelledby="choose-title">
+    <div class="wrap grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-16">
+      <h2 id="choose-title" class="display h-lg max-w-[10ch]">{T.chooseTitle}</h2>
+      <div class="prose-v max-w-[720px] text-[17px]">
+        {T.choose.map((paragraph) => <p set:html={linked(paragraph)} />)}
+      </div>
+    </div>
+  </section>
+
+  <CrossLinks id="by-sector" kicker={T.sectorKicker} title={T.sectorTitle} items={bySector} allHref={pathTo('sectores', lang)} allLabel={T.allSectors} columns={3} compact />
   <CtaBand />
 </BaseLayout>

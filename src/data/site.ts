@@ -41,7 +41,7 @@ export const organizationLd = {
   taxID: company.taxId,
   url: `${site.url}/`,
   email: site.email,
-  logo: `${site.url}/favicon.svg`,
+  logo: `${site.url}/icon-512.png`,
   address: {
     '@type': 'PostalAddress',
     streetAddress: company.street,
@@ -76,8 +76,38 @@ export const organizationLd = {
   ],
 };
 
+/** Profiles of the studio elsewhere (LinkedIn, GitHub…): they feed schema.org sameAs. Only real ones. */
+export const profiles: string[] = [];
+
+/**
+ * The studio as a local business (schema.org ProfessionalService), with its real
+ * address. No phone, opening hours or map point until there are real ones to give.
+ */
+export const localBusinessLd = (lang: Lang) => ({
+  '@type': 'ProfessionalService',
+  '@id': `${site.url}/#service`,
+  name: site.name,
+  legalName: company.legalName,
+  url: `${site.url}/`,
+  email: site.email,
+  image: `${site.url}/og.png`,
+  logo: `${site.url}/icon-512.png`,
+  description: siteText[lang].description,
+  address: organizationLd.address,
+  areaServed: [
+    { '@type': 'AdministrativeArea', name: lang === 'en' ? 'Province of Almería' : 'Provincia de Almería' },
+    { '@type': 'Country', name: company.country[lang] },
+  ],
+  availableLanguage: ['Spanish', 'English'],
+  parentOrganization: { '@id': `${site.url}/#organization` },
+});
+
 /** The organization, described in the page's language. */
-export const organizationLdFor = (lang: Lang) => ({ ...organizationLd, description: siteText[lang].description });
+export const organizationLdFor = (lang: Lang) => ({
+  ...organizationLd,
+  description: siteText[lang].description,
+  ...(profiles.length ? { sameAs: profiles } : {}),
+});
 
 export const websiteLd = {
   '@type': 'WebSite',

@@ -262,7 +262,7 @@ const studio: Service[] = [
     kicker: '07 · Creativo',
     title: 'Desarrollo creativo: animación web y WebGL',
     description:
-      'Experiencias web con animación, scroll narrativo, WebGL, shaders e ilustración isométrica interactiva. Impacto visual sin sacrificar rendimiento ni accesibilidad.',
+      'Experiencias web con animación, scroll narrativo, WebGL, shaders e ilustración isométrica interactiva. Impacto visual sin perder rendimiento ni accesibilidad.',
     h1: 'Desarrollo creativo con impacto y sin tirones',
     lead: 'Hay ideas que no se explican con un párrafo: se entienden cuando se ven moverse. Construimos esas piezas con código —animación, WebGL, ilustración interactiva— y las hacemos rápidas, accesibles y medibles, para que el efecto sume y no reste.',
     blocks: [
@@ -323,7 +323,7 @@ const studio: Service[] = [
     kicker: '08 · 3D',
     title: 'Webs 3D interactivas con Three.js y WebGPU',
     description:
-      'Sitios web 3D interactivos: producto, espacio o proceso en tiempo real en el navegador. Modelado optimizado, Three.js, React Three Fiber y WebGPU con carga rápida.',
+      'Sitios web 3D interactivos: producto, espacio o proceso en tiempo real en el navegador. Modelado optimizado, Three.js, React Three Fiber y WebGPU.',
     h1: 'Webs 3D interactivas que hacen tangible la idea',
     lead: 'Cuando el producto es físico, complejo o todavía no existe, una foto se queda corta. Una escena 3D en el navegador deja girar, abrir y probar. La construimos ligera, para que cargue en un móvil y siga siendo una web que encuentra Google.',
     blocks: [
@@ -506,7 +506,7 @@ const studio: Service[] = [
     kicker: '11 · Rediseño',
     title: 'Rediseño web sin perder posicionamiento SEO',
     description:
-      'Rediseño y migración de webs corporativas conservando el tráfico orgánico: auditoría, mapa de redirecciones, migración de contenidos y mejora de Core Web Vitals.',
+      'Rediseño y migración de webs corporativas conservando el tráfico orgánico: auditoría, mapa de redirecciones, migración de contenidos y Core Web Vitals.',
     h1: 'Rediseño web sin perder lo que ya habéis ganado en Google',
     lead: 'El riesgo de un rediseño no es que quede feo. Es que el tráfico orgánico caiga a la mitad la semana del lanzamiento porque nadie hizo el mapa de redirecciones. Rediseñamos con ese riesgo controlado desde el primer día.',
     blocks: [

@@ -1,0 +1,120 @@
+---
+// /glosario/ and /en/glossary/: every term, grouped by the kind of project it belongs to.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LinkRow from '../components/LinkRow.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { categories, termsFor } from '../data/glossary';
+import { breadcrumbLd, site } from '../data/site';
+import { langOf, pathTo, termHref } from '../i18n';
+import { UPDATED } from '../data/updated';
+
+const lang = langOf(Astro.url);
+const terms = termsFor(lang);
+const url = new URL(pathTo('glosario', lang), site.url).href;
+const T = {
+  es: {
+    home: 'Inicio',
+    glossary: 'Glosario',
+    title: 'Glosario de software, IA y automatización',
+    description: `${terms.length} términos de IA, desarrollo, SEO y de cada sector, explicados sin jerga: qué significa cada uno, cómo funciona y dónde aparece en un proyecto.`,
+    lead: 'Las siglas que salen en la primera reunión y nadie se atreve a preguntar. Cada término tiene su página: una definición que se entiende sola, cómo funciona y cómo aparece en un proyecto real.',
+    jump: 'Categorías',
+    count: (n: number) => `${n} términos`,
+    setName: 'Glosario de Veodar',
+  },
+  en: {
+    home: 'Home',
+    glossary: 'Glossary',
+    title: 'Glossary of Software, AI and Automation',
+    description: `${terms.length} terms from AI, development, SEO and each industry, explained without jargon: what each one means, how it works and where it shows up in a project.`,
+    lead: 'The acronyms that come up in the first meeting and nobody dares to ask about. Every term has its own page: a definition that stands on its own, how it works and how it shows up in a real project.',
+    jump: 'Categories',
+    count: (n: number) => `${n} terms`,
+    setName: 'Veodar glossary',
+  },
+}[lang];
+const groups = categories.map((category) => ({ ...category, name: category[lang], terms: terms.filter((term) => term.cat === category.id) }));
+
+const ld = [
+  breadcrumbLd([
+    { name: T.home, path: pathTo('home', lang) },
+    { name: T.glossary, path: pathTo('glosario', lang) },
+  ]),
+  {
+    '@type': 'DefinedTermSet',
+    '@id': `${url}#glossary`,
+    name: T.setName,
+    description: T.description,
+    url,
+    inLanguage: lang,
+    hasDefinedTerm: terms.map((term) => ({
+      '@type': 'DefinedTerm',
+      '@id': `${new URL(termHref(term.id, lang), site.url).href}#term`,
+      name: term.name,
+      url: new URL(termHref(term.id, lang), site.url).href,
+    })),
+  },
+];
+---
+
+<BaseLayout title={T.title} description={T.description} jsonLd={ld} pageType="CollectionPage" updated={UPDATED.glossary} mainEntity={`${url}#glossary`}>
+  <section class="pt-14 pb-10 md:pt-20" data-trunk-start="0.5">
+    <div class="wrap">
+      <p class="eyebrow" data-reveal>{T.glossary} · {T.count(terms.length)}</p>
+      <h1 class="display h-hero mt-6 max-w-[13ch]" data-reveal style="--d:60ms">
+        {lang === 'en' ? <>The words, <em>explained</em>.</> : <>Las palabras, <em>explicadas</em>.</>}
+      </h1>
+      <p class="lead mt-7 max-w-[58ch]" data-reveal style="--d:120ms">{T.lead}</p>
+      <nav class="mt-9" aria-label={T.jump} data-reveal style="--d:160ms">
+        <ul class="flex flex-wrap gap-2">
+          {
+            groups.map((group) => (
+              <li>
+                <a href={`#${group.id}`} class="chip gl-jump">
+                  {group.name} <span class="gl-n">{group.terms.length}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  {
+    groups.map((group) => (
+      <section id={group.id} class="border-t border-line py-14 md:py-20" data-spine="0.5" aria-labelledby={`${group.id}-title`}>
+        <div class="wrap grid gap-8 lg:grid-cols-[0.8fr_2fr] lg:gap-14">
+          <div>
+            <h2 id={`${group.id}-title`} class="display h-lg max-w-[12ch]">{group.name}</h2>
+            <p class="mt-4 font-mono text-[12px] tracking-[0.08em] text-muted uppercase">{T.count(group.terms.length)}</p>
+          </div>
+          <ul class="grid gap-3 sm:grid-cols-2">
+            {group.terms.map((term, index) => (
+              <li data-reveal style={`--d:${(index % 2) * 60}ms`}>
+                <LinkRow href={termHref(term.id, lang)} anchor={term.name} text={term.long ?? term.title} compact />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    ))
+  }
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .gl-jump {
+    gap: 8px;
+    transition: background-color 0.2s;
+  }
+  .gl-jump:hover {
+    background: var(--color-card);
+  }
+  .gl-n {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-muted);
+  }
+</style>

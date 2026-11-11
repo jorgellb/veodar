@@ -56,9 +56,9 @@ const T = {
     sectorsLine: 'El oficio es el mismo. El problema, no.',
     seeSectors: 'Ver todos los sectores',
     sectorsChip: 'Sectores',
-    rowsResources: 'Proceso, preguntas y contacto',
+    rowsResources: 'Proceso, glosario y contacto',
     rowsPricing: 'Cómo se escribe un presupuesto',
-    resourcesCap: 'Proceso, preguntas y contacto · 4',
+    resourcesCap: 'Proceso, glosario, preguntas y contacto · 5',
   },
   en: {
     home: 'Veodar, home',
@@ -92,9 +92,9 @@ const T = {
     sectorsLine: 'Same craft. Different problem.',
     seeSectors: 'See all industries',
     sectorsChip: 'Industries',
-    rowsResources: 'Process, questions and contact',
+    rowsResources: 'Process, glossary and contact',
     rowsPricing: 'How a quote gets written',
-    resourcesCap: 'Process, questions and contact · 4',
+    resourcesCap: 'Process, glossary, questions and contact · 5',
   },
 }[lang];
 
@@ -127,12 +127,14 @@ const resourceText = {
   es: [
     ['Precios', 'Cómo se escribe un presupuesto'],
     ['Cómo trabajamos', 'Construir, desplegar, operar'],
+    ['Glosario', 'Las siglas, explicadas sin jerga'],
     ['Preguntas frecuentes', 'Lo que nos preguntan siempre'],
     ['Contacto', 'El siguiente paso, por correo'],
   ],
   en: [
     ['Pricing', 'How a quote gets written'],
     ['How we work', 'Build, deploy, operate'],
+    ['Glossary', 'The acronyms, explained plainly'],
     ['FAQ', 'What we always get asked'],
     ['Contact', 'The next step, by email'],
   ],
@@ -140,6 +142,7 @@ const resourceText = {
 const resources = [
   { href: pathTo('precios', lang), icon: 'tag' },
   { href: pathTo('home', lang, 'proceso'), icon: 'compass' },
+  { href: pathTo('glosario', lang), icon: 'layers' },
   { href: pathTo('home', lang, 'preguntas'), icon: 'search' },
   { href: pathTo('contacto', lang), icon: 'mail' },
 ].map((item, i) => ({ ...item, name: resourceText[i][0], desc: resourceText[i][1] }));

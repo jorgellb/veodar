@@ -9,11 +9,15 @@ Web de Veodar: automatizaciones con IA, desarrollo web, apps móviles y de escri
 | `astro dev --background` | Servidor de desarrollo (`astro dev stop` / `status` / `logs`) |
 | `npm run build` | Genera el sitio en `dist/` |
 | `npm run figures` | Regenera todas las figuras isométricas en `src/generated/` |
+| `npm test` | Pruebas del formulario de contacto |
+| `npm run seo:audit` | Audita `dist/` tras compilar: enlaces rotos, huérfanas, profundidad, enlaces entrantes, títulos, descripciones, hreflang, sitemap y JSON-LD (`-- --verbose`, `-- --json fichero`) |
+| `npm run seo:indexnow` | Avisa a IndexNow de las páginas cambiadas (`-- --all`, `-- --dry`) |
+| `npm run icons` | Regenera los iconos PNG a partir del dibujo del favicon |
 
 ## Estructura
 
 - `src/data/services.ts` — los 12 servicios (menú, textos, tecnologías y la figura de cada uno). `src/data/pages.ts` — contenido largo de los 4 servicios de ingeniería y de Soluciones, Precios y Contacto.
-- `src/pages/` — home, `/servicios/`, `/servicios/<slug>/`, `/soluciones/`, `/precios/`, `/contacto/`, 404, `sitemap.xml` y `llms.txt`.
+- `src/pages/` — home, `/servicios/`, `/servicios/<slug>/`, `/soluciones/`, `/sectores/`, `/glosario/`, `/desarrollo-software-almeria/`, `/precios/`, `/contacto/`, `/mapa-del-sitio/`, textos legales, 404, `sitemap.xml`, `llms.txt` y `llms-full*.txt`.
 - `src/components/` — `Nav` (mega-menús de escritorio y menú de móvil a pantalla completa, que se abre como un iris desde el botón), `ServiceCard` + `ServiceGlyph` (bloques de servicio con ilustración animada), `DocPage` (plantilla de páginas interiores), `home/*`.
 
 ## Figuras isométricas
@@ -37,9 +41,23 @@ El español vive en la raíz (sus URL no cambian nunca) y el inglés bajo `/en/`
 - SEO: cada página lleva `hreflang` es/en/x-default (x-default = español), canonical propia, `og:locale` y `og:locale:alternate`, un nodo `WebPage` con `inLanguage` y `dateModified`, y el sitemap lista las dos versiones con sus alternativas. El 404 es bilingüe y `noindex`.
 - Figuras: los SVG se generan en español; `src/i18n/figures.ts` cambia la descripción accesible y los rótulos dibujados en las páginas en inglés, y los scripts en vivo usan `tr('es', 'en')` del runtime.
 - Selector de idioma: `src/components/LangSwitch.astro` (cabecera, pie y menú de móvil). Son enlaces reales a la página equivalente, sin redirecciones automáticas por idioma del navegador (los buscadores ven siempre las dos versiones).
-- Enlazado interno: `src/i18n/links.ts` enlaza en el texto corrido (bloques y respuestas de las FAQ) la primera mención de cada término clave hacia su servicio: una vez por destino, como mucho 6 por página, nunca a la propia página y solo con términos inequívocos.
+- Enlazado interno: ver «SEO y enlazado interno» más abajo.
 
 Para añadir una página: su ruta en `PAGES` (si es fija) o su slug en `SERVICE_SLUGS`, el contenido en los dos idiomas y la entrada del sitemap.
+
+## SEO y enlazado interno
+
+Todo sale de datos, así que una página nueva queda enlazada sin tocar las demás.
+
+- **Cruces servicio ↔ sector** (`src/data/crosslinks.ts`): cada par tiene una frase propia en los dos idiomas (qué hace ese servicio en ese sector). Aparece en la página del servicio («Dónde más lo aplicamos») y en la del sector (en sus tarjetas y en «Más servicios»), cada una enlazando a la otra. Ahí están también los sectores afines y las variantes de ancla: una página no se enlaza siempre con las mismas palabras. Componentes: `LinkRow` (la fila; el enlace lleva solo el ancla y cubre toda la tarjeta), `CrossLinks` (el bloque) y `Pager` (anterior/siguiente).
+- **Enlaces en el texto** (`src/i18n/links.ts`): en párrafos, entradillas y respuestas de las FAQ se enlaza la primera mención de cada término hacia su servicio, sector o página fija. Un destino solo una vez por página, como mucho 8 por página, dos por párrafo (uno a un servicio y otro al resto) y nunca a la propia página. Antes de añadir un término, comprobar que significa lo mismo en todos los textos: «comercializadoras» apunta a energía, no a fruta.
+- **Glosario** (`src/data/glossary.ts` + `src/data/glossary/es.ts` y `en.ts`): un término por página (`/glosario/<id>/`, `/en/glossary/<slug>/`). Cada uno declara sus servicios, sectores y términos relacionados, y las frases (`match`) que lo enlazan desde el texto corrido (hasta 6 por página, subrayado punteado; las siglas solo coinciden en mayúsculas). Para añadir uno: su entrada en `meta`, el texto en los dos idiomas y su slug inglés en `TERM_SLUGS`. Solo datos comprobables; si una norma cambia de fecha a menudo, el texto dice dónde consultarla. `node scripts/check-sameas.mjs` comprueba que los artículos de Wikipedia citados en `wiki` existen.
+- **Página local** (`src/data/local.ts`): una sola, la de la sede real (Almería). Lleva el nodo `ProfessionalService` con la dirección de `company`. Sin teléfono, horario ni coordenadas mientras no haya unos reales.
+- **Fechas** (`src/data/updated.ts`): la fecha de cada tipo de página alimenta `dateModified`, la fecha visible y el `<lastmod>` del sitemap. Se cambia a mano cuando cambia el contenido, no en cada compilación.
+- **Para asistentes de IA**: `/llms.txt` (resumen), `/llms-full.txt` y `/llms-full-es.txt` (todo el contenido en un documento, generado en `src/data/llms-full.ts`; van con `noindex` para que en los buscadores salgan las páginas y no el fichero) y `robots.txt` con los rastreadores de IA permitidos.
+- **IndexNow**: la clave pública está en `public/<clave>.txt`. `.github/workflows/indexnow.yml` ejecuta `scripts/indexnow.mjs` tras cada despliegue de producción y envía las páginas cuyo `<lastmod>` es de los dos últimos días.
+- **Rendimiento**: lo primero que se ve se pinta sin esperar a JavaScript (`reveal-first` en `global.css`) y las figuras que quedan lejos (`<Figure lazy />`) se sirven desde `/figures/<idioma>/<nombre>.svg` cuando se acercan a la pantalla.
+- Lo que no se hace aquí, a propósito: reseñas o valoraciones inventadas en los datos estructurados, texto oculto, páginas clonadas por ciudad ni contenido distinto para el buscador. Son motivo de penalización.
 
 ## Despliegue (Vercel)
 

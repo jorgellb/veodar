@@ -4,15 +4,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/home/Hero.astro';
 import Pillars from '../components/home/Pillars.astro';
 import Process from '../components/home/Process.astro';
+import Sectors from '../components/home/Sectors.astro';
 import Principles from '../components/home/Principles.astro';
 import ServiceGrid from '../components/ServiceGrid.astro';
 import Faq from '../components/Faq.astro';
 import CtaBand from '../components/CtaBand.astro';
 import Icon from '../components/Icon.astro';
 import { servicesFor, serviceHref } from '../data/services';
-import { faqLd, site, siteText } from '../data/site';
+import { faqLd, localBusinessLd, site } from '../data/site';
 import { langOf, pathTo } from '../i18n';
 import { startLinks } from '../i18n/links';
+import { UPDATED } from '../data/updated';
 
 const lang = langOf(Astro.url);
 const services = servicesFor(lang);
@@ -42,6 +44,10 @@ const faqEs = [
   {
     q: '¿Trabajáis con empresas fuera de España?',
     a: 'Sí, en castellano o en inglés, con equipos en España, Latinoamérica y el resto de Europa. El método no cambia con la distancia: ejemplo real, alcance escrito y un primer corte que alguien usa.',
+  },
+  {
+    q: '¿Dónde estáis?',
+    a: 'En Vera (Almería). Trabajamos en remoto con equipos de toda España y de fuera, y de cerca con las empresas de la provincia.',
   },
   {
     q: '¿También hacéis diseño, 3D y SEO?',
@@ -75,6 +81,10 @@ const faqEn = [
     a: "Yes, in English or Spanish, with teams in Spain, Latin America and the rest of Europe. Distance doesn't change the method: a real example, a written scope and a first release someone uses.",
   },
   {
+    q: 'Where are you based?',
+    a: 'In Vera (Almería), in southern Spain. We work remotely with teams across Spain and abroad, and up close with companies in the province.',
+  },
+  {
     q: 'Do you also do design, 3D and SEO?',
     a: 'Yes. Our studio covers brand identity, web design, creative development, 3D websites, configurators, launch videos, redesigns that keep your rankings and SEO with visibility in AI search.',
   },
@@ -104,14 +114,7 @@ const T = {
 
 const ld = [
   {
-    '@type': 'ProfessionalService',
-    '@id': `${site.url}/#service`,
-    name: 'Veodar',
-    url: `${site.url}/`,
-    email: site.email,
-    description: siteText[lang].description,
-    provider: { '@id': `${site.url}/#organization` },
-    availableLanguage: ['Spanish', 'English'],
+    ...localBusinessLd(lang),
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: T.catalog,
@@ -130,7 +133,7 @@ const ld = [
 ];
 ---
 
-<BaseLayout title={T.title} description={T.description} jsonLd={ld} darkHero>
+<BaseLayout title={T.title} description={T.description} jsonLd={ld} darkHero updated={UPDATED.home}>
   <Hero />
   <Pillars />
 
@@ -156,6 +159,7 @@ const ld = [
     </div>
   </section>
 
+  <Sectors />
   <Process />
   <Principles />
   <Faq items={faq} />

@@ -1,0 +1,12 @@
+---
+import GlossaryTerm from '../../../views/GlossaryTerm.astro';
+import { termsFor } from '../../../data/glossary';
+import { TERM_SLUGS } from '../../../i18n';
+
+export function getStaticPaths() {
+  return termsFor('en').map((term) => ({ params: { slug: TERM_SLUGS[term.id] }, props: { term } }));
+}
+const { term } = Astro.props;
+---
+
+<GlossaryTerm term={term} />

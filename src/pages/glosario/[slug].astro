@@ -1,0 +1,11 @@
+---
+import GlossaryTerm from '../../views/GlossaryTerm.astro';
+import { termsFor } from '../../data/glossary';
+
+export function getStaticPaths() {
+  return termsFor('es').map((term) => ({ params: { slug: term.id }, props: { term } }));
+}
+const { term } = Astro.props;
+---
+
+<GlossaryTerm term={term} />

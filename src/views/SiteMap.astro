@@ -1,0 +1,134 @@
+---
+// /mapa-del-sitio/ and /en/sitemap/: every page of the site in one list, for people
+// and for crawlers that arrive without the XML sitemap.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { categories, termsFor } from '../data/glossary';
+import { sectorsFor } from '../data/sectors';
+import { servicesFor, serviceGroupsFor, serviceHref } from '../data/services';
+import { breadcrumbLd } from '../data/site';
+import { langOf, pathTo, sectorHref, termHref, type PageKey } from '../i18n';
+import { UPDATED } from '../data/updated';
+
+const lang = langOf(Astro.url);
+const services = servicesFor(lang);
+const terms = termsFor(lang);
+const T = {
+  es: {
+    home: 'Inicio',
+    name: 'Mapa del sitio',
+    title: 'Mapa del sitio de Veodar: todas las páginas',
+    description: 'Todas las páginas de veodar.com en una sola lista: servicios, soluciones, sectores, glosario y textos legales, cada una con su enlace.',
+    lead: 'Todas las páginas del sitio, agrupadas. Si buscas algo y no lo ves aquí, escríbenos.',
+    main: 'Principal',
+    services: 'Servicios',
+    sectors: 'Sectores',
+    glossary: 'Glosario',
+    legal: 'Textos legales',
+    pages: ['Inicio', 'Todos los servicios', 'Soluciones por área', 'Todos los sectores', 'Precios', 'Contacto', 'Glosario', 'Veodar en Almería'],
+    legalPages: ['Aviso legal', 'Política de privacidad', 'Política de cookies'],
+  },
+  en: {
+    home: 'Home',
+    name: 'Site map',
+    title: 'Veodar Site Map: Every Page on the Site',
+    description: 'Every page on veodar.com in a single list: services, solutions, industries, glossary and legal pages, each with its link.',
+    lead: 'Every page on the site, grouped. If you are looking for something and can’t see it here, write to us.',
+    main: 'Main',
+    services: 'Services',
+    sectors: 'Industries',
+    glossary: 'Glossary',
+    legal: 'Legal',
+    pages: ['Home', 'All services', 'Solutions by department', 'All industries', 'Pricing', 'Contact', 'Glossary', 'Veodar in Almería'],
+    legalPages: ['Legal notice', 'Privacy policy', 'Cookie policy'],
+  },
+}[lang];
+const mainKeys: PageKey[] = ['home', 'servicios', 'soluciones', 'sectores', 'precios', 'contacto', 'glosario', 'almeria'];
+const legalKeys: PageKey[] = ['avisoLegal', 'privacidad', 'cookies'];
+type Group = { title: string; links: { href: string; label: string }[] };
+const groups: Group[] = [
+  { title: T.main, links: mainKeys.map((key, i) => ({ href: pathTo(key, lang), label: T.pages[i] })) },
+  ...serviceGroupsFor(lang).map((group) => ({
+    title: `${T.services} · ${group.label}`,
+    links: services.filter((service) => service.group === group.id).map((service) => ({ href: serviceHref(service.slug, lang), label: service.name })),
+  })),
+  { title: T.sectors, links: sectorsFor(lang).map((sector) => ({ href: sectorHref(sector.id, lang), label: sector.name })) },
+  ...categories.map((category) => ({
+    title: `${T.glossary} · ${category[lang]}`,
+    links: terms.filter((term) => term.cat === category.id).map((term) => ({ href: termHref(term.id, lang), label: term.long ? `${term.name} (${term.long})` : term.name })),
+  })),
+  { title: T.legal, links: legalKeys.map((key, i) => ({ href: pathTo(key, lang), label: T.legalPages[i] })) },
+];
+const ld = [
+  breadcrumbLd([
+    { name: T.home, path: pathTo('home', lang) },
+    { name: T.name, path: pathTo('mapa', lang) },
+  ]),
+];
+---
+
+<BaseLayout title={T.title} description={T.description} jsonLd={ld} pageType="CollectionPage" updated={UPDATED.pages}>
+  <section class="pt-14 pb-8 md:pt-20">
+    <div class="wrap">
+      <p class="eyebrow" data-reveal>veodar.com</p>
+      <h1 class="display h-xl mt-5 max-w-[16ch]" data-reveal style="--d:60ms">{T.name}</h1>
+      <p class="lead mt-6 max-w-[58ch]" data-reveal style="--d:120ms">{T.lead}</p>
+    </div>
+  </section>
+
+  <section class="border-t border-line py-14 md:py-20" data-trunk-start="0.5">
+    <div class="wrap sm-cols">
+      {
+        groups.map((group) => (
+          <div class="sm-group">
+            <h2 class="font-mono text-[11.5px] tracking-[0.12em] text-muted uppercase">{group.title}</h2>
+            <ul class="mt-4 grid gap-2">
+              {group.links.map((link) => (
+                <li>
+                  <a href={link.href} class="sm-link">
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .sm-cols {
+    columns: 1;
+    column-gap: 3rem;
+  }
+  @media (min-width: 640px) {
+    .sm-cols {
+      columns: 2;
+    }
+  }
+  @media (min-width: 1024px) {
+    .sm-cols {
+      columns: 3;
+    }
+  }
+  .sm-group {
+    break-inside: avoid;
+    padding-bottom: 2.6rem;
+  }
+  .sm-link {
+    font-size: 15.5px;
+    line-height: 1.4;
+    color: var(--color-ink-2);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition:
+      color 0.2s,
+      text-decoration-color 0.2s;
+  }
+  .sm-link:hover {
+    color: var(--color-ink);
+    text-decoration-color: var(--color-accent);
+  }
+</style>

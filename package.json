@@ -11,7 +11,10 @@
     "preview": "astro preview",
     "astro": "astro",
     "figures": "node iso/all.mjs",
-    "test": "node --test tests/"
+    "test": "node --test tests/",
+    "seo:audit": "node scripts/seo-audit.mjs",
+    "seo:indexnow": "node scripts/indexnow.mjs",
+    "icons": "node scripts/icons.mjs"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

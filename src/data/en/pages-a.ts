@@ -229,7 +229,7 @@ export const pagesA: Page[] = [
     slug: 'automatizaciones-ia',
     title: 'AI Automation and AI Agents for Businesses',
     description:
-      'Veodar automates one specific task with AI on top of the systems you already use. The AI proposes; a person or a rule confirms. Credentials never live in the chat.',
+      'Veodar automates one specific task with AI on top of the systems you already use. The AI proposes; a person or a rule confirms. No credentials in the chat.',
     h1: 'AI automation for businesses',
     lead: "AI in a company isn't a chatbot hanging off the intranet. It's a task that already existed, repeated, with a known failure mode: sorting the incident inbox, drafting a reply, flagging an order that doesn't add up. Veodar builds that. The AI proposes. A person, or a written rule, decides what happens next.",
     blocks: [

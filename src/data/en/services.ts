@@ -173,7 +173,7 @@ export const servicesEn: Record<string, ShortText | FullText> = {
     kicker: '07 · Creative',
     title: 'Creative Development: Web Animation and WebGL',
     description:
-      'Web experiences with animation, scroll storytelling, WebGL, shaders and interactive isometric illustration. Visual impact without sacrificing speed or accessibility.',
+      'Web animation, scroll storytelling, WebGL, shaders and interactive isometric illustration. Visual impact without sacrificing speed or accessibility.',
     h1: 'Creative development with impact, and no jank',
     lead: "Some ideas can't be explained in a paragraph: they click when you see them move. We build those pieces in code — animation, WebGL, interactive illustration — and make them fast, accessible and measurable, so the effect adds rather than subtracts.",
     blocks: [

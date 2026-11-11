@@ -6,12 +6,15 @@ import CtaBand from './CtaBand.astro';
 import Plant from './iso/Plant.astro';
 import Figure from './iso/Figure.astro';
 import ServiceCard from './ServiceCard.astro';
+import CrossLinks, { type CrossItem } from './CrossLinks.astro';
+import Pager from './Pager.astro';
 import type { Block, Faq as FaqItem } from '../data/pages';
 import type { Tint } from '../data/services';
 import { servicesFor } from '../data/services';
 import { breadcrumbLd, faqLd } from '../data/site';
 import { langOf, pathTo } from '../i18n';
 import { linkify, startLinks } from '../i18n/links';
+import { UPDATED } from '../data/updated';
 
 interface Props {
   title: string;
@@ -39,6 +42,14 @@ interface Props {
   extraLd?: Record<string, unknown>[];
   /** schema.org type of the page (WebPage, ContactPage, CollectionPage…). */
   pageType?: string;
+  /** ISO date the content last changed (see src/data/updated.ts). */
+  updated?: string;
+  /** A line per related service, specific to this page (sector pages). */
+  relatedNotes?: Record<string, string | undefined>;
+  /** Blocks of internal links with context, after the related services. */
+  cross?: { id: string; title: string; kicker?: string; items: CrossItem[]; allHref?: string; allLabel?: string; columns?: 2 | 3; compact?: boolean }[];
+  /** Previous and next page of the same kind. */
+  pager?: { prev: { href: string; label: string }; next: { href: string; label: string }; prevLabel: string; nextLabel: string; ariaLabel: string };
 }
 
 const p = Astro.props;
@@ -46,7 +57,7 @@ const lang = langOf(Astro.url);
 const services = servicesFor(lang);
 // Contextual keyword links in the running text (once per target, see src/i18n/links.ts).
 startLinks(Astro.url.pathname);
-const linked = (text: string) => linkify(text, lang, Astro.url.pathname, 1);
+const linked = (text: string) => linkify(text, lang, Astro.url.pathname, 2);
 const T = {
   es: {
     crumbs: 'Migas de pan',
@@ -77,8 +88,8 @@ const T = {
     updated: 'Updated',
   },
 }[lang];
-const today = new Date();
-const updated = today.toLocaleDateString(lang === 'en' ? 'en-US' : 'es-ES', { year: 'numeric', month: 'long' });
+const updatedIso = p.updated ?? UPDATED.pages;
+const updated = new Date(`${updatedIso}T12:00:00Z`).toLocaleDateString(lang === 'en' ? 'en-US' : 'es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
 // A page can put something of its own beside the headline (Contacto puts its form);
 // the figure then moves under the text on wide screens and after it on phones.
 const aside = Astro.slots.has('hero-aside');
@@ -94,7 +105,7 @@ const tintBg: Record<string, string> = {
 const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
 ---
 
-<BaseLayout title={p.title} description={p.description} jsonLd={ld} pageType={p.pageType}>
+<BaseLayout title={p.title} description={p.description} jsonLd={ld} pageType={p.pageType} updated={updatedIso}>
   <div class="read-progress" aria-hidden="true"></div>
   <section class="pt-8 pb-16 md:pt-12 md:pb-24" data-spine={aside ? '0.4726' : '0.4885'}>
     <div class="wrap">
@@ -123,7 +134,7 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
         <div class="hero-text">
           <p class="eyebrow" data-reveal>{p.kicker}</p>
           <h1 class="display h-xl mt-5 max-w-[14ch]" data-reveal style="--d:60ms">{p.h1}</h1>
-          <p class="lead mt-7 max-w-[56ch]" data-reveal style="--d:120ms">{p.lead}</p>
+          <p class="lead mt-7 max-w-[56ch]" data-reveal style="--d:120ms" set:html={linkify(p.lead, lang, Astro.url.pathname, 1, false)} />
           {
             !aside && (
               <div class="mt-9 flex flex-wrap gap-3" data-reveal style="--d:180ms">
@@ -228,7 +239,7 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
   <div class="border-t border-line">
     <Faq items={p.faq} title={T.faqTitle} />
     <p class="wrap -mt-14 pb-14 font-mono text-[11.5px] tracking-[0.06em] text-muted md:-mt-20 md:pb-20">
-      {T.updated}: <time datetime={today.toISOString().slice(0, 10)}>{updated}</time>
+      {T.updated}: <time datetime={updatedIso}>{updated}</time>
     </p>
   </div>
 
@@ -245,7 +256,7 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
           <ul class="mt-10 grid gap-4 md:grid-cols-3">
             {relatedServices.map((service) => (
               <li>
-                <ServiceCard service={service} />
+                <ServiceCard service={service} note={p.relatedNotes?.[service.slug]} />
               </li>
             ))}
           </ul>
@@ -253,6 +264,9 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
       </section>
     )
   }
+
+  {(p.cross ?? []).map((block) => <CrossLinks {...block} />)}
+  {p.pager && <Pager {...p.pager} />}
 
   <CtaBand title={p.ctaTitle} text={p.ctaText} href={p.ctaHref} label={p.ctaLabel} />
 </BaseLayout>

@@ -76,11 +76,37 @@
       ]
     },
     {
-      "source": "/(og.png|favicon.svg|favicon.ico)",
+      "source": "/(og.png|favicon.svg|favicon.ico|apple-touch-icon.png|icon-192.png|icon-512.png|icon-maskable-512.png|manifest.webmanifest)",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
+    },
+    {
+      "source": "/figures/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    },
+    {
+      "source": "/(llms-full.txt|llms-full-es.txt)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
         }
       ]
     },

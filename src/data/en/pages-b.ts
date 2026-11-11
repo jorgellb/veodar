@@ -180,7 +180,7 @@ export const pagesB: Page[] = [
     slug: 'contacto',
     title: 'Contact: Tell Us About Your Project',
     description:
-      "Tell us this week's manual process through the form or at info@veodar.com. Veodar tells you whether it's a web, desktop, mobile or AI automation job, and if it fits.",
+      "Tell us this week's manual process, by form or at info@veodar.com. We'll say whether it's a web, desktop, mobile or AI automation job, and if it fits.",
     h1: "This week's busywork, in one message",
     lead: "No tender document or slide deck needed. What's needed is the work that's done by hand today, who suffers it and which system can't be changed. With that we know whether the job is web, desktop, mobile or an automation, and whether we're the right people to do it. Write it in the form or, if you prefer, at info@veodar.com.",
     blocks: [
