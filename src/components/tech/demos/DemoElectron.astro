@@ -1,0 +1,185 @@
+---
+// Electron: an old app loads a third-party add-on. With no protection on, the add-on
+// gets everything it tries; each of the three switches takes one thing away from it.
+import DemoFrame from '../DemoFrame.astro';
+import DemoWindow from '../DemoWindow.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    window: 'Visor de pedidos · versión heredada',
+    windowLabel: 'Ventana de la aplicación',
+    orders: ['Pedido 0141 · preparado', 'Pedido 0142 · en reparto', 'Pedido 0143 · pendiente'],
+    addon: 'Complemento de terceros',
+    addonNote: 'Código que no has escrito tú, cargado dentro de la ventana.',
+    run: 'Ejecutar el complemento',
+    guard: 'Protecciones de la ventana',
+    guards: ['Ventana sin acceso a Node.js', 'Ventana aislada del puente', 'Navegación limitada a la propia app'],
+    tries: 'Lo que intenta el complemento',
+    attempts: ['Leer un archivo del equipo', 'Usar las funciones internas del puente', 'Llevar la ventana a otra web'],
+    idle: 'Sin ejecutar todavía.',
+    js: {
+      got: 'conseguido',
+      blocked: 'bloqueado',
+      why: ['La ventana ya no tiene Node.js: no puede abrir archivos por su cuenta.', 'La ventana vive aparte del puente: solo ve las funciones que se le exponen.', 'La app solo navega dentro de sí misma: la salida se cancela.'],
+      how: ['Tiene Node.js a mano y abre el archivo directamente.', 'Comparte contexto con el puente y alcanza lo que no se le ofrecía.', 'Nada le impide cargar otra dirección en la ventana.'],
+      summary: 'El complemento ha conseguido {n} de 3 cosas.',
+      none: 'El complemento no ha conseguido nada: las tres protecciones están activas.',
+      status: ['Ventana abierta', 'Ventana abierta · el complemento ha actuado', 'Ventana abierta · el complemento no ha podido hacer nada'],
+      idle: 'Sin ejecutar todavía.',
+    },
+  },
+  en: {
+    window: 'Order viewer · legacy version',
+    windowLabel: 'Application window',
+    orders: ['Order 0141 · ready', 'Order 0142 · out for delivery', 'Order 0143 · pending'],
+    addon: 'Third-party add-on',
+    addonNote: 'Code you did not write, loaded inside the window.',
+    run: 'Run the add-on',
+    guard: 'Protections on the window',
+    guards: ['Window with no access to Node.js', 'Window isolated from the bridge', 'Navigation limited to the app itself'],
+    tries: 'What the add-on tries',
+    attempts: ['Read a file on the machine', 'Use the internals of the bridge', 'Take the window to another website'],
+    idle: 'Not run yet.',
+    js: {
+      got: 'done',
+      blocked: 'blocked',
+      why: ['The window no longer has Node.js: it cannot open files by itself.', 'The window lives apart from the bridge: it only sees the functions exposed to it.', 'The app only navigates inside itself: the exit is canceled.'],
+      how: ['It has Node.js at hand and opens the file directly.', 'It shares a context with the bridge and reaches what was never offered.', 'Nothing stops it loading another address in the window.'],
+      summary: 'The add-on got {n} of 3 things.',
+      none: 'The add-on got nothing: all three protections are on.',
+      status: ['Window open', 'Window open · the add-on has acted', 'Window open · the add-on could not do anything'],
+      idle: 'Not run yet.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="electron" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--2">
+    <DemoWindow title={T.window} label={T.windowLabel} status={T.js.status[0]}>
+      <ul class="del-orders">
+        {T.orders.map((order) => <li>{order}</li>)}
+      </ul>
+      <div class="del-addon">
+        <p><strong>{T.addon}</strong></p>
+        <p class="del-note">{T.addonNote}</p>
+        <button class="dm-btn" type="button" data-run>{T.run}</button>
+      </div>
+    </DemoWindow>
+    <div class="dm-panel">
+      <p class="dm-cap" id="del-guard">{T.guard}</p>
+      <div class="del-guards" role="group" aria-labelledby="del-guard">
+        {
+          T.guards.map((guard, i) => (
+            <label class="dm-switch">
+              <input type="checkbox" data-guard={i} />
+              <span>{guard}</span>
+            </label>
+          ))
+        }
+      </div>
+      <p class="dm-cap">{T.tries}</p>
+      <ol class="dm-steps">
+        {T.attempts.map((attempt, i) => <li data-step={i} data-state="idle">{attempt}<small></small></li>)}
+      </ol>
+      <p class="del-summary" data-summary aria-live="polite">{T.idle}</p>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  .del-orders {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 14px;
+  }
+  .del-orders li {
+    padding: 0.45rem 0.6rem;
+    border-radius: 8px;
+    background: rgb(22 20 44 / 0.04);
+  }
+  .del-addon {
+    display: grid;
+    gap: 0.45rem;
+    justify-items: start;
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: 1.5px dashed var(--color-line-strong);
+    font-size: 14px;
+  }
+  .del-note {
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+  .del-guards {
+    display: grid;
+    gap: 0.1rem;
+  }
+  .del-summary {
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+  .del-summary[data-state='ok'] {
+    color: #14573a;
+  }
+  .del-summary[data-state='err'] {
+    color: #8f241b;
+  }
+</style>
+
+<script>
+  import { demo, fill, setStep } from '../demo-kit';
+
+  type Strings = { got: string; blocked: string; why: string[]; how: string[]; summary: string; none: string; status: string[]; idle: string };
+  const d = demo<Strings>('electron');
+  if (d) {
+    const guards = d.$$<HTMLInputElement>('[data-guard]');
+    const steps = d.$$('[data-step]');
+    const summary = d.$('[data-summary]');
+    const status = d.$('[data-status]');
+    const clear = () => {
+      steps.forEach((step) => setStep(step, 'idle'));
+      summary.textContent = d.T.idle;
+      summary.removeAttribute('data-state');
+      status.textContent = d.T.status[0];
+      status.removeAttribute('data-state');
+    };
+
+    d.$('[data-run]').addEventListener('click', async () => {
+      const run = d.newRun();
+      clear();
+      let got = 0;
+      for (let i = 0; i < steps.length; i++) {
+        setStep(steps[i], 'run');
+        await d.wait(480);
+        if (d.stale(run)) return;
+        const blocked = guards[i].checked;
+        // "ok" is the app's point of view: the attempt was stopped.
+        setStep(steps[i], blocked ? 'ok' : 'err', `${blocked ? d.T.blocked : d.T.got} · ${blocked ? d.T.why[i] : d.T.how[i]}`);
+        if (!blocked) got++;
+      }
+      const text = got ? fill(d.T.summary, { n: got }) : d.T.none;
+      summary.textContent = text;
+      summary.dataset.state = got ? 'err' : 'ok';
+      status.textContent = d.T.status[got ? 1 : 2];
+      status.dataset.state = got ? 'err' : 'ok';
+      d.say(text);
+    });
+
+    // A protection switched after a run: what is on screen no longer describes it.
+    guards.forEach((guard) =>
+      guard.addEventListener('change', () => {
+        d.newRun();
+        clear();
+      }),
+    );
+
+    d.onReset(() => {
+      guards.forEach((guard) => (guard.checked = false));
+      clear();
+      d.say('');
+    });
+  }
+</script>

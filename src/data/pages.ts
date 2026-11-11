@@ -110,6 +110,8 @@ export const pages: Page[] = [
           'El navegador va bien para consultar y para un trámite corto. Es un mal sitio para archivos locales, atajos que la gente ya tiene en la mano y un aparato enchufado por cable. Forzar eso a una web “porque así se actualiza solo” traslada el problema al operador, que acaba con tres ventanas y un pendrive.',
           'La aplicación de escritorio se justifica cuando el puesto es el lugar de trabajo, no un visor. Quien está en el taller no quiere iniciar sesión en un portal para marcar una pieza. Quiere la ventana que ya estaba abierta, con el pedido de ayer todavía ahí si se fue la luz.',
           'También se justifica cuando el dato no puede salir del equipo. No es una preferencia de interfaz. Es una regla de la empresa o del cliente. El diseño parte de esa regla: qué se calcula en local, qué se sincroniza cuando hay red y qué no se sincroniza nunca.',
+          'La tecnología sale de esas mismas preguntas. Para una aplicación nueva que debe correr en varios sistemas, lo habitual es una interfaz con tecnología web sobre un núcleo en Rust, con Tauri: pesa poco, arranca rápido y llega a los archivos y a los aparatos del puesto.',
+          'Si lo que hay es un programa de gestión en Windows, .NET sigue siendo el camino más directo. Y una aplicación que ya funciona en Electron se mantiene y se asegura antes de plantear una migración: cambiar de tecnología es una herramienta, no un objetivo.',
         ],
       },
       {

@@ -143,7 +143,7 @@ const T = {
       if (d.stale(run)) return;
       const entry = { id: next++, name: who, sent: false };
       entries = [entry, ...entries].slice(0, 4);
-      setStep(steps[1], 'ok', fill(d.T.saved, entry));
+      setStep(steps[1], 'ok', fill(d.T.saved, { id: entry.id, name: entry.name }));
       draw();
       setStep(steps[2], 'run', d.T.sending);
       await d.wait(900);
@@ -151,10 +151,10 @@ const T = {
       if (crm.checked) {
         entry.sent = true;
         setStep(steps[2], 'ok', d.T.sent);
-        d.say(fill(d.T.doneSay, entry));
+        d.say(fill(d.T.doneSay, { id: entry.id, name: entry.name }));
       } else {
         setStep(steps[2], 'warn', d.T.pending);
-        d.say(fill(d.T.pendingSay, entry));
+        d.say(fill(d.T.pendingSay, { id: entry.id, name: entry.name }));
       }
       draw();
     });

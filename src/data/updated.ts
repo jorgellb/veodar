@@ -15,12 +15,13 @@ export const UPDATED = {
 export type UpdatedKey = keyof typeof UPDATED;
 
 // Pages that changed after the rest of their group, all on 2026-11-11: the web
-// development and mobile apps pages gained their block of technologies (and the mobile
-// one two paragraphs), and the AI automation page a paragraph.
+// development, mobile apps and desktop apps pages gained their block of technologies
+// (and the last two, two paragraphs each), and the AI automation page a paragraph.
 const SERVICE_UPDATED: Record<string, string> = {
   'desarrollo-web': '2026-11-11',
   'automatizaciones-ia': '2026-11-11',
   'aplicaciones-moviles': '2026-11-11',
+  'aplicaciones-escritorio': '2026-11-11',
 };
 /** The date a service page last changed in substance. */
 export const serviceUpdated = (id: string) => SERVICE_UPDATED[id] ?? UPDATED.services;

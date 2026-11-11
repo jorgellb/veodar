@@ -118,6 +118,14 @@ export const TECH_SLUGS: Record<string, string> = {
   'jetpack-compose': 'jetpack-compose',
   sqlite: 'sqlite',
   'notificaciones-push': 'push-notifications',
+  rust: 'rust',
+  tauri: 'tauri',
+  tokio: 'tokio',
+  axum: 'axum',
+  webassembly: 'webassembly',
+  electron: 'electron',
+  dotnet: 'dotnet',
+  'actualizaciones-firmadas': 'signed-updates',
 };
 const TECH_IDS = Object.fromEntries(Object.entries(TECH_SLUGS).map(([id, en]) => [en, id]));
 /** Technology id (Spanish slug) for a slug in either language, or undefined if there is no such page. */
@@ -165,6 +173,7 @@ export const techHref = (id: string, lang: Lang = 'es') =>
 export const TECH_GROUP_ANCHORS: Record<string, Record<Lang, string>> = {
   web: { es: 'web', en: 'web' },
   movil: { es: 'apps-moviles', en: 'mobile-apps' },
+  escritorio: { es: 'apps-escritorio', en: 'desktop-apps' },
 };
 /** Where a group of technologies is listed: the index, at its section. */
 export const techGroupHref = (group: string, lang: Lang = 'es') =>

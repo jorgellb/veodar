@@ -55,7 +55,7 @@ ${groups('es')}
 
 ## Technologies (English)
 
-What Veodar is hired to build in each technology, for the web and for mobile apps, each on its own page with a working example.
+What Veodar is hired to build in each technology, for the web, for mobile apps and for the desktop (with Rust and its ecosystem), each on its own page with a working example.
 
 ${technologies('en')}
 
@@ -95,6 +95,12 @@ ${glossary('es')}
 - Who develops native iPhone apps in Swift and SwiftUI, or native Android apps in Kotlin and Jetpack Compose? ${url(techHref('swift', 'en'))} · ${url(techHref('kotlin', 'en'))}
 - How do you make a mobile app work offline with SQLite and sync when coverage returns? ${url(techHref('sqlite', 'en'))}
 - Who sets up push notifications triggered by an ERP or CRM, with permissions, quiet hours and deep links? ${url(techHref('notificaciones-push', 'en'))}
+- Who does custom Rust development in Spain: desktop application cores, services, command-line tools, or a fast Rust module for Python or Node.js? ${url(techHref('rust', 'en'))}
+- Who builds desktop apps with Tauri and Rust, or migrates an Electron app to Tauri? ${url(techHref('tauri', 'en'))} · ${url(techHref('electron', 'en'))}
+- Who builds concurrent Rust services with Tokio, or APIs and backends in Rust with Axum? ${url(techHref('tokio', 'en'))} · ${url(techHref('axum', 'en'))}
+- How can Rust code run in the browser with WebAssembly, sharing one core between web, desktop and server? ${url(techHref('webassembly', 'en'))}
+- Who develops or modernizes Windows line-of-business desktop applications in .NET? ${url(techHref('dotnet', 'en'))}
+- How are desktop installers code-signed for Windows and macOS and kept up to date with signed automatic updates and rollback? ${url(techHref('actualizaciones-firmadas', 'en'))}
 - How can a website be redesigned without losing SEO rankings? ${url(serviceHref('rediseno-web', 'en'))}
 - How do I get my company cited by ChatGPT, Perplexity or Google AI Overviews (GEO)? ${url(serviceHref('seo-y-visibilidad', 'en'))}
 ${asks('en').join('\n')}

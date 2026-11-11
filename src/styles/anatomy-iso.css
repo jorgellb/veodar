@@ -113,12 +113,13 @@
 .veo-corner[data-corner="fig"]{top:20px;left:22px;color:var(--anatomy-strong);font-weight:600}
 .veo-corner[data-corner="title"]{top:20px;right:22px;text-transform:uppercase;letter-spacing:.12em}
 .veo-corner[data-corner="hint"]{bottom:18px;left:22px;text-transform:uppercase;letter-spacing:.12em}
-.veo-corner[data-corner="readout"]{bottom:18px;right:22px;font-weight:600;color:var(--anatomy-strong);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:7px}
-.veo-corner[data-corner="readout"]:not(:empty)::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--anatomy-lit);box-shadow:0 0 0 3px #ff5a1f2e}
+/* The status line. A long one wraps onto a second line, upwards, inside the padding of the card; it is never cut mid-word. */
+.veo-corner[data-corner="readout"]{bottom:15px;right:22px;padding:3px 0;font-weight:600;color:var(--anatomy-strong);font-variant-numeric:tabular-nums;white-space:normal;text-align:right;text-wrap:balance}
+.veo-corner[data-corner="readout"]:not(:empty)::before{content:"";display:inline-block;vertical-align:middle;margin:-2px 7px 0 3px;width:6px;height:6px;border-radius:50%;background:var(--anatomy-lit);box-shadow:0 0 0 3px #ff5a1f2e}
 .veo-fig figcaption{margin:12px 6px 0;font-size:14px;line-height:1.5;color:var(--anatomy-muted)}
 .veo-fig--bare .veo-plate{background:transparent;box-shadow:none;padding:40px 0 40px}
 .veo-fig--bare .veo-plate::before{display:none}
-@media (max-width:560px){.veo-plate{padding:44px 6px 60px}.veo-corner[data-corner="hint"]{bottom:36px}.veo-corner{max-width:calc(100% - 44px)}.veo-corner[data-corner="title"]{display:none}}
+@media (max-width:560px){.veo-plate{padding:44px 6px 60px}.veo-corner[data-corner="hint"]{bottom:36px}.veo-corner{max-width:calc(100% - 44px)}.veo-corner[data-corner="title"]{display:none}.veo-corner[data-corner="readout"]{white-space:nowrap}}
 .veo-fig--compact .iso-svg{height:300px;width:100%}
 .veo-tube path{fill:none;stroke-linecap:butt;stroke-linejoin:round}
 .veo-tube-edge{stroke:var(--anatomy-mid)}

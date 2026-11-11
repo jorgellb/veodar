@@ -1,0 +1,355 @@
+---
+// .NET: a line-of-business form that behaves like one. The grid of an order is bound
+// to its totals: change a quantity or a discount and everything adds up again; what
+// does not make sense is marked and the report waits until it is right.
+import DemoFrame from '../DemoFrame.astro';
+import DemoWindow from '../DemoWindow.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    window: 'Pedido 0142 · Talleres Ejemplo',
+    windowLabel: 'Ventana de la aplicación de gestión',
+    cols: ['Artículo', 'Cantidad', 'Precio', 'Dto. %', 'Importe'],
+    items: ['Rodamiento 6204', 'Correa dentada', 'Aceite hidráulico 5 l'],
+    base: 'Base',
+    vat: 'IVA 21 %',
+    total: 'Total',
+    report: 'Generar informe',
+    preview: 'Informe',
+    empty: 'El informe aparece aquí cuando el pedido esté correcto.',
+    quantityOf: 'Cantidad de',
+    discountOf: 'Descuento de',
+    js: {
+      ok: 'Pedido correcto',
+      quantity: '{item}: la cantidad debe ser un número entero entre 1 y 999',
+      discount: '{item}: el descuento debe estar entre 0 y 50',
+      blocked: 'El informe no se genera hasta corregir lo marcado.',
+      done: 'Informe generado con {lines} líneas. Total: {total}.',
+      title: 'Pedido 0142',
+      customer: 'Talleres Ejemplo · datos ficticios',
+      base: 'Base',
+      vat: 'IVA 21 %',
+      total: 'Total',
+      units: 'ud.',
+      empty: 'El informe aparece aquí cuando el pedido esté correcto.',
+    },
+  },
+  en: {
+    window: 'Order 0142 · Example Workshops',
+    windowLabel: 'Line-of-business application window',
+    cols: ['Item', 'Quantity', 'Price', 'Disc. %', 'Amount'],
+    items: ['Bearing 6204', 'Timing belt', 'Hydraulic oil 5 l'],
+    base: 'Subtotal',
+    vat: 'VAT 21%',
+    total: 'Total',
+    report: 'Generate report',
+    preview: 'Report',
+    empty: 'The report appears here once the order is correct.',
+    quantityOf: 'Quantity of',
+    discountOf: 'Discount on',
+    js: {
+      ok: 'Order correct',
+      quantity: '{item}: the quantity must be a whole number between 1 and 999',
+      discount: '{item}: the discount must be between 0 and 50',
+      blocked: 'The report is not generated until what is marked has been fixed.',
+      done: 'Report generated with {lines} lines. Total: {total}.',
+      title: 'Order 0142',
+      customer: 'Example Workshops · fictitious data',
+      base: 'Subtotal',
+      vat: 'VAT 21%',
+      total: 'Total',
+      units: 'pcs',
+      empty: 'The report appears here once the order is correct.',
+    },
+  },
+}[lang];
+// Fictitious prices, in euros.
+const ROWS = [
+  { price: 4.8, quantity: 12, discount: 0 },
+  { price: 23.5, quantity: 2, discount: 10 },
+  { price: 31.9, quantity: 1, discount: 0 },
+];
+---
+
+<DemoFrame id="dotnet" strings={{ ...T.js, items: T.items, lang }} kind="real">
+  <div class="dm-grid dm-grid--wide ddn-layout">
+    <DemoWindow title={T.window} label={T.windowLabel} status={T.js.ok}>
+      <div class="ddn-scroll">
+        <table class="dm-table ddn-grid">
+          <thead>
+            <tr>{T.cols.map((col, i) => <th scope="col" class:list={[i > 0 && 'ddn-num', i === 2 && 'ddn-price']}>{col}</th>)}</tr>
+          </thead>
+          <tbody>
+            {
+              ROWS.map((row, i) => (
+                <tr data-row={i} data-price={row.price}>
+                  <th scope="row">
+                    {T.items[i]}
+                    <small class="ddn-unit" data-unit />
+                  </th>
+                  <td class="ddn-num">
+                    <input class="dm-input" type="text" inputmode="numeric" autocomplete="off" value={row.quantity} data-quantity aria-label={`${T.quantityOf} ${T.items[i]}`} />
+                  </td>
+                  <td class="ddn-num ddn-price" data-price-cell></td>
+                  <td class="ddn-num">
+                    <input class="dm-input" type="text" inputmode="decimal" autocomplete="off" value={row.discount} data-discount aria-label={`${T.discountOf} ${T.items[i]}`} />
+                  </td>
+                  <td class="ddn-num" data-amount></td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      <dl class="ddn-totals">
+        <div><dt>{T.base}</dt><dd data-base></dd></div>
+        <div><dt>{T.vat}</dt><dd data-vat></dd></div>
+        <div class="ddn-total"><dt>{T.total}</dt><dd data-total></dd></div>
+      </dl>
+      <div class="dm-row">
+        <button class="dm-btn" type="button" data-report>{T.report}</button>
+      </div>
+    </DemoWindow>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.preview}</p>
+      <div class="ddn-paper" data-paper aria-live="polite"><p class="dm-empty">{T.empty}</p></div>
+    </div>
+  </div>
+</DemoFrame>
+
+<style is:global>
+  /* Global and prefixed: the report is written by the script. */
+  @media (min-width: 860px) {
+    .ddn-layout {
+      grid-template-columns: 1.35fr 0.65fr;
+    }
+  }
+  .ddn-scroll {
+    overflow-x: auto;
+  }
+  .ddn-grid {
+    min-width: 430px;
+  }
+  .ddn-grid th[scope='row'] {
+    padding: 0.45rem 0.5rem;
+    text-align: left;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-ink);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .ddn-grid .ddn-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .ddn-grid td {
+    vertical-align: middle;
+  }
+  /* On a phone the price moves under the name of the item, so the two cells that can
+     be edited and the amount fit without scrolling sideways. */
+  .ddn-unit {
+    display: none;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 559px) {
+    .ddn-grid {
+      min-width: 0;
+      table-layout: fixed;
+    }
+    .ddn-grid .ddn-price {
+      display: none;
+    }
+    .ddn-unit {
+      display: block;
+    }
+    .ddn-grid :is(th, td) {
+      padding-inline: 0.3rem;
+    }
+    .ddn-grid thead th:is(:nth-child(2), :nth-child(4)) {
+      width: 4.1rem;
+    }
+    .ddn-grid thead th:nth-child(5) {
+      width: 4.6rem;
+    }
+    .ddn-grid thead th {
+      letter-spacing: 0.04em;
+    }
+    .ddn-grid .dm-input {
+      width: 100%;
+      padding-inline: 0.35rem;
+    }
+    .ddn-totals > div {
+      grid-template-columns: 5rem 6.4rem;
+    }
+  }
+  .ddn-grid .dm-input {
+    width: 4.4rem;
+    min-height: 34px;
+    padding: 0.2rem 0.5rem;
+    text-align: right;
+  }
+  .ddn-totals {
+    display: grid;
+    gap: 0.2rem;
+    justify-content: end;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .ddn-totals > div {
+    display: grid;
+    grid-template-columns: 6rem 7rem;
+    gap: 1rem;
+  }
+  .ddn-totals dd {
+    text-align: right;
+  }
+  .ddn-totals dt {
+    color: var(--color-muted);
+  }
+  .ddn-total {
+    padding-top: 0.3rem;
+    border-top: 1px solid var(--color-line-strong);
+    font-weight: 620;
+  }
+  .ddn-total dt {
+    color: var(--color-ink);
+  }
+  .ddn-paper {
+    display: grid;
+    gap: 0.5rem;
+    min-height: 12rem;
+    align-content: start;
+  }
+  .ddn-sheet {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.9rem;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow:
+      inset 0 0 0 1px var(--color-line),
+      0 8px 18px -14px rgb(22 20 44 / 0.5);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  .ddn-sheet h4 {
+    font-size: 15px;
+    font-weight: 620;
+  }
+  .ddn-sheet small {
+    color: var(--color-muted);
+  }
+  .ddn-sheet ul {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.45rem 0;
+    border-block: 1px solid var(--color-line);
+  }
+  .ddn-sheet li,
+  .ddn-sheet p {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+  }
+  .ddn-sheet p:last-child {
+    font-weight: 620;
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml, fill } from '../demo-kit';
+
+  type Strings = { ok: string; quantity: string; discount: string; blocked: string; done: string; title: string; customer: string; base: string; vat: string; total: string; units: string; empty: string; items: string[]; lang: string };
+  const d = demo<Strings>('dotnet');
+  if (d) {
+    const rows = d.$$<HTMLTableRowElement>('[data-row]');
+    const status = d.$('[data-status]');
+    const paper = d.$('[data-paper]');
+    const report = d.$<HTMLButtonElement>('[data-report]');
+    const cells = { base: d.$('[data-base]'), vat: d.$('[data-vat]'), total: d.$('[data-total]') };
+    const money = new Intl.NumberFormat(d.T.lang === 'en' ? 'en-IE' : 'es-ES', { style: 'currency', currency: 'EUR' });
+    const start = rows.map((row) => [row.querySelector<HTMLInputElement>('[data-quantity]')!.value, row.querySelector<HTMLInputElement>('[data-discount]')!.value]);
+    type Line = { item: string; quantity: number; amount: number };
+    let lines: Line[] = [];
+    let totals = { base: 0, vat: 0, total: 0 };
+    let problems: string[] = [];
+
+    const compute = () => {
+      problems = [];
+      lines = [];
+      let base = 0;
+      rows.forEach((row, i) => {
+        const price = Number(row.dataset.price);
+        const q = row.querySelector<HTMLInputElement>('[data-quantity]')!;
+        const dc = row.querySelector<HTMLInputElement>('[data-discount]')!;
+        const quantity = /^\d+$/.test(q.value.trim()) ? Number(q.value.trim()) : NaN;
+        const discount = /^\d+([.,]\d+)?$/.test(dc.value.trim()) ? Number(dc.value.trim().replace(',', '.')) : NaN;
+        const badQ = !(quantity >= 1 && quantity <= 999);
+        const badD = !(discount >= 0 && discount <= 50);
+        q.setAttribute('aria-invalid', String(badQ));
+        dc.setAttribute('aria-invalid', String(badD));
+        if (badQ) problems.push(fill(d.T.quantity, { item: d.T.items[i] }));
+        if (badD) problems.push(fill(d.T.discount, { item: d.T.items[i] }));
+        row.querySelector('[data-price-cell]')!.textContent = money.format(price);
+        row.querySelector('[data-unit]')!.textContent = `${money.format(price)} / ${d.T.units}`;
+        const amount = badQ || badD ? NaN : Math.round(price * quantity * (100 - discount)) / 100;
+        row.querySelector('[data-amount]')!.textContent = Number.isNaN(amount) ? '—' : money.format(amount);
+        if (!Number.isNaN(amount)) {
+          base += amount;
+          lines.push({ item: d.T.items[i], quantity, amount });
+        }
+      });
+      const valid = problems.length === 0;
+      const vat = Math.round(base * 21) / 100;
+      totals = { base, vat, total: base + vat };
+      cells.base.textContent = valid ? money.format(base) : '—';
+      cells.vat.textContent = valid ? money.format(vat) : '—';
+      cells.total.textContent = valid ? money.format(base + vat) : '—';
+      status.textContent = valid ? d.T.ok : problems[0];
+      status.dataset.state = valid ? 'ok' : 'err';
+      report.setAttribute('aria-disabled', String(!valid));
+      return valid;
+    };
+
+    d.root.addEventListener('input', (event) => {
+      if (!(event.target as Element).closest('[data-row]')) return;
+      // What was printed no longer matches the grid.
+      paper.innerHTML = `<p class="dm-empty">${escapeHtml(d.T.empty)}</p>`;
+      const valid = compute();
+      d.say(valid ? `${d.T.ok}. ${d.T.total}: ${money.format(totals.total)}` : problems[0]);
+    });
+
+    report.addEventListener('click', () => {
+      if (!compute()) {
+        d.say(`${d.T.blocked} ${problems[0]}`);
+        (d.root.querySelector<HTMLElement>('[aria-invalid="true"]') ?? report).focus();
+        return;
+      }
+      paper.innerHTML = `<div class="ddn-sheet"><h4>${escapeHtml(d.T.title)}</h4><small>${escapeHtml(d.T.customer)}</small><ul>${lines
+        .map((line) => `<li><span>${escapeHtml(line.item)} · ${line.quantity} ${escapeHtml(d.T.units)}</span><span>${money.format(line.amount)}</span></li>`)
+        .join('')}</ul><p><span>${escapeHtml(d.T.base)}</span><span>${money.format(totals.base)}</span></p><p><span>${escapeHtml(d.T.vat)}</span><span>${money.format(totals.vat)}</span></p><p><span>${escapeHtml(d.T.total)}</span><span>${money.format(totals.total)}</span></p></div>`;
+      d.say(fill(d.T.done, { lines: lines.length, total: money.format(totals.total) }));
+    });
+
+    d.onReset(() => {
+      rows.forEach((row, i) => {
+        row.querySelector<HTMLInputElement>('[data-quantity]')!.value = start[i][0];
+        row.querySelector<HTMLInputElement>('[data-discount]')!.value = start[i][1];
+      });
+      paper.innerHTML = `<p class="dm-empty">${escapeHtml(d.T.empty)}</p>`;
+      compute();
+      d.say('');
+    });
+
+    compute();
+  }
+</script>

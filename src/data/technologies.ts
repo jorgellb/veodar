@@ -1,9 +1,10 @@
-// The technologies Veodar is hired to program in, in two groups: the ones a website or
-// a server is built with and the ones a mobile app is built with. Each technology has a
-// card (shown on the index, on the page of the service its group hangs from and wherever
-// it is related) and a page of its own. What every language shares lives here; the text
-// is in ./tech/: es.ts and en.ts (web), es-mobile.ts and en-mobile.ts (mobile) and
-// groups.ts (the words of each group).
+// The technologies Veodar is hired to program in, in three groups: the ones a website
+// or a server is built with, the ones a mobile app is built with and the ones a desktop
+// app is built with, where Rust and its ecosystem lead. Each technology has a card (shown
+// on the index, on the page of the service its group hangs from and wherever it is
+// related) and a page of its own. What every language shares lives here; the text is in
+// ./tech/: es.ts and en.ts (web), es-mobile.ts and en-mobile.ts, es-desktop.ts and
+// en-desktop.ts, and groups.ts (the words of each group).
 import type { Faq } from './pages';
 import type { Tint } from './services';
 import { techGroupHref, TECH_GROUP_ANCHORS, type Lang } from '../i18n';
@@ -11,20 +12,24 @@ import { techEs } from './tech/es';
 import { techEn } from './tech/en';
 import { mobileEs } from './tech/es-mobile';
 import { mobileEn } from './tech/en-mobile';
+import { desktopEs } from './tech/es-desktop';
+import { desktopEn } from './tech/en-desktop';
 import { groupText, type GroupText } from './tech/groups';
 
 /** Ids (the Spanish slugs), in the order they are always listed inside their group. */
 export const WEB_IDS = ['wordpress', 'astro', 'react', 'nextjs', 'nodejs', 'python', 'ia-generativa', 'javascript'] as const;
 export const MOBILE_IDS = ['react-native', 'expo', 'swift', 'swiftui', 'kotlin', 'jetpack-compose', 'sqlite', 'notificaciones-push'] as const;
-export const TECH_IDS = [...WEB_IDS, ...MOBILE_IDS] as const;
+export const DESKTOP_IDS = ['rust', 'tauri', 'tokio', 'axum', 'webassembly', 'electron', 'dotnet', 'actualizaciones-firmadas'] as const;
+export const TECH_IDS = [...WEB_IDS, ...MOBILE_IDS, ...DESKTOP_IDS] as const;
 export type WebTechId = (typeof WEB_IDS)[number];
 export type MobileTechId = (typeof MOBILE_IDS)[number];
+export type DesktopTechId = (typeof DESKTOP_IDS)[number];
 export type TechId = (typeof TECH_IDS)[number];
 
 /** The groups, in the order the index lists them, and the service each one hangs from. */
-export const TECH_GROUPS = ['web', 'movil'] as const;
+export const TECH_GROUPS = ['web', 'movil', 'escritorio'] as const;
 export type TechGroup = (typeof TECH_GROUPS)[number];
-const GROUP_SERVICE: Record<TechGroup, string> = { web: 'desarrollo-web', movil: 'aplicaciones-moviles' };
+const GROUP_SERVICE: Record<TechGroup, string> = { web: 'desarrollo-web', movil: 'aplicaciones-moviles', escritorio: 'aplicaciones-escritorio' };
 
 /** A box of the connections diagram: what it is, what travels along its wire and, sometimes, where to read more. */
 export type TechNode = { label: string; flow: string; tech?: TechId; service?: string };
@@ -96,6 +101,14 @@ const meta: TechMeta[] = [
   { id: 'jetpack-compose', group: 'movil', icon: 'layers', figure: 'stretcher', tint: 'blush', parts: ['frame', 'scale', 'theme', 'adapter'], services: ['aplicaciones-moviles', 'diseno-web', 'desarrollo-web'], techs: ['kotlin', 'swiftui', 'react-native'] },
   { id: 'sqlite', group: 'movil', icon: 'key', figure: 'cardvault', tint: 'sky', parts: ['cabinet', 'sync', 'index', 'lock'], services: ['aplicaciones-moviles', 'aplicaciones-escritorio', 'automatizaciones-ia'], techs: ['react-native', 'kotlin', 'nodejs'] },
   { id: 'notificaciones-push', group: 'movil', icon: 'bell', figure: 'annunciator', tint: 'butter', parts: ['relays', 'console', 'selector', 'phone'], services: ['aplicaciones-moviles', 'automatizaciones-ia', 'desarrollo-web'], techs: ['expo', 'nodejs', 'swift'] },
+  { id: 'rust', group: 'escritorio', icon: 'shield', figure: 'gaugeline', tint: 'blush', parts: ['binary', 'cell', 'insert', 'port'], services: ['aplicaciones-escritorio', 'automatizaciones-ia', 'desarrollo-web'], techs: ['tauri', 'tokio', 'webassembly'] },
+  { id: 'tauri', group: 'escritorio', icon: 'desktop', figure: 'shellbench', tint: 'butter', parts: ['window', 'core', 'gate', 'bundles'], services: ['aplicaciones-escritorio', 'desarrollo-web', 'aplicaciones-moviles'], techs: ['rust', 'sqlite', 'actualizaciones-firmadas'] },
+  { id: 'tokio', group: 'escritorio', icon: 'refresh', figure: 'roundhouse', tint: 'sky', parts: ['stalls', 'table', 'channel', 'clock'], services: ['aplicaciones-escritorio', 'automatizaciones-ia', 'desarrollo-web'], techs: ['rust', 'axum', 'tauri'] },
+  { id: 'axum', group: 'escritorio', icon: 'layers', figure: 'sievetower', tint: 'mint', parts: ['router', 'tower', 'handlers', 'live'], services: ['desarrollo-web', 'aplicaciones-escritorio', 'automatizaciones-ia'], techs: ['rust', 'tokio', 'nodejs'] },
+  { id: 'webassembly', group: 'escritorio', icon: 'cube', figure: 'capsule', tint: 'lilac', parts: ['browser', 'docks', 'press', 'sandbox'], services: ['desarrollo-web', 'aplicaciones-escritorio', 'configuradores-3d'], techs: ['rust', 'javascript', 'tauri'] },
+  { id: 'electron', group: 'escritorio', icon: 'browser', figure: 'enginecase', tint: 'sky', parts: ['renderer', 'main', 'bridge', 'crate'], services: ['aplicaciones-escritorio', 'desarrollo-web', 'rediseno-web'], techs: ['tauri', 'rust', 'nodejs'] },
+  { id: 'dotnet', group: 'escritorio', icon: 'grid', figure: 'cascade', tint: 'lilac', parts: ['windows', 'report', 'lift', 'domain'], services: ['aplicaciones-escritorio', 'automatizaciones-ia', 'desarrollo-web'], techs: ['rust', 'actualizaciones-firmadas', 'sqlite'] },
+  { id: 'actualizaciones-firmadas', group: 'escritorio', icon: 'key', figure: 'sealgate', tint: 'mint', parts: ['signer', 'shelf', 'verifier', 'swap'], services: ['aplicaciones-escritorio', 'aplicaciones-moviles', 'desarrollo-web'], techs: ['tauri', 'electron', 'dotnet'] },
 ];
 
 /** Every scene also has a close-up of the moment it explains, shown in "what you can solve". */
@@ -116,7 +129,7 @@ export type Tech = TechMeta &
     build: Omit<TechText['build'], 'items'> & { items: BuildItem[] };
   };
 
-const TEXTS: Record<Lang, Record<TechId, TechText>> = { es: { ...techEs, ...mobileEs }, en: { ...techEn, ...mobileEn } };
+const TEXTS: Record<Lang, Record<TechId, TechText>> = { es: { ...techEs, ...mobileEs, ...desktopEs }, en: { ...techEn, ...mobileEn, ...desktopEn } };
 
 function join(lang: Lang): Tech[] {
   const texts = TEXTS[lang];
@@ -160,6 +173,6 @@ export const groupsFor = (lang: Lang): TechGroupInfo[] =>
 export const groupOfService = (service: string, lang: Lang) => groupsFor(lang).find((group) => group.service === service);
 
 // The names a service page lists as its stack, when they are not the technology's own.
-const STACK_NAMES: Record<string, TechId> = { 'React 19': 'react', Push: 'notificaciones-push' };
+const STACK_NAMES: Record<string, TechId> = { 'React 19': 'react', Push: 'notificaciones-push', 'Tauri 2': 'tauri', 'Auto-update firmado': 'actualizaciones-firmadas', 'Signed auto-update': 'actualizaciones-firmadas' };
 /** The technology a name in a service's stack stands for, if it has a page. */
 export const techOfStack = (label: string): TechId | undefined => STACK_NAMES[label] ?? all.es.find((tech) => tech.name === label)?.id;

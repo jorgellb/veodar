@@ -1,7 +1,10 @@
 ---
 // The working example of a technology page.
 import DemoAstro from './demos/DemoAstro.astro';
+import DemoAxum from './demos/DemoAxum.astro';
 import DemoCompose from './demos/DemoCompose.astro';
+import DemoDotnet from './demos/DemoDotnet.astro';
+import DemoElectron from './demos/DemoElectron.astro';
 import DemoExpo from './demos/DemoExpo.astro';
 import DemoIa from './demos/DemoIa.astro';
 import DemoJavascript from './demos/DemoJavascript.astro';
@@ -12,9 +15,14 @@ import DemoPush from './demos/DemoPush.astro';
 import DemoPython from './demos/DemoPython.astro';
 import DemoReact from './demos/DemoReact.astro';
 import DemoReactNative from './demos/DemoReactNative.astro';
+import DemoRust from './demos/DemoRust.astro';
+import DemoSigned from './demos/DemoSigned.astro';
 import DemoSqlite from './demos/DemoSqlite.astro';
 import DemoSwift from './demos/DemoSwift.astro';
 import DemoSwiftui from './demos/DemoSwiftui.astro';
+import DemoTauri from './demos/DemoTauri.astro';
+import DemoTokio from './demos/DemoTokio.astro';
+import DemoWasm from './demos/DemoWasm.astro';
 import DemoWordpress from './demos/DemoWordpress.astro';
 import type { TechId } from '../../data/technologies';
 
@@ -38,6 +46,14 @@ const demos = {
   'jetpack-compose': DemoCompose,
   sqlite: DemoSqlite,
   'notificaciones-push': DemoPush,
+  rust: DemoRust,
+  tauri: DemoTauri,
+  tokio: DemoTokio,
+  axum: DemoAxum,
+  webassembly: DemoWasm,
+  electron: DemoElectron,
+  dotnet: DemoDotnet,
+  'actualizaciones-firmadas': DemoSigned,
 } satisfies Record<TechId, unknown>;
 const Demo = demos[Astro.props.id];
 ---

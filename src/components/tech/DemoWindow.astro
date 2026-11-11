@@ -1,0 +1,23 @@
+---
+// A desktop window drawn in HTML for the examples of the desktop pages: a title bar,
+// a body (the slot) and, if asked for, a status line. Styles live in DemoFrame.astro.
+interface Props {
+  title: string;
+  /** Name read to screen readers when the title is not enough. */
+  label?: string;
+  /** Text of the status line; leave it out for a window without one. */
+  status?: string;
+  /** Hook for the example's script. */
+  name?: string;
+}
+const { title, label, status, name } = Astro.props;
+---
+
+<div class="dm-app" data-window={name} role="group" aria-label={label ?? title}>
+  <div class="dm-app-bar">
+    <span data-title>{title}</span>
+    <span class="dm-app-keys" aria-hidden="true"><i></i><i></i><i></i></span>
+  </div>
+  <div class="dm-app-body"><slot /></div>
+  {status !== undefined && <p class="dm-app-status" data-status>{status}</p>}
+</div>

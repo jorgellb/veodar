@@ -108,6 +108,15 @@ const techRules = (lang: Lang): Rule[] => [
   { to: techHref('kotlin', lang), terms: ['Kotlin'], exact: true },
   { to: techHref('sqlite', lang), terms: ['SQLite'], exact: true },
   { to: techHref('notificaciones-push', lang), terms: lang === 'es' ? ['notificaciones push', 'notificación push'] : ['push notifications', 'push notification'] },
+  { to: techHref('rust', lang), terms: ['Rust'], exact: true },
+  { to: techHref('tauri', lang), terms: ['Tauri'], exact: true },
+  // In Spanish «Tokio» is also the city: there the name links only from its own cards.
+  ...(lang === 'en' ? [{ to: techHref('tokio', lang), terms: ['Tokio'], exact: true }] : []),
+  { to: techHref('axum', lang), terms: ['Axum'], exact: true },
+  { to: techHref('webassembly', lang), terms: ['WebAssembly'], exact: true },
+  { to: techHref('electron', lang), terms: ['Electron'], exact: true },
+  { to: techHref('dotnet', lang), terms: ['.NET'], exact: true },
+  { to: techHref('actualizaciones-firmadas', lang), terms: lang === 'es' ? ['actualizaciones firmadas', 'firma de código'] : ['signed updates', 'code signing'] },
 ];
 
 // Glossary terms: the phrases each term declares in `match`. They come after the

@@ -96,6 +96,8 @@ export const pagesA: Page[] = [
           "The browser is fine for looking things up and for a short task. It's a bad place for local files, the shortcuts people already know by heart and a device plugged in by cable. Forcing that into a website “because it updates itself” shifts the problem onto the operator, who ends up with three windows and a USB stick.",
           "A desktop application makes sense when the station is the workplace, not a viewer. Someone on the shop floor doesn't want to log into a portal to mark a part. They want the window that was already open, with yesterday's order still there if the power went out.",
           "It also makes sense when the data can't leave the machine. That isn't an interface preference. It's a company or client rule. The design starts from that rule: what is computed locally, what syncs when there is a network and what never syncs.",
+          'The technology comes out of those same questions. For a new application that has to run on several systems, the usual choice is an interface in web technology on a Rust core, with Tauri: it is small, starts fast and reaches the files and devices at the station.',
+          'If what exists is a Windows line-of-business program, .NET is still the most direct route. And an application already running on Electron is maintained and secured before any migration is considered: changing technology is a tool, not a goal.',
         ],
       },
       {

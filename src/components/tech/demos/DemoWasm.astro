@@ -1,0 +1,182 @@
+---
+// WebAssembly: the letter of a Spanish tax ID is the remainder of its number divided
+// by 23. Here that remainder is worked out by a real WebAssembly module, forty bytes
+// written by hand and loaded in the page: nothing is sent anywhere.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    field: 'NIF (ocho cifras y una letra)',
+    check: 'Comprobar',
+    samples: 'Muestras inventadas',
+    module: 'El módulo',
+    loading: 'Cargando el módulo…',
+    result: 'Resultado',
+    idle: 'Escribe un NIF o elige una muestra.',
+    js: {
+      loaded: 'Módulo WebAssembly cargado · {bytes} bytes · exporta la función «{name}»',
+      fallback: 'Este navegador no ha podido cargar WebAssembly: el cálculo se hace aquí con JavaScript, con la misma regla.',
+      call: '{name}({number}) → {rest} → letra {letter}',
+      bad: 'Hacen falta ocho cifras y una letra, por ejemplo 12345678Z.',
+      match: 'La letra {letter} es la correcta. El cálculo lo ha hecho el módulo, sin salir de esta página.',
+      mismatch: 'La letra no coincide: para ese número el módulo calcula {letter}, no {given}.',
+      idle: 'Escribe un NIF o elige una muestra.',
+    },
+  },
+  en: {
+    field: 'Spanish tax ID, NIF (eight digits and a letter)',
+    check: 'Check',
+    samples: 'Made-up samples',
+    module: 'The module',
+    loading: 'Loading the module…',
+    result: 'Result',
+    idle: 'Type a NIF or pick a sample.',
+    js: {
+      loaded: 'WebAssembly module loaded · {bytes} bytes · exports the function “{name}”',
+      fallback: 'This browser could not load WebAssembly: the calculation is done here in JavaScript, by the same rule.',
+      call: '{name}({number}) → {rest} → letter {letter}',
+      bad: 'Eight digits and a letter are needed, for example 12345678Z.',
+      match: 'The letter {letter} is the right one. The module worked it out without leaving this page.',
+      mismatch: 'The letter does not match: for that number the module works out {letter}, not {given}.',
+      idle: 'Type a NIF or pick a sample.',
+    },
+  },
+}[lang];
+const SAMPLES = ['12345678Z', '00000000T', '12345678A'];
+---
+
+<DemoFrame id="webassembly" strings={T.js} kind="real">
+  <div class="dm-grid dm-grid--2">
+    <div class="dm-panel">
+      <form class="dwa-form" data-form novalidate>
+        <label class="dm-field">
+          <span>{T.field}</span>
+          <input class="dm-input" type="text" name="nif" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10" data-nif aria-describedby="dwa-result" />
+        </label>
+        <button class="dm-btn" type="submit">{T.check}</button>
+      </form>
+      <p class="dm-cap" id="dwa-samples">{T.samples}</p>
+      <div class="dm-row" role="group" aria-labelledby="dwa-samples">
+        {SAMPLES.map((nif) => <button class="dm-btn dm-btn--ghost" type="button" data-sample={nif}>{nif}</button>)}
+      </div>
+    </div>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.result}</p>
+      <p class="dwa-result" id="dwa-result" data-result>{T.idle}</p>
+      <p class="dm-cap">{T.module}</p>
+      <p class="dwa-module" data-module>{T.loading}</p>
+      <p class="dwa-call" data-call hidden></p>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  .dwa-form {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: start;
+  }
+  .dwa-form .dm-field {
+    width: 100%;
+  }
+  .dwa-result {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .dwa-result[data-state='ok'] {
+    color: #14573a;
+  }
+  .dwa-result[data-state='err'] {
+    color: #8f241b;
+  }
+  .dwa-module,
+  .dwa-call {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+  .dwa-call {
+    padding: 0.55rem 0.7rem;
+    border-radius: 10px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+</style>
+
+<script>
+  import { demo, fill } from '../demo-kit';
+
+  type Strings = { loaded: string; fallback: string; call: string; bad: string; match: string; mismatch: string; idle: string };
+  const d = demo<Strings>('webassembly');
+  if (d) {
+    // The whole module, byte by byte: one function, mod(n) = n % 23.
+    const BYTES = new Uint8Array([
+      0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, // "\0asm", version 1
+      0x01, 0x06, 0x01, 0x60, 0x01, 0x7f, 0x01, 0x7f, // one type: (i32) → i32
+      0x03, 0x02, 0x01, 0x00, // one function of that type
+      0x07, 0x07, 0x01, 0x03, 0x6d, 0x6f, 0x64, 0x00, 0x00, // exported as "mod"
+      0x0a, 0x09, 0x01, 0x07, 0x00, 0x20, 0x00, 0x41, 0x17, 0x70, 0x0b, // local.get 0 · i32.const 23 · i32.rem_u
+    ]);
+    const LETTERS = 'TRWAGMYFPDXBNJZSQVHLCKE';
+    const input = d.$<HTMLInputElement>('[data-nif]');
+    const result = d.$('[data-result]');
+    const moduleLine = d.$('[data-module]');
+    const callLine = d.$('[data-call]');
+    let name = 'mod';
+    let mod: (n: number) => number = (n) => n % 23;
+
+    try {
+      const compiled = new WebAssembly.Module(BYTES);
+      name = WebAssembly.Module.exports(compiled)[0].name;
+      mod = new WebAssembly.Instance(compiled).exports[name] as (n: number) => number;
+      moduleLine.textContent = fill(d.T.loaded, { bytes: BYTES.length, name });
+    } catch {
+      moduleLine.textContent = d.T.fallback;
+    }
+
+    const show = (text: string, state?: 'ok' | 'err') => {
+      result.textContent = text;
+      if (state) result.dataset.state = state;
+      else result.removeAttribute('data-state');
+      d.say(text);
+    };
+    const check = () => {
+      const value = input.value.trim().toUpperCase().replace(/[\s-]/g, '');
+      const match = /^(\d{8})([A-Z])$/.exec(value);
+      input.setAttribute('aria-invalid', String(!match));
+      if (!match) {
+        callLine.hidden = true;
+        return show(d.T.bad, 'err');
+      }
+      const number = Number(match[1]);
+      const rest = mod(number);
+      const letter = LETTERS[rest];
+      callLine.hidden = false;
+      callLine.textContent = fill(d.T.call, { name, number, rest, letter });
+      if (letter === match[2]) show(fill(d.T.match, { letter }), 'ok');
+      else show(fill(d.T.mismatch, { letter, given: match[2] }), 'err');
+    };
+
+    d.$('[data-form]').addEventListener('submit', (event) => {
+      event.preventDefault();
+      check();
+    });
+    d.root.addEventListener('click', (event) => {
+      const sample = (event.target as Element).closest<HTMLElement>('[data-sample]')?.dataset.sample;
+      if (!sample) return;
+      input.value = sample;
+      check();
+    });
+    d.onReset(() => {
+      input.value = '';
+      input.removeAttribute('aria-invalid');
+      callLine.hidden = true;
+      result.textContent = d.T.idle;
+      result.removeAttribute('data-state');
+      d.say('');
+    });
+  }
+</script>

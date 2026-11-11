@@ -1,0 +1,210 @@
+---
+// Rust: three bugs told in words. Compile, and the compiler stops each one that has
+// not been fixed; only with the three fixed does the program get built.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    code: 'El programa, contado en palabras',
+    elsewhere: 'En otros lenguajes',
+    fix: 'Aplicar el arreglo',
+    compile: 'Compilar',
+    output: 'Salida del compilador (simulada)',
+    stages: ['Analizar', 'Comprobar quién usa cada dato', 'Generar el ejecutable'],
+    idle: 'Pulsa «Compilar» para ver qué dice el compilador.',
+    bugs: [
+      { what: 'Dos hilos suman en el mismo contador a la vez.', else: 'Compila. A veces el total sale mal y nadie sabe por qué.', fix: 'Proteger el contador con un cerrojo' },
+      { what: 'Se entrega la lista de pedidos a otra función y luego se vuelve a usar.', else: 'Compila. El programa se cae al tocar memoria que ya no es suya.', fix: 'Prestar la lista en lugar de entregarla' },
+      { what: 'Se lee el descuento de un cliente que puede no tener ninguno.', else: 'Compila. Falla el día que llega un cliente sin descuento.', fix: 'Decir qué se hace cuando no hay descuento' },
+    ],
+    js: {
+      errors: ['error: el contador se usa desde dos hilos sin protección', 'error: la lista ya se entregó; aquí no se puede volver a usar', 'error: falta tratar el caso en que no hay descuento'],
+      where: ['pedidos.rs, línea 14', 'pedidos.rs, línea 27', 'pedidos.rs, línea 41'],
+      stopped: 'No se genera ningún programa: {n} por corregir.',
+      stoppedOne: 'No se genera ningún programa: queda 1 error por corregir.',
+      built: 'Compilado. El programa existe y ninguno de los tres fallos puede ocurrir.',
+      checking: 'Compilando…',
+      fails: '{n} errores',
+      failsOne: '1 error',
+      ok: 'sin errores',
+    },
+  },
+  en: {
+    code: 'The program, told in words',
+    elsewhere: 'In other languages',
+    fix: 'Apply the fix',
+    compile: 'Compile',
+    output: 'Compiler output (simulated)',
+    stages: ['Parse', 'Check who uses each piece of data', 'Build the executable'],
+    idle: 'Press “Compile” to see what the compiler says.',
+    bugs: [
+      { what: 'Two threads add to the same counter at once.', else: 'It compiles. Sometimes the total comes out wrong and nobody knows why.', fix: 'Protect the counter with a lock' },
+      { what: 'The list of orders is handed to another function and then used again.', else: 'It compiles. The program crashes when it touches memory that is no longer its own.', fix: 'Lend the list instead of handing it over' },
+      { what: 'The discount of a customer who may have none is read.', else: 'It compiles. It fails the day a customer with no discount arrives.', fix: 'Say what happens when there is no discount' },
+    ],
+    js: {
+      errors: ['error: the counter is used from two threads with no protection', 'error: the list was already handed over; it cannot be used here again', 'error: the case where there is no discount is not handled'],
+      where: ['orders.rs, line 14', 'orders.rs, line 27', 'orders.rs, line 41'],
+      stopped: 'No program is built: {n} to fix.',
+      stoppedOne: 'No program is built: 1 error left to fix.',
+      built: 'Compiled. The program exists and none of the three bugs can happen.',
+      checking: 'Compiling…',
+      fails: '{n} errors',
+      failsOne: '1 error',
+      ok: 'no errors',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="rust" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--wide">
+    <div class="dm-panel">
+      <p class="dm-cap">{T.code}</p>
+      <ol class="drs-bugs">
+        {
+          T.bugs.map((bug, i) => (
+            <li data-bug={i}>
+              <p class="drs-what">{bug.what}</p>
+              <p class="drs-else">
+                <span>{T.elsewhere}</span> {bug.else}
+              </p>
+              <label class="dm-switch">
+                <input type="checkbox" data-fix={i} />
+                <span>{bug.fix}</span>
+              </label>
+            </li>
+          ))
+        }
+      </ol>
+      <div class="dm-row">
+        <button class="dm-btn" type="button" data-compile>{T.compile}</button>
+      </div>
+    </div>
+    <div class="drs-side">
+      <div class="dm-panel">
+        <ol class="dm-steps">
+          {T.stages.map((stage, i) => <li data-step={i} data-state="idle">{stage}<small></small></li>)}
+        </ol>
+      </div>
+      <div class="dm-panel dm-panel--dark drs-out">
+        <p class="dm-cap">{T.output}</p>
+        <ol class="dm-log" data-log aria-live="polite"><li>{T.idle}</li></ol>
+      </div>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  .drs-bugs {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .drs-bugs li {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.75rem 0.85rem 0.45rem;
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    background: #fff;
+  }
+  .drs-bugs li[data-state='err'] {
+    box-shadow: inset 0 0 0 1.5px #d9705f;
+    background: rgb(248 210 195 / 0.28);
+  }
+  .drs-bugs li[data-state='ok'] {
+    box-shadow: inset 0 0 0 1.5px #5aa881;
+  }
+  .drs-what {
+    font-size: 14.5px;
+    font-weight: 540;
+    line-height: 1.4;
+  }
+  .drs-else {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-muted);
+  }
+  .drs-else span {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-right: 0.35em;
+  }
+  .drs-side {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    min-width: 0;
+  }
+  .drs-out {
+    min-height: 11rem;
+  }
+</style>
+
+<script>
+  import { demo, fill, setStep } from '../demo-kit';
+
+  type Strings = { errors: string[]; where: string[]; stopped: string; stoppedOne: string; built: string; checking: string; fails: string; failsOne: string; ok: string };
+  const d = demo<Strings>('rust');
+  if (d) {
+    const steps = d.$$('[data-step]');
+    const log = d.$('[data-log]');
+    const bugs = d.$$('[data-bug]');
+    const fixes = d.$$<HTMLInputElement>('[data-fix]');
+    const idle = log.innerHTML;
+    const line = (text: string, state?: 'ok' | 'warn' | 'err') => {
+      const li = document.createElement('li');
+      if (state) li.dataset.state = state;
+      li.textContent = text;
+      log.append(li);
+    };
+
+    d.$('[data-compile]').addEventListener('click', async () => {
+      const run = d.newRun();
+      log.innerHTML = '';
+      bugs.forEach((bug) => bug.removeAttribute('data-state'));
+      steps.forEach((step) => setStep(step, 'idle'));
+      line(d.T.checking);
+      setStep(steps[0], 'run');
+      await d.wait(380);
+      if (d.stale(run)) return;
+      setStep(steps[0], 'ok');
+      setStep(steps[1], 'run');
+      await d.wait(620);
+      if (d.stale(run)) return;
+      log.innerHTML = '';
+      const open = fixes.flatMap((fix, i) => (fix.checked ? [] : [i]));
+      bugs.forEach((bug, i) => bug.setAttribute('data-state', open.includes(i) ? 'err' : 'ok'));
+      if (open.length) {
+        for (const i of open) {
+          line(d.T.errors[i], 'err');
+          line(`  → ${d.T.where[i]}`);
+        }
+        const summary = open.length === 1 ? d.T.stoppedOne : fill(d.T.stopped, { n: open.length });
+        setStep(steps[1], 'err', open.length === 1 ? d.T.failsOne : fill(d.T.fails, { n: open.length }));
+        line(summary, 'warn');
+        d.say(`${open.map((i) => d.T.errors[i]).join('. ')}. ${summary}`);
+        return;
+      }
+      setStep(steps[1], 'ok', d.T.ok);
+      setStep(steps[2], 'run');
+      await d.wait(520);
+      if (d.stale(run)) return;
+      setStep(steps[2], 'ok');
+      line(d.T.built, 'ok');
+      d.say(d.T.built);
+    });
+
+    d.onReset(() => {
+      fixes.forEach((fix) => (fix.checked = false));
+      bugs.forEach((bug) => bug.removeAttribute('data-state'));
+      steps.forEach((step) => setStep(step, 'idle'));
+      log.innerHTML = idle;
+      d.say('');
+    });
+  }
+</script>

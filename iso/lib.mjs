@@ -178,7 +178,25 @@ export function kitFor(P, { lod = "full" } = {}) {
     slab({ ...plan, r: kind === "a" ? 5 : 3 }, z, h, tone, { steps: 6, bevel: 0.5, crease: "lo", seam: z + h / 2 }) +
     top(plan.x + 1.3, plan.y + 1.3, z + h + 0.02, screen(plan.w - 2.6, plan.d - 2.6, ui, kind === "a" ? 4 : 2.2), attrs);
 
-  return { at, S, L, D, slab, cyl, screws, byDepth, slot, base, ruler, label, knob, lamp, top, faceY, faceX, screen, platters, cable, shadow, pick, thumb, handset, handsetFlat };
+  // A desktop monitor on its foot with the glass toward +y. `ui` is drawn on the glass
+  // in the glass's own units (x to the right, y down; it measures w − 2.4 by h − 2.4).
+  // No maker's mark, and nothing on it that belongs to one operating system.
+  const display = ({ x, y, z = 0, w = 44, h = 30, t = 2.4, neck = 7 }, ui = "", { tone = "hi", attrs = "", lit = false } = {}) => {
+    const cx = x + w / 2;
+    return (
+      slab({ x: cx - 8, y: y - 3.4, w: 16, d: 9, r: 2 }, z, 1.2, "mid", { steps: 4, bevel: 0.3 }) +
+      slab({ x: cx - 2, y: y - 0.8, w: 4, d: 2, r: 0.6 }, z + 1.2, neck, "mid", { steps: 2, bevel: 0 }) +
+      slab({ x, y, w, d: t, r: 0.9 }, z + neck, h, tone, { steps: 2, bevel: 0.4, crease: "lo", lit }) +
+      faceY(x + 1.2, y + t, z + neck + h - 1.2, screen(w - 2.4, h - 2.4, ui, 1), attrs)
+    );
+  };
+  // The frame every window on a screen shares: a bar with two marks and a rule under it.
+  const windowBar = (w, title = "") =>
+    `<path class="scr-s" data-t="dim" d="M0 5.2h${w}"/>` +
+    pick(`<circle class="scr-f" data-t="mid" cx="3" cy="2.7" r=".8"/><circle class="scr-f" data-t="mid" cx="5.6" cy="2.7" r=".8"/>`) +
+    (title ? `<text class="scr-t" x="${w / 2}" y="3.7" font-size="2.6" text-anchor="middle" opacity=".8">${title}</text>` : "");
+
+  return { at, S, L, D, slab, cyl, screws, byDepth, slot, base, ruler, label, knob, lamp, top, faceY, faceX, screen, platters, cable, shadow, pick, thumb, handset, handsetFlat, display, windowBar };
 }
 
 // Vertical coil spring split into back and front halves.

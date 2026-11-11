@@ -30,6 +30,10 @@ const path = techHref(tech.id, lang);
 const url = new URL(path, site.url).href;
 startLinks(Astro.url.pathname);
 const linked = (text: string) => linkify(text, lang, Astro.url.pathname, 1, false);
+// Headings that fit on two lines in the fallback font and need three in Fraunces: a
+// narrower measure breaks them the same way in both, so nothing jumps when it loads.
+const H1_MAX: Record<string, number> = { 'dotnet:es': 14, 'electron:en': 15 };
+const h1Max = H1_MAX[`${tech.id}:${lang}`];
 
 const T = {
   es: {
@@ -164,7 +168,7 @@ const serviceLd = {
       <div class="mt-10 grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
         <div>
           <p class="eyebrow" data-reveal>{tech.kicker}</p>
-          <h1 class="display h-lg mt-5 max-w-[17ch]" data-reveal style="--d:60ms">{tech.h1}</h1>
+          <h1 class="display h-lg mt-5 max-w-[17ch]" data-reveal style={`--d:60ms${h1Max ? `;max-width:${h1Max}ch` : ''}`}>{tech.h1}</h1>
           <p class="lead mt-7 max-w-[56ch]" data-reveal style="--d:120ms">{tech.lead}</p>
           <div class="mt-9 flex flex-wrap gap-3" data-reveal style="--d:180ms">
             <a href={pathTo('contacto', lang)} class="btn btn-primary">
