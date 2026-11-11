@@ -1,0 +1,181 @@
+---
+// Node.js: an order notification comes in, is validated, queued and applied to the
+// destination system. A bad one is rejected, a repeated one is ignored.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    send: 'Enviar un aviso',
+    valid: 'Pedido nuevo',
+    unsigned: 'Sin firma',
+    repeat: 'Repetir el último',
+    stages: ['Recibido', 'Validado', 'En cola', 'ERP actualizado'],
+    log: 'Registro de operaciones',
+    erp: 'Pedidos en el ERP (simulado)',
+    none: 'Ninguno todavía.',
+    js: {
+      received: 'POST /avisos/pedido · {id}',
+      badSignature: '{id} · firma no válida → rechazado (401), no entra en la cola',
+      duplicate: '{id} · ya procesado → se responde 200 y no se repite',
+      validated: '{id} · firma y campos correctos',
+      queued: '{id} · en cola, 1 trabajo',
+      done: '{id} · ERP actualizado',
+      nothing: 'Todavía no hay ningún pedido que repetir.',
+      order: 'Pedido',
+      reject: 'rechazado',
+      skip: 'ya estaba',
+    },
+  },
+  en: {
+    send: 'Send a notification',
+    valid: 'New order',
+    unsigned: 'Unsigned',
+    repeat: 'Repeat the last one',
+    stages: ['Received', 'Validated', 'Queued', 'ERP updated'],
+    log: 'Operations log',
+    erp: 'Orders in the ERP (simulated)',
+    none: 'None yet.',
+    js: {
+      received: 'POST /hooks/order · {id}',
+      badSignature: '{id} · invalid signature → rejected (401), never queued',
+      duplicate: '{id} · already processed → answers 200 and does not repeat',
+      validated: '{id} · signature and fields correct',
+      queued: '{id} · queued, 1 job',
+      done: '{id} · ERP updated',
+      nothing: 'There is no order to repeat yet.',
+      order: 'Order',
+      reject: 'rejected',
+      skip: 'already there',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="nodejs" strings={T.js} kind="simulated">
+  <div class="dm-grid">
+    <div class="dm-panel">
+      <p class="dm-cap" id="dj-send">{T.send}</p>
+      <div class="dm-row" role="group" aria-labelledby="dj-send">
+        <button class="dm-btn" type="button" data-send="valid">{T.valid}</button>
+        <button class="dm-btn dm-btn--ghost" type="button" data-send="unsigned">{T.unsigned}</button>
+        <button class="dm-btn dm-btn--ghost" type="button" data-send="repeat">{T.repeat}</button>
+      </div>
+      <ol class="dm-steps dj-stages">
+        {T.stages.map((stage, i) => <li data-step={i} data-state="idle">{stage}<small></small></li>)}
+      </ol>
+    </div>
+  </div>
+  <div class="dm-grid dm-grid--wide" style="margin-top:12px">
+    <div class="dm-panel dm-panel--dark">
+      <p class="dm-cap">{T.log}</p>
+      <ol class="dm-log" data-log aria-live="polite"></ol>
+    </div>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.erp}</p>
+      <p class="dm-empty" data-none>{T.none}</p>
+      <ul class="dj-orders" data-orders></ul>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  @media (min-width: 720px) {
+    .dj-stages {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .dj-orders {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+</style>
+
+<script>
+  import { demo, fill, setStep } from '../demo-kit';
+
+  const d = demo<Record<string, string>>('nodejs');
+  if (d) {
+    const steps = d.$$('[data-step]');
+    const log = d.$('[data-log]');
+    const orders = d.$('[data-orders]');
+    const none = d.$('[data-none]');
+    let next = 1042;
+    let last: number | null = null;
+    const processed = new Set<number>();
+
+    const write = (text: string, state: 'ok' | 'warn' | 'err' = 'ok') => {
+      const line = document.createElement('li');
+      line.dataset.state = state;
+      line.textContent = text;
+      log.append(line);
+      while (log.children.length > 7) log.firstElementChild!.remove();
+    };
+    const draw = () => {
+      none.hidden = processed.size > 0;
+      orders.innerHTML = [...processed].map((id) => `<li class="dm-pill" data-state="ok">${d.T.order} ${id}</li>`).join('');
+    };
+
+    d.root.addEventListener('click', async (event) => {
+      const kind = (event.target as Element).closest<HTMLElement>('[data-send]')?.dataset.send;
+      if (!kind) return;
+      if (kind === 'repeat' && last === null) {
+        d.say(d.T.nothing);
+        write(d.T.nothing, 'warn');
+        return;
+      }
+      const run = d.newRun();
+      const id = kind === 'repeat' ? last! : next++;
+      const name = `${d.T.order} ${id}`;
+      steps.forEach((step) => setStep(step, 'idle'));
+      setStep(steps[0], 'run');
+      write(fill(d.T.received, { id: name }));
+      await d.wait(420);
+      if (d.stale(run)) return;
+      setStep(steps[0], 'ok');
+      setStep(steps[1], 'run');
+      await d.wait(520);
+      if (d.stale(run)) return;
+      if (kind === 'unsigned') {
+        setStep(steps[1], 'err', d.T.reject);
+        write(fill(d.T.badSignature, { id: name }), 'err');
+        d.say(fill(d.T.badSignature, { id: name }));
+        return;
+      }
+      if (processed.has(id)) {
+        setStep(steps[1], 'warn', d.T.skip);
+        write(fill(d.T.duplicate, { id: name }), 'warn');
+        d.say(fill(d.T.duplicate, { id: name }));
+        return;
+      }
+      setStep(steps[1], 'ok');
+      write(fill(d.T.validated, { id: name }));
+      setStep(steps[2], 'run');
+      write(fill(d.T.queued, { id: name }), 'warn');
+      await d.wait(900);
+      if (d.stale(run)) return;
+      setStep(steps[2], 'ok');
+      setStep(steps[3], 'run');
+      await d.wait(520);
+      if (d.stale(run)) return;
+      setStep(steps[3], 'ok');
+      processed.add(id);
+      last = id;
+      write(fill(d.T.done, { id: name }));
+      d.say(fill(d.T.done, { id: name }));
+      draw();
+    });
+
+    d.onReset(() => {
+      next = 1042;
+      last = null;
+      processed.clear();
+      log.innerHTML = '';
+      steps.forEach((step) => setStep(step, 'idle'));
+      draw();
+      d.say('');
+    });
+  }
+</script>

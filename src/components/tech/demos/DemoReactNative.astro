@@ -1,0 +1,345 @@
+---
+// React Native: one work report, two phones. Every action runs once, on the shared
+// state, and both phones draw it; what differs is each system's own way of showing a
+// checkbox and of saying "you can't close this yet".
+import DemoFrame from '../DemoFrame.astro';
+import DemoPhone from '../DemoPhone.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    shared: 'El código común',
+    add: 'Añadir una tarea',
+    who: 'Técnico',
+    techs: ['Marta R.', 'Iván C.'],
+    phoneA: 'Teléfono con iOS',
+    phoneB: 'Teléfono con Android',
+    same: 'Lo que comparten',
+    sameList: ['La lista de tareas y su estado', 'La regla: no se cierra con tareas pendientes', 'El técnico asignado y el guardado'],
+    own: 'Lo propio de cada sistema',
+    ownList: ['La forma de la casilla y del botón', 'Cómo avisa de que algo falta', 'La barra inferior y el gesto de volver'],
+    js: {
+      report: 'Parte 0142',
+      tasks: ['Revisar la caldera', 'Cambiar el filtro', 'Probar la presión'],
+      more: ['Purgar los radiadores', 'Fotografiar el contador', 'Firmar con el cliente'],
+      close: 'Cerrar el parte',
+      closed: 'Parte cerrado',
+      reopen: 'Reabrir',
+      alertTitle: 'No se puede cerrar',
+      alertBody: 'Tareas pendientes: {n}.',
+      ok: 'Entendido',
+      snack: 'Tareas pendientes: {n}',
+      sayAdded: 'Tarea añadida en los dos teléfonos: {task}.',
+      sayDone: 'Hecha en los dos teléfonos: {task}.',
+      sayUndone: 'Pendiente otra vez en los dos teléfonos: {task}.',
+      sayBlocked: 'Tareas pendientes: {n}. El parte no se cierra, y cada sistema lo avisa a su manera.',
+      sayClosed: 'Parte cerrado en los dos teléfonos.',
+      sayTech: 'Técnico asignado en los dos teléfonos: {name}',
+      sayNoMore: 'No quedan más tareas de ejemplo.',
+    },
+  },
+  en: {
+    shared: 'The shared code',
+    add: 'Add a task',
+    who: 'Technician',
+    techs: ['Marta R.', 'Iván C.'],
+    phoneA: 'Phone running iOS',
+    phoneB: 'Phone running Android',
+    same: 'What they share',
+    sameList: ['The task list and its state', 'The rule: no closing with tasks pending', 'The assigned technician and saving'],
+    own: 'What belongs to each system',
+    ownList: ['The shape of the checkbox and the button', 'How it says something is missing', 'The bottom bar and the back gesture'],
+    js: {
+      report: 'Report 0142',
+      tasks: ['Check the boiler', 'Replace the filter', 'Test the pressure'],
+      more: ['Bleed the radiators', 'Photograph the meter', 'Sign with the customer'],
+      close: 'Close the report',
+      closed: 'Report closed',
+      reopen: 'Reopen',
+      alertTitle: "Can't close yet",
+      alertBody: 'Tasks still pending: {n}.',
+      ok: 'OK',
+      snack: 'Tasks still pending: {n}',
+      sayAdded: 'Task added on both phones: {task}.',
+      sayDone: 'Done on both phones: {task}.',
+      sayUndone: 'Pending again on both phones: {task}.',
+      sayBlocked: "Tasks still pending: {n}. The report doesn't close, and each system says so in its own way.",
+      sayClosed: 'Report closed on both phones.',
+      sayTech: 'Technician assigned on both phones: {name}',
+      sayNoMore: 'There are no more sample tasks.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="react-native" strings={T.js} kind="sample">
+  <div class="dm-panel">
+    <p class="dm-cap">{T.shared}</p>
+    <div class="dm-row">
+      <button class="dm-btn" type="button" data-add>{T.add}</button>
+      <span class="drn-who" role="group" aria-label={T.who}>
+        {T.techs.map((name, i) => <button class="dm-btn dm-btn--ghost" type="button" data-tech={name} aria-pressed={i === 0 ? 'true' : 'false'}>{name}</button>)}
+      </span>
+    </div>
+  </div>
+  <div class="drn-phones">
+    <DemoPhone kind="a" name="a" label={T.phoneA} />
+    <DemoPhone kind="b" name="b" label={T.phoneB} />
+  </div>
+  <div class="dm-grid dm-grid--2" style="margin-top:12px">
+    <div class="dm-panel">
+      <p class="dm-cap">{T.same}</p>
+      <ul class="drn-list">{T.sameList.map((item) => <li>{item}</li>)}</ul>
+    </div>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.own}</p>
+      <ul class="drn-list">{T.ownList.map((item) => <li>{item}</li>)}</ul>
+    </div>
+  </div>
+</DemoFrame>
+
+<style is:global>
+  .drn-who {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .drn-phones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 18px 8px;
+    border-radius: 16px;
+    background: var(--color-paper-2);
+  }
+  .drn-list {
+    display: grid;
+    gap: 0.35rem;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .drn-list li {
+    padding-left: 1rem;
+    background: radial-gradient(circle at 0.3rem 0.62em, var(--color-accent) 0.16rem, transparent 0.18rem);
+  }
+  .drn-task {
+    font-size: 12.5px;
+  }
+  .drn-task[aria-checked='true'] span:last-child {
+    text-decoration: line-through;
+    opacity: 0.55;
+  }
+  /* Each system's own checkbox: a circle on one, a square on the other. */
+  .drn-box {
+    flex: none;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1.5px var(--color-line-strong);
+  }
+  .dm-phone[data-kind='b'] .drn-box {
+    border-radius: 4px;
+  }
+  .drn-task[aria-checked='true'] .drn-box {
+    background: var(--color-ink) no-repeat center / 11px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.4l2.3 2.3 4.7-5' fill='none' stroke='%23fbf8f1' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    box-shadow: none;
+  }
+  .drn-tasks {
+    display: grid;
+    gap: 6px;
+  }
+  .drn-foot {
+    margin-top: auto;
+    display: grid;
+    gap: 6px;
+  }
+  /* The same refusal, said two ways: a sheet in the middle, or a bar at the bottom. */
+  .drn-alert {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgb(22 20 44 / 0.32);
+  }
+  .drn-alert > div {
+    width: 100%;
+    padding: 14px 12px 8px;
+    border-radius: 16px;
+    background: var(--color-paper);
+    text-align: center;
+    font-size: 12.5px;
+  }
+  .drn-alert strong {
+    display: block;
+    font-size: 14px;
+  }
+  .drn-alert button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 9px 0 6px;
+    border-top: 1px solid var(--color-line);
+    font-weight: 600;
+    color: var(--color-accent-ink);
+    cursor: pointer;
+  }
+  .drn-snack {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-size: 12px;
+  }
+  .drn-snack button {
+    font-weight: 600;
+    color: var(--color-accent);
+    cursor: pointer;
+  }
+  .drn-done {
+    display: grid;
+    place-items: center;
+    gap: 6px;
+    padding: 14px 8px;
+    border-radius: 12px;
+    background: var(--color-mint);
+    color: #14573a;
+    font-weight: 600;
+    text-align: center;
+  }
+  @media (max-width: 520px) {
+    .drn-phones {
+      gap: 6px;
+      padding: 12px 4px;
+    }
+    .drn-phones .dm-phone {
+      padding: 5px;
+    }
+    .drn-phones .dm-phone-body {
+      padding-inline: 7px;
+    }
+    .drn-phones .dm-phone-title {
+      font-size: 17px;
+    }
+    .drn-phones .dm-phone-row {
+      padding-inline: 7px;
+      gap: 6px;
+    }
+    /* Two phones side by side leave little room at the top: a smaller cut-out, no signal dots. */
+    .drn-phones .dm-phone-status {
+      padding-inline: 10px;
+      font-size: 10px;
+    }
+    .drn-phones .dm-phone-status > :last-child {
+      visibility: hidden;
+    }
+    .drn-phones .dm-phone[data-kind='a'] .dm-phone-cut {
+      width: 34px;
+      height: 12px;
+    }
+    .drn-snack {
+      left: 6px;
+      right: 6px;
+      flex-wrap: wrap;
+      padding: 8px 10px;
+    }
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml, fill } from '../demo-kit';
+
+  type Strings = Record<string, string> & { tasks: string[]; more: string[] };
+  const d = demo<Strings>('react-native');
+  if (d) {
+    const T = d.T;
+    const phones = d.$$('[data-phone]');
+    const add = d.$<HTMLButtonElement>('[data-add]');
+    const techs = d.$$<HTMLButtonElement>('[data-tech]');
+    // The shared state: this is all there is, and both phones are drawn from it.
+    type State = { tasks: { text: string; done: boolean }[]; tech: string; closed: boolean; refused: boolean };
+    const fresh = (): State => ({ tasks: T.tasks.map((text, i) => ({ text, done: i === 0 })), tech: techs[0].dataset.tech!, closed: false, refused: false });
+    let state = fresh();
+    let pool = [...T.more];
+    const pending = () => state.tasks.filter((task) => !task.done).length;
+
+    const draw = () => {
+      for (const phone of phones) {
+        const kind = phone.dataset.kind;
+        const body = phone.querySelector<HTMLElement>('[data-body]')!;
+        const left = pending();
+        const refusal = !state.refused
+          ? ''
+          : kind === 'a'
+            ? `<div class="drn-alert" role="alertdialog" aria-label="${escapeHtml(T.alertTitle)}"><div><strong>${escapeHtml(T.alertTitle)}</strong>${escapeHtml(fill(T.alertBody, { n: left }))}<button type="button" data-dismiss>${escapeHtml(T.ok)}</button></div></div>`
+            : `<div class="drn-snack" role="status"><span>${escapeHtml(fill(T.snack, { n: left }))}</span><button type="button" data-dismiss>${escapeHtml(T.ok)}</button></div>`;
+        body.innerHTML =
+          `<p class="dm-phone-title">${escapeHtml(T.report)}</p><p class="dm-phone-sub">${escapeHtml(state.tech)}</p>` +
+          (state.closed
+            ? `<p class="drn-done">${escapeHtml(T.closed)}</p><div class="drn-foot"><button type="button" class="dm-phone-btn" data-tone="ghost" data-reopen>${escapeHtml(T.reopen)}</button></div>`
+            : `<div class="drn-tasks">${state.tasks.map((task, i) => `<button type="button" class="dm-phone-row drn-task" role="checkbox" aria-checked="${task.done}" data-task="${i}"><span class="drn-box"></span><span>${escapeHtml(task.text)}</span></button>`).join('')}</div>` +
+              `<div class="drn-foot"><button type="button" class="dm-phone-btn" data-close>${escapeHtml(T.close)}</button></div>`) +
+          refusal;
+      }
+      add.setAttribute('aria-disabled', String(!pool.length || state.closed));
+      techs.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.tech === state.tech)));
+    };
+
+    // Whichever phone is touched, the action is the same one.
+    d.root.addEventListener('click', (event) => {
+      const target = (event.target as Element).closest<HTMLElement>('button');
+      if (!target || target.hasAttribute('data-demo-reset')) return;
+      const phone = target.closest<HTMLElement>('[data-phone]')?.dataset.phone;
+      if (target.dataset.task) {
+        const task = state.tasks[Number(target.dataset.task)];
+        task.done = !task.done;
+        state.refused = false;
+        d.say(fill(task.done ? T.sayDone : T.sayUndone, { task: task.text }));
+      } else if (target.hasAttribute('data-close')) {
+        if (pending()) {
+          state.refused = true;
+          d.say(fill(T.sayBlocked, { n: pending() }));
+        } else {
+          state.closed = true;
+          d.say(T.sayClosed);
+        }
+      } else if (target.hasAttribute('data-dismiss')) state.refused = false;
+      else if (target.hasAttribute('data-reopen')) state.closed = false;
+      else if (target.hasAttribute('data-add')) {
+        if (!pool.length || state.closed) return d.say(T.sayNoMore);
+        const text = pool.shift()!;
+        state.tasks.push({ text, done: false });
+        state.refused = false;
+        d.say(fill(T.sayAdded, { task: text }));
+      } else if (target.dataset.tech) {
+        state.tech = target.dataset.tech;
+        d.say(fill(T.sayTech, { name: state.tech }));
+      } else return;
+      draw();
+      // Keep the keyboard where it was: the phones were redrawn.
+      if (phone) {
+        const again = d.root.querySelector<HTMLElement>(`[data-phone="${phone}"]`)!;
+        // After a refusal the way out is its own button; otherwise the button that was pressed.
+        const next = target.dataset.task ? again.querySelector<HTMLElement>(`[data-task="${target.dataset.task}"]`) : (again.querySelector<HTMLElement>('[data-dismiss]') ?? again.querySelector<HTMLElement>('[data-close], [data-reopen]'));
+        next?.focus();
+      }
+    });
+
+    d.onReset(() => {
+      state = fresh();
+      pool = [...T.more];
+      draw();
+      d.say('');
+    });
+    draw();
+  }
+</script>

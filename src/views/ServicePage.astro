@@ -1,13 +1,15 @@
 ---
 // One service page, in the language of its URL.
 import DocPage from '../components/DocPage.astro';
+import TechBlock from '../components/tech/TechBlock.astro';
 import { serviceHref, servicesFor, type Service } from '../data/services';
 import { sectorsFor } from '../data/sectors';
 import { sectorsOfService } from '../data/crosslinks';
 import { termsOfService } from '../data/glossary';
 import { site } from '../data/site';
-import { langOf, pathTo, sectorHref, termHref } from '../i18n';
-import { UPDATED } from '../data/updated';
+import { langOf, pathTo, sectorHref, techHref, termHref } from '../i18n';
+import { groupOfService, techOfStack } from '../data/technologies';
+import { serviceUpdated } from '../data/updated';
 
 interface Props {
   service: Service;
@@ -16,8 +18,8 @@ const { service } = Astro.props;
 const lang = langOf(Astro.url);
 const url = new URL(serviceHref(service.slug, lang), site.url).href;
 const T = {
-  es: { home: 'Inicio', services: 'Servicios', where: 'Por sector', whereTitle: 'Dónde más lo aplicamos', allSectors: 'Todos los sectores', prev: 'Servicio anterior', next: 'Servicio siguiente', pager: 'Otros servicios', terms: 'Glosario', termsTitle: 'Conceptos que conviene conocer', allTerms: 'Ver todo el glosario', audience: 'Empresas de', areas: [{ '@type': 'Country', name: 'España' }, { '@type': 'Place', name: 'Latinoamérica' }, { '@type': 'Place', name: 'Europa' }] },
-  en: { home: 'Home', services: 'Services', where: 'By industry', whereTitle: 'Where we apply it most', allSectors: 'All industries', prev: 'Previous service', next: 'Next service', pager: 'Other services', terms: 'Glossary', termsTitle: 'Terms worth knowing', allTerms: 'See the whole glossary', audience: 'Companies in', areas: [{ '@type': 'Country', name: 'Spain' }, { '@type': 'Place', name: 'Latin America' }, { '@type': 'Place', name: 'Europe' }] },
+  es: { home: 'Inicio', services: 'Servicios', techs: 'Tecnologías', where: 'Por sector', whereTitle: 'Dónde más lo aplicamos', allSectors: 'Todos los sectores', prev: 'Servicio anterior', next: 'Servicio siguiente', pager: 'Otros servicios', terms: 'Glosario', termsTitle: 'Conceptos que conviene conocer', allTerms: 'Ver todo el glosario', audience: 'Empresas de', areas: [{ '@type': 'Country', name: 'España' }, { '@type': 'Place', name: 'Latinoamérica' }, { '@type': 'Place', name: 'Europa' }] },
+  en: { home: 'Home', services: 'Services', techs: 'Technologies', where: 'By industry', whereTitle: 'Where we apply it most', allSectors: 'All industries', prev: 'Previous service', next: 'Next service', pager: 'Other services', terms: 'Glossary', termsTitle: 'Terms worth knowing', allTerms: 'See the whole glossary', audience: 'Companies in', areas: [{ '@type': 'Country', name: 'Spain' }, { '@type': 'Place', name: 'Latin America' }, { '@type': 'Place', name: 'Europe' }] },
 }[lang];
 const sectors = sectorsFor(lang);
 const services = servicesFor(lang);
@@ -32,6 +34,13 @@ const glossary = termsOfService(service.slug, lang).map((term) => ({ href: termH
 const at = services.findIndex((s) => s.slug === service.slug);
 const prevService = services[(at - 1 + services.length) % services.length];
 const nextService = services[(at + 1) % services.length];
+// The services a group of technologies hangs from (web development, mobile apps) also
+// show what can be built in each one, and every stack name with a page links to it.
+const group = groupOfService(service.slug, lang);
+// «Aplicaciones móviles» fits beside «para» by a hair with the web font and not with the
+// one shown while it loads: in a narrower box the headline breaks the same way in both.
+const H1_MAX: Record<string, number> = { 'aplicaciones-moviles': 12 };
+const stackHrefs = Object.fromEntries(service.stack.map((label) => [label, techOfStack(label)]).filter(([, id]) => id).map(([label, id]) => [label, techHref(id as string, lang)]));
 const serviceLd = {
   '@type': 'Service',
   '@id': `${url}#service`,
@@ -71,7 +80,11 @@ const serviceLd = {
   stack={service.stack}
   tint={service.tint}
   extraLd={[serviceLd]}
-  updated={UPDATED.services}
+  updated={serviceUpdated(service.slug)}
+  stackHrefs={stackHrefs}
+  h1Max={lang === 'es' ? H1_MAX[service.slug] : undefined}
+  afterDetail={!!group}
+  tocExtra={group ? [{ id: 'tecnologias', label: T.techs }] : []}
   cross={[
     { id: 'where-title', kicker: T.where, title: T.whereTitle, items: inSectors, allHref: pathTo('sectores', lang), allLabel: T.allSectors },
     { id: 'terms-title', kicker: T.terms, title: T.termsTitle, items: glossary, allHref: pathTo('glosario', lang), allLabel: T.allTerms, columns: 3, compact: true },
@@ -83,4 +96,6 @@ const serviceLd = {
     nextLabel: T.next,
     ariaLabel: T.pager,
   }}
-/>
+>
+  {group && <TechBlock slot="after-detail" group={group.id} />}
+</DocPage>

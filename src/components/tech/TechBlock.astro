@@ -1,0 +1,39 @@
+---
+// The block of technologies on a service page (web development, mobile apps): what can
+// be built in each technology of that service's group, with a card per technology, a
+// way to the index and a way to write. The words of each group are in data/tech/groups.ts.
+import Icon from '../Icon.astro';
+import TechGrid from './TechGrid.astro';
+import { groupsFor, type TechGroup } from '../../data/technologies';
+import { langOf, pathTo } from '../../i18n';
+
+interface Props {
+  group: TechGroup;
+}
+const lang = langOf(Astro.url);
+const group = groupsFor(lang).find((item) => item.id === Astro.props.group)!;
+const T = {
+  es: { kicker: 'Tecnologías', all: 'Ver todas las tecnologías' },
+  en: { kicker: 'Technologies', all: 'See all technologies' },
+}[lang];
+---
+
+<section id="tecnologias" class="tb" aria-labelledby="tecnologias-title" data-section>
+  <p class="eyebrow">{T.kicker}</p>
+  <h2 id="tecnologias-title" class="display h-md mt-4 max-w-[24ch]">{group.block.title}</h2>
+  <p class="lead mt-5 max-w-[62ch]">{group.block.lead}</p>
+  <div class="mt-9">
+    <TechGrid level="h3" label={group.block.list} group={group.id} />
+  </div>
+  <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+    <a href={pathTo('contacto', lang)} class="btn btn-primary">{group.block.contact} <Icon name="arrow" size={17} class="arrow" /></a>
+    <a href={group.href} class="link-arrow">{T.all} <Icon name="arrow" size={16} /></a>
+  </div>
+</section>
+
+<style>
+  .tb {
+    padding-top: 4.5rem;
+    border-top: 1px solid var(--color-line);
+  }
+</style>

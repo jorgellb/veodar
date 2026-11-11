@@ -11,7 +11,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "figures": "node iso/all.mjs",
-    "test": "node --test tests/",
+    "test": "node --import ./scripts/ts-resolve.mjs --test tests/",
     "seo:audit": "node scripts/seo-audit.mjs",
     "seo:indexnow": "node scripts/indexnow.mjs",
     "icons": "node scripts/icons.mjs",

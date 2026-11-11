@@ -1,4 +1,4 @@
-import { depthOf, iso, pathOf, towardViewer } from '../iso-kit.mjs';
+import { cameraOf, depthOf, iso, pathOf, towardViewer, translateAlong } from '../iso-kit.mjs';
 
 export type Vec3 = [number, number, number];
 export type Proj = { origin: [number, number]; scale: number; azimuth: number; elevation: number };
@@ -23,6 +23,65 @@ export const tr = (es: string, en: string) => (isEn() ? en : es);
 /** A number with the page's decimal separator: 0,80 in Spanish, 0.80 in English. */
 export const fmt = (v: number, digits = 2) => (isEn() ? v.toFixed(digits) : v.toFixed(digits).replace('.', ','));
 export const polar = (cx: number, cy: number, r: number, a: number): [number, number] => [cx + Math.sin(a) * r, cy - Math.cos(a) * r];
+
+/** A point along a polyline of screen points, by length: `at(0)` is its start, `at(1)` its end. */
+export function along(points: number[][]) {
+  const acc = [0];
+  for (let i = 1; i < points.length; i++) acc.push(acc[i - 1] + Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]));
+  const total = acc[acc.length - 1] || 1;
+  return (f: number): [number, number] => {
+    const s = clamp01(f) * total;
+    let i = 1;
+    while (i < acc.length - 1 && acc[i] < s) i++;
+    const t = (s - acc[i - 1]) / (acc[i] - acc[i - 1] || 1);
+    return [points[i - 1][0] + (points[i][0] - points[i - 1][0]) * t, points[i - 1][1] + (points[i][1] - points[i - 1][1]) * t];
+  };
+}
+/** Puts a bead on a route while `f` is between 0 and 1, and hides it otherwise. */
+export function ride(bead: Element | undefined, at: (f: number) => [number, number], f: number, back = false) {
+  if (!bead) return;
+  if (f <= 0 || f >= 1) return bead.setAttribute('opacity', '0');
+  const [x, y] = at(back ? 1 - ease(f) : ease(f));
+  bead.setAttribute('opacity', '1');
+  bead.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+}
+/** Moves a group by a world offset (the drawing itself stays where it was built). */
+export const shift = (el: Element | null | undefined, P: Proj, by: Vec3) => el?.setAttribute('transform', translateAlong(P, by));
+export const fade = (el: Element | null | undefined, value: number) => el?.setAttribute('opacity', clamp01(value).toFixed(2));
+export const write = (el: Element | null | undefined, text: string) => {
+  if (el && el.textContent !== text) el.textContent = text;
+};
+
+/** A ring around a point, tilted and turned, as the half behind the point and the half in front (iso/lib.mjs draws the still one). */
+export function gyroRing(center: Vec3, radius: number, tilt: number, turn: number, P: Proj, steps = 56) {
+  const { sinA, cosA, sinE, cosE } = cameraOf(P);
+  const view = [cosA * cosE, sinA * cosE, sinE];
+  const front: string[] = [];
+  const back: string[] = [];
+  let run: number[][] = [];
+  let near: boolean | null = null;
+  const [ct, st, cz, sz] = [Math.cos(tilt), Math.sin(tilt), Math.cos(turn), Math.sin(turn)];
+  for (let i = 0; i <= steps; i++) {
+    const th = (i / steps) * Math.PI * 2;
+    const x0 = radius * Math.cos(th);
+    const y0 = radius * Math.sin(th) * ct;
+    const z0 = radius * Math.sin(th) * st;
+    const rel = [x0 * cz - y0 * sz, x0 * sz + y0 * cz, z0];
+    const isNear = rel[0] * view[0] + rel[1] * view[1] + rel[2] * view[2] > 0;
+    const flat = iso([center[0] + rel[0], center[1] + rel[1], center[2] + rel[2]], P);
+    if (near === null) near = isNear;
+    if (isNear !== near) {
+      run.push(flat);
+      (near ? front : back).push(pathOf(run));
+      run = [flat];
+      near = isNear;
+      continue;
+    }
+    run.push(flat);
+  }
+  if (run.length > 1) (near ? front : back).push(pathOf(run));
+  return { front: front.join(''), back: back.join('') };
+}
 
 export function coilZ(z0: number, z1: number, cx: number, cy: number, radius: number, turns: number, P: Proj) {
   const count = Math.max(12, Math.round(turns * 18));

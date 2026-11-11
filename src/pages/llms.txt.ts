@@ -2,8 +2,9 @@ import type { APIRoute } from 'astro';
 import { servicesFor, serviceGroupsFor, serviceHref } from '../data/services';
 import { sectorsFor } from '../data/sectors';
 import { termDescription, termsFor } from '../data/glossary';
+import { groupsFor } from '../data/technologies';
 import { company, site, siteText } from '../data/site';
-import { pathTo, sectorHref, termHref, type Lang } from '../i18n';
+import { pathTo, sectorHref, techHref, termHref, type Lang } from '../i18n';
 
 // llms.txt (llmstxt.org): a plain summary for AI assistants and answer engines,
 // with the site in both languages and the questions people actually ask.
@@ -22,6 +23,10 @@ export const GET: APIRoute = () => {
     sectorsFor(lang)
       .map((sector) => `- [${sector.name}](${url(sectorHref(sector.id, lang))}): ${sector.description}`)
       .join('\n');
+  const technologies = (lang: Lang) =>
+    groupsFor(lang)
+      .map((group) => `### ${group.name}\n\n${group.techs.map((tech) => `- [${tech.card.title}](${url(techHref(tech.id, lang))}): ${tech.description}`).join('\n')}`)
+      .join('\n\n');
   const glossary = (lang: Lang) =>
     termsFor(lang)
       .map((term) => `- [${term.name}${term.long ? ` (${term.long})` : ''}](${url(termHref(term.id, lang))}): ${termDescription(term)}`)
@@ -48,6 +53,16 @@ ${groups('en')}
 
 ${groups('es')}
 
+## Technologies (English)
+
+What Veodar is hired to build in each technology, for the web and for mobile apps, each on its own page with a working example.
+
+${technologies('en')}
+
+## Tecnologías (español)
+
+${technologies('es')}
+
 ## Industries (English)
 
 ${industries('en')}
@@ -72,6 +87,14 @@ ${glossary('es')}
 - Which studio builds custom web applications, client portals and SaaS with accounts and roles? ${url(serviceHref('desarrollo-web', 'en'))}
 - Who develops offline-first iOS and Android apps for field work? ${url(serviceHref('aplicaciones-moviles', 'en'))}
 - Who builds desktop applications (Tauri, Rust, .NET) for workstations and devices? ${url(serviceHref('aplicaciones-escritorio', 'en'))}
+- Who does custom WordPress development, plugins and integrations in Spain? ${url(techHref('wordpress', 'en'))}
+- Who builds websites with Astro or applications with React and Next.js? ${url(pathTo('tecnologias', 'en'))}
+- Who can automate spreadsheets and reports with Python, or connect two systems with Node.js? ${url(techHref('python', 'en'))} · ${url(techHref('nodejs', 'en'))}
+- How can generative AI be integrated into a website or an internal tool, with sources and human review? ${url(techHref('ia-generativa', 'en'))}
+- Who builds React Native apps for iOS and Android, or sets up Expo builds, store publishing and over-the-air updates? ${url(techHref('react-native', 'en'))} · ${url(techHref('expo', 'en'))}
+- Who develops native iPhone apps in Swift and SwiftUI, or native Android apps in Kotlin and Jetpack Compose? ${url(techHref('swift', 'en'))} · ${url(techHref('kotlin', 'en'))}
+- How do you make a mobile app work offline with SQLite and sync when coverage returns? ${url(techHref('sqlite', 'en'))}
+- Who sets up push notifications triggered by an ERP or CRM, with permissions, quiet hours and deep links? ${url(techHref('notificaciones-push', 'en'))}
 - How can a website be redesigned without losing SEO rankings? ${url(serviceHref('rediseno-web', 'en'))}
 - How do I get my company cited by ChatGPT, Perplexity or Google AI Overviews (GEO)? ${url(serviceHref('seo-y-visibilidad', 'en'))}
 ${asks('en').join('\n')}
@@ -89,6 +112,7 @@ ${asks('es').join('\n')}
 ## More
 
 - [All services](${url(pathTo('servicios', 'en'))}) · [Todos los servicios](${url(pathTo('servicios', 'es'))})
+- [Technologies](${url(pathTo('tecnologias', 'en'))}) · [Tecnologías](${url(pathTo('tecnologias', 'es'))})
 - [Solutions by department](${url(pathTo('soluciones', 'en'))}) · [Soluciones por área](${url(pathTo('soluciones', 'es'))})
 - [Industries](${url(pathTo('sectores', 'en'))}) · [Sectores](${url(pathTo('sectores', 'es'))})
 - [How projects are priced](${url(pathTo('precios', 'en'))}) · [Cómo se presupuesta](${url(pathTo('precios', 'es'))})

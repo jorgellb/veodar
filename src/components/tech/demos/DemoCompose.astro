@@ -1,0 +1,426 @@
+---
+// Jetpack Compose: one screen, three widths. The same list and the same detail are
+// arranged by the space there is: one column on a phone, two panes on an open foldable,
+// a side rail as well on a tablet. The brand color is one value every piece reads.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    width: 'Ancho del dispositivo',
+    sizes: [
+      { id: 'compact', label: 'Móvil' },
+      { id: 'medium', label: 'Plegable abierto' },
+      { id: 'expanded', label: 'Tableta' },
+    ],
+    brand: 'Color de marca',
+    colors: [
+      { id: 'orange', label: 'Naranja', value: '#ff5a1f', ink: '#1a0a03' },
+      { id: 'green', label: 'Verde', value: '#1f8f5f', ink: '#ffffff' },
+      { id: 'blue', label: 'Azul', value: '#2b5fd9', ink: '#ffffff' },
+    ],
+    screen: 'Pantalla de la app',
+    reads: 'Lo que decide la pantalla',
+    js: {
+      app: 'Almacén',
+      back: 'Volver a la lista',
+      sections: ['Stock', 'Pedidos', 'Ajustes'],
+      items: [
+        { name: 'Válvula 3/4', place: 'Pasillo 2 · estante B', units: '48 unidades' },
+        { name: 'Junta tórica 22', place: 'Pasillo 2 · estante D', units: '310 unidades' },
+        { name: 'Filtro F-10', place: 'Pasillo 5 · estante A', units: '12 unidades' },
+        { name: 'Manguito 40 cm', place: 'Pasillo 7 · estante C', units: '75 unidades' },
+      ],
+      action: 'Pedir reposición',
+      choose: 'Elige una referencia de la lista',
+      compact: 'Compacto: una columna y barra de secciones abajo. Al tocar una referencia, el detalle ocupa la pantalla.',
+      medium: 'Medio: la lista a la izquierda y el detalle a la derecha, a la vez.',
+      expanded: 'Amplio: las secciones pasan a un menú lateral y quedan lista y detalle.',
+      sayBrand: 'Color de marca: {color}. Lo han tomado el botón, la selección y la sección activa.',
+    },
+  },
+  en: {
+    width: 'Device width',
+    sizes: [
+      { id: 'compact', label: 'Phone' },
+      { id: 'medium', label: 'Open foldable' },
+      { id: 'expanded', label: 'Tablet' },
+    ],
+    brand: 'Brand color',
+    colors: [
+      { id: 'orange', label: 'Orange', value: '#ff5a1f', ink: '#1a0a03' },
+      { id: 'green', label: 'Green', value: '#1f8f5f', ink: '#ffffff' },
+      { id: 'blue', label: 'Blue', value: '#2b5fd9', ink: '#ffffff' },
+    ],
+    screen: 'App screen',
+    reads: 'What the screen decides',
+    js: {
+      app: 'Warehouse',
+      back: 'Back to the list',
+      sections: ['Stock', 'Orders', 'Settings'],
+      items: [
+        { name: '3/4 valve', place: 'Aisle 2 · shelf B', units: '48 units' },
+        { name: 'O-ring 22', place: 'Aisle 2 · shelf D', units: '310 units' },
+        { name: 'F-10 filter', place: 'Aisle 5 · shelf A', units: '12 units' },
+        { name: '40 cm sleeve', place: 'Aisle 7 · shelf C', units: '75 units' },
+      ],
+      action: 'Order restock',
+      choose: 'Pick an item from the list',
+      compact: 'Compact: one column and a bar of sections at the bottom. Tapping an item gives the whole screen to its detail.',
+      medium: 'Medium: the list on the left and the detail on the right, at once.',
+      expanded: 'Expanded: the sections move to a side rail, leaving list and detail.',
+      sayBrand: 'Brand color: {color}. The button, the selection and the active section took it.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="jetpack-compose" strings={T.js} kind="real">
+  <div class="dm-panel">
+    <div class="dcp-controls">
+      <div>
+        <p class="dm-cap" id="dcp-width">{T.width}</p>
+        <div class="dm-row" role="group" aria-labelledby="dcp-width">
+          {T.sizes.map((size, i) => <button type="button" class="dm-btn dm-btn--ghost" data-size={size.id} aria-pressed={i === 0 ? 'true' : 'false'}>{size.label}</button>)}
+        </div>
+      </div>
+      <div>
+        <p class="dm-cap" id="dcp-brand">{T.brand}</p>
+        <div class="dm-row" role="group" aria-labelledby="dcp-brand">
+          {
+            T.colors.map((color, i) => (
+              <button type="button" class="dcp-swatch" data-color={color.value} data-ink={color.ink} data-name={color.label} aria-pressed={i === 0 ? 'true' : 'false'} style={`--swatch:${color.value}`}>
+                <span aria-hidden="true"></span>
+                {color.label}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="dcp-stage">
+    <div class="dcp-device" data-device data-size="compact" role="group" aria-label={T.screen}></div>
+  </div>
+  <div class="dm-panel" style="margin-top:12px">
+    <p class="dm-cap">{T.reads}</p>
+    <p class="dcp-reads" data-reads aria-live="polite"></p>
+  </div>
+</DemoFrame>
+
+<style is:global>
+  .dcp-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2.4rem;
+  }
+  .dcp-controls > div {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .dcp-swatch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 40px;
+    padding: 0 0.9rem 0 0.6rem;
+    border-radius: 999px;
+    font-size: 14px;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    cursor: pointer;
+  }
+  .dcp-swatch span {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--swatch);
+  }
+  .dcp-swatch[aria-pressed='true'] {
+    box-shadow: inset 0 0 0 2px var(--color-ink);
+    background: #fff;
+  }
+  .dcp-stage {
+    display: grid;
+    justify-items: center;
+    margin-top: 12px;
+    padding: 20px 10px;
+    border-radius: 16px;
+    background: var(--color-paper-2);
+  }
+  /* The device: only its width changes; what is inside rearranges itself. */
+  .dcp-device {
+    --brand: #ff5a1f;
+    --brand-ink: #1a0a03;
+    width: 46%;
+    min-width: 214px;
+    max-width: 100%;
+    height: 362px;
+    display: grid;
+    grid-template: 'bar' auto 'main' 1fr 'nav' auto / 1fr;
+    border-radius: 20px;
+    border: 7px solid #16142c;
+    background: var(--color-paper);
+    overflow: hidden;
+    font-size: 13px;
+    transition: width 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .dcp-device[data-size='medium'] {
+    width: 74%;
+    grid-template: 'bar bar' auto 'list detail' 1fr 'nav nav' auto / minmax(0, 0.8fr) minmax(0, 1fr);
+  }
+  .dcp-device[data-size='expanded'] {
+    width: 100%;
+    grid-template: 'nav bar bar' auto 'nav list detail' 1fr / auto minmax(0, 0.7fr) minmax(0, 1fr);
+  }
+  .dcp-bar {
+    grid-area: bar;
+    padding: 10px 12px 8px;
+    font-family: var(--font-display);
+    font-size: 19px;
+    letter-spacing: -0.02em;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .dcp-list,
+  .dcp-detail {
+    min-height: 0;
+    padding: 8px;
+    overflow: auto;
+  }
+  .dcp-list {
+    grid-area: list;
+    display: grid;
+    gap: 5px;
+    align-content: start;
+  }
+  .dcp-detail {
+    grid-area: detail;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-left: 1px solid var(--color-line);
+  }
+  /* One column: list and detail take turns in the same place. */
+  .dcp-device[data-size='compact'] :is(.dcp-list, .dcp-detail) {
+    grid-area: main;
+    border-left: 0;
+  }
+  .dcp-device[data-size='compact'][data-view='list'] .dcp-detail,
+  .dcp-device[data-size='compact'][data-view='detail'] .dcp-list,
+  .dcp-device:not([data-size='compact']) .dcp-back {
+    display: none;
+  }
+  .dcp-item {
+    display: grid;
+    gap: 1px;
+    width: 100%;
+    padding: 7px 9px;
+    border-radius: 10px;
+    text-align: left;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    cursor: pointer;
+  }
+  .dcp-item small,
+  .dcp-detail small {
+    font-size: 11.5px;
+    color: var(--color-muted);
+  }
+  .dcp-item[aria-pressed='true'] {
+    box-shadow: inset 0 0 0 2px var(--brand);
+    background: color-mix(in srgb, var(--brand) 9%, white);
+  }
+  .dcp-item:focus-visible,
+  .dcp-back:focus-visible,
+  .dcp-action:focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+  .dcp-detail h4 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.1;
+  }
+  .dcp-pic {
+    height: 64px;
+    border-radius: 10px;
+    background: repeating-linear-gradient(135deg, var(--color-paper-2) 0 8px, transparent 8px 16px), var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  .dcp-back {
+    align-self: flex-start;
+    font-size: 12.5px;
+    color: var(--color-muted);
+    cursor: pointer;
+  }
+  .dcp-action {
+    margin-top: auto;
+    min-height: 38px;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: var(--brand);
+    color: var(--brand-ink);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: default;
+    transition: background-color 0.25s;
+  }
+  .dcp-hint {
+    margin: auto;
+    padding: 0 8px;
+    text-align: center;
+    color: var(--color-muted);
+  }
+  .dcp-nav {
+    grid-area: nav;
+    display: flex;
+    justify-content: space-around;
+    gap: 4px;
+    padding: 6px 8px 7px;
+    border-top: 1px solid var(--color-line);
+    font-size: 11px;
+    color: var(--color-muted);
+  }
+  .dcp-nav span {
+    display: grid;
+    justify-items: center;
+    gap: 3px;
+  }
+  .dcp-nav span::before {
+    content: '';
+    width: 34px;
+    height: 16px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  }
+  .dcp-nav span[data-on] {
+    color: var(--color-ink);
+  }
+  .dcp-nav span[data-on]::before {
+    background: var(--brand);
+    box-shadow: none;
+    transition: background-color 0.25s;
+  }
+  /* On a tablet the sections stand in a rail at the side. */
+  .dcp-device[data-size='expanded'] .dcp-nav {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 12px 8px;
+    border-top: 0;
+    border-right: 1px solid var(--color-line);
+  }
+  .dcp-reads {
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+  @media (max-width: 520px) {
+    .dcp-device {
+      min-width: 190px;
+      font-size: 12px;
+    }
+    .dcp-device[data-size='medium'] {
+      width: 100%;
+    }
+    .dcp-device[data-size='expanded'] .dcp-nav {
+      padding-inline: 4px;
+      font-size: 0;
+      gap: 8px;
+    }
+    .dcp-device[data-size='expanded'] .dcp-nav span::before {
+      width: 22px;
+    }
+    .dcp-item {
+      padding: 6px 7px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dcp-device,
+    .dcp-action,
+    .dcp-nav span[data-on]::before {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml, fill } from '../demo-kit';
+
+  type Item = { name: string; place: string; units: string };
+  type Strings = Record<string, string> & { items: Item[]; sections: string[] };
+  type Size = 'compact' | 'medium' | 'expanded';
+  const d = demo<Strings>('jetpack-compose');
+  if (d) {
+    const T = d.T;
+    const device = d.$('[data-device]');
+    const reads = d.$('[data-reads]');
+    const sizes = d.$$<HTMLButtonElement>('[data-size]').filter((el) => el.tagName === 'BUTTON');
+    const swatches = d.$$<HTMLButtonElement>('[data-color]');
+    let size: Size = 'compact';
+    let selected = -1;
+    let view: 'list' | 'detail' = 'list';
+    const e = escapeHtml;
+
+    // The whole screen, drawn from three values: the width class, what is selected and
+    // which of the two views a single column is showing.
+    const draw = (focus?: string) => {
+      const item = T.items[selected];
+      device.dataset.size = size;
+      device.dataset.view = view;
+      device.innerHTML =
+        `<div class="dcp-bar">${e(T.app)}</div>` +
+        `<div class="dcp-list">${T.items.map((entry, i) => `<button type="button" class="dcp-item" data-item="${i}" aria-pressed="${i === selected}"><span>${e(entry.name)}</span><small>${e(entry.units)}</small></button>`).join('')}</div>` +
+        `<div class="dcp-detail">` +
+        (item
+          ? `<button type="button" class="dcp-back" data-back>‹ ${e(T.back)}</button><div class="dcp-pic"></div><h4>${e(item.name)}</h4><small>${e(item.place)}</small><span>${e(item.units)}</span><button type="button" class="dcp-action" tabindex="-1">${e(T.action)}</button>`
+          : `<p class="dcp-hint">${e(T.choose)}</p>`) +
+        `</div>` +
+        `<div class="dcp-nav" aria-hidden="true">${T.sections.map((name, i) => `<span${i === 0 ? ' data-on' : ''}>${e(name)}</span>`).join('')}</div>`;
+      reads.textContent = T[size];
+      sizes.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.size === size)));
+      if (focus) device.querySelector<HTMLElement>(focus)?.focus();
+    };
+
+    sizes.forEach((button) =>
+      button.addEventListener('click', () => {
+        size = button.dataset.size as Size;
+        // With room for both panes there is always something on the right.
+        if (size !== 'compact' && selected < 0) selected = 0;
+        if (size === 'compact') view = 'list';
+        draw();
+      }),
+    );
+    swatches.forEach((button) =>
+      button.addEventListener('click', () => {
+        device.style.setProperty('--brand', button.dataset.color!);
+        device.style.setProperty('--brand-ink', button.dataset.ink!);
+        swatches.forEach((other) => other.setAttribute('aria-pressed', String(other === button)));
+        d.say(fill(T.sayBrand, { color: button.dataset.name!.toLowerCase() }));
+      }),
+    );
+    device.addEventListener('click', (event) => {
+      const target = (event.target as Element).closest<HTMLElement>('[data-item], [data-back]');
+      if (!target) return;
+      if (target.dataset.item) {
+        selected = Number(target.dataset.item);
+        view = 'detail';
+        draw(size === 'compact' ? '[data-back]' : `[data-item="${selected}"]`);
+      } else {
+        view = 'list';
+        draw(`[data-item="${selected}"]`);
+      }
+    });
+
+    d.onReset(() => {
+      size = 'compact';
+      selected = -1;
+      view = 'list';
+      device.style.removeProperty('--brand');
+      device.style.removeProperty('--brand-ink');
+      swatches.forEach((button, i) => button.setAttribute('aria-pressed', String(i === 0)));
+      draw();
+      d.say('');
+    });
+    draw();
+  }
+</script>

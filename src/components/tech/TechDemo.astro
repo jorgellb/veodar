@@ -1,0 +1,45 @@
+---
+// The working example of a technology page.
+import DemoAstro from './demos/DemoAstro.astro';
+import DemoCompose from './demos/DemoCompose.astro';
+import DemoExpo from './demos/DemoExpo.astro';
+import DemoIa from './demos/DemoIa.astro';
+import DemoJavascript from './demos/DemoJavascript.astro';
+import DemoKotlin from './demos/DemoKotlin.astro';
+import DemoNextjs from './demos/DemoNextjs.astro';
+import DemoNodejs from './demos/DemoNodejs.astro';
+import DemoPush from './demos/DemoPush.astro';
+import DemoPython from './demos/DemoPython.astro';
+import DemoReact from './demos/DemoReact.astro';
+import DemoReactNative from './demos/DemoReactNative.astro';
+import DemoSqlite from './demos/DemoSqlite.astro';
+import DemoSwift from './demos/DemoSwift.astro';
+import DemoSwiftui from './demos/DemoSwiftui.astro';
+import DemoWordpress from './demos/DemoWordpress.astro';
+import type { TechId } from '../../data/technologies';
+
+interface Props {
+  id: TechId;
+}
+const demos = {
+  wordpress: DemoWordpress,
+  astro: DemoAstro,
+  react: DemoReact,
+  nextjs: DemoNextjs,
+  nodejs: DemoNodejs,
+  python: DemoPython,
+  'ia-generativa': DemoIa,
+  javascript: DemoJavascript,
+  'react-native': DemoReactNative,
+  expo: DemoExpo,
+  swift: DemoSwift,
+  swiftui: DemoSwiftui,
+  kotlin: DemoKotlin,
+  'jetpack-compose': DemoCompose,
+  sqlite: DemoSqlite,
+  'notificaciones-push': DemoPush,
+} satisfies Record<TechId, unknown>;
+const Demo = demos[Astro.props.id];
+---
+
+<Demo />

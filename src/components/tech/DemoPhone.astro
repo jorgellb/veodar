@@ -1,0 +1,27 @@
+---
+// A phone drawn in HTML for the examples of the mobile pages: the status bar, a body
+// (the slot) and the bottom bar of its family. Styles live in DemoFrame.astro.
+interface Props {
+  kind?: 'a' | 'b';
+  /** A dark screen: a lock screen, or a screen that is off. */
+  dark?: boolean;
+  /** Name read to screen readers: "Teléfono con iOS" and the like. */
+  label: string;
+  /** Hook for the example's script. */
+  name?: string;
+  time?: string;
+}
+const { kind = 'a', dark = false, label, name, time = '9:41' } = Astro.props;
+---
+
+<div class="dm-phone" data-kind={kind} data-phone={name} role="group" aria-label={label}>
+  <div class="dm-phone-screen" data-dark={dark ? '' : undefined} data-screen>
+    <div class="dm-phone-status" aria-hidden="true">
+      <span data-time>{time}</span>
+      <span class="dm-phone-cut"></span>
+      <span data-signal>●●●</span>
+    </div>
+    <div class="dm-phone-body" data-body><slot /></div>
+    <div class="dm-phone-end" aria-hidden="true"><i></i></div>
+  </div>
+</div>

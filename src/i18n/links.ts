@@ -4,13 +4,18 @@
 // "click here", in both languages.
 //
 // Rules keep it natural: one link per target per page, at most MAX_PER_PAGE links
-// to services, sectors and fixed pages plus MAX_TERMS_PER_PAGE to glossary terms,
-// never a link to the page itself, and never inside headings.
+// to services, sectors and fixed pages, MAX_TECH_PER_PAGE to technologies and
+// MAX_TERMS_PER_PAGE to glossary terms, never a link to the page itself, and never
+// inside headings.
 
 import { termsFor } from '../data/glossary';
-import { pathTo, sectorHref, serviceHref, termHref, type Lang } from './index';
+import { pathTo, sectorHref, serviceHref, techHref, termHref, type Lang } from './index';
 
-type Rule = { to: string; terms: string[] };
+/**
+ * `exact` matches the term only as written (a name: "React" but not "react");
+ * `except` lists what may not follow it ("React" is not "React Native").
+ */
+type Rule = { to: string; terms: string[]; exact?: boolean; except?: string[] };
 
 const isService = (to: string) => /^\/(servicios|en\/services)\/[^/]+\/$/.test(to);
 
@@ -49,6 +54,7 @@ const rules = (lang: Lang): Rule[] =>
         { to: sectorHref('agroalimentacion', lang), terms: ['cooperativas agroalimentarias', 'cooperativas', 'agroalimentaria'] },
         { to: sectorHref('hosteleria-turismo', lang), terms: ['hoteles y restaurantes', 'hoteles', 'hostelería'] },
         { to: pathTo('sectores', lang), terms: ['cada sector', 'por sector'] },
+        { to: pathTo('tecnologias', lang), terms: ['desarrollo por tecnología', 'por tecnología'] },
         { to: pathTo('almeria', lang), terms: ['Vera (Almería)', 'provincia de Almería', 'Almería'] },
       ]
     : [
@@ -79,8 +85,30 @@ const rules = (lang: Lang): Rule[] =>
         { to: sectorHref('agroalimentacion', lang), terms: ['agricultural cooperatives', 'cooperatives', 'agrifood'] },
         { to: sectorHref('hosteleria-turismo', lang), terms: ['hotels and restaurants', 'hotels', 'hospitality'] },
         { to: pathTo('sectores', lang), terms: ['every industry', 'by industry'] },
+        { to: pathTo('tecnologias', lang), terms: ['development by technology', 'by technology'] },
         { to: pathTo('almeria', lang), terms: ['Vera (Almería)', 'province of Almería', 'Almería'] },
       ];
+
+// Technologies: the name of each one links to its page. They have a budget of their
+// own, so a paragraph that names the stack never spends the links to services.
+const techRules = (lang: Lang): Rule[] => [
+  { to: techHref('wordpress', lang), terms: ['WordPress'], exact: true },
+  { to: techHref('astro', lang), terms: ['Astro'], exact: true },
+  { to: techHref('nextjs', lang), terms: ['Next.js'], exact: true },
+  { to: techHref('react', lang), terms: ['React'], exact: true, except: [' Native'] },
+  { to: techHref('nodejs', lang), terms: ['Node.js'], exact: true },
+  { to: techHref('python', lang), terms: ['Python'], exact: true },
+  { to: techHref('ia-generativa', lang), terms: lang === 'es' ? ['IA generativa', 'modelos de lenguaje', 'modelo de lenguaje'] : ['generative AI', 'language models', 'language model'] },
+  { to: techHref('javascript', lang), terms: ['JavaScript'], exact: true },
+  { to: techHref('react-native', lang), terms: ['React Native'], exact: true },
+  { to: techHref('expo', lang), terms: ['Expo'], exact: true },
+  { to: techHref('swiftui', lang), terms: ['SwiftUI'], exact: true },
+  { to: techHref('swift', lang), terms: ['Swift'], exact: true },
+  { to: techHref('jetpack-compose', lang), terms: ['Jetpack Compose'], exact: true },
+  { to: techHref('kotlin', lang), terms: ['Kotlin'], exact: true },
+  { to: techHref('sqlite', lang), terms: ['SQLite'], exact: true },
+  { to: techHref('notificaciones-push', lang), terms: lang === 'es' ? ['notificaciones push', 'notificación push'] : ['push notifications', 'push notification'] },
+];
 
 // Glossary terms: the phrases each term declares in `match`. They come after the
 // rules above, so a phrase that already sells a service keeps pointing at that page.
@@ -107,8 +135,11 @@ function termRules(lang: Lang, here: string): Rule[] {
 }
 
 const MAX_PER_PAGE = 8;
+const MAX_TECH_PER_PAGE = 4;
+const MAX_TECH_PER_PARAGRAPH = 3;
 const MAX_TERMS_PER_PAGE = 6;
 const used = new Map<string, Set<string>>();
+const usedTech = new Map<string, Set<string>>();
 const usedTerms = new Map<string, Set<string>>();
 
 // An acronym (MES, GEO, POS) only matches as written: "mes" is also a month.
@@ -122,6 +153,7 @@ const norm = (path: string) => (path.endsWith('/') ? path : `${path}/`);
 /** Forget what a page has linked: call once at the top of every page render (dev re-renders pages). */
 export function startLinks(pagePath: string) {
   used.set(norm(pagePath), new Set());
+  usedTech.set(norm(pagePath), new Set());
   usedTerms.set(norm(pagePath), new Set());
 }
 
@@ -129,7 +161,8 @@ export function startLinks(pagePath: string) {
 function linkFirst(html: string, rule: Rule, className: string): string | null {
   for (const term of rule.terms) {
     // Whole words only (accents count as letters), and never inside a link we already added.
-    const re = new RegExp(`(?<![\\p{L}\\p{N}>])(${escapeRe(escapeHtml(term))})(?![\\p{L}\\p{N}])(?![^<]*</a>)`, isAcronym(term) ? 'u' : 'iu');
+    const except = rule.except?.length ? `(?!${rule.except.map((tail) => escapeRe(escapeHtml(tail))).join('|')})` : '';
+    const re = new RegExp(`(?<![\\p{L}\\p{N}>])(${escapeRe(escapeHtml(term))})(?![\\p{L}\\p{N}])${except}(?![^<]*</a>)`, rule.exact || isAcronym(term) ? 'u' : 'iu');
     const match = re.exec(html);
     if (!match) continue;
     return `${html.slice(0, match.index)}<a class="${className}" href="${rule.to}">${match[1]}</a>${html.slice(match.index + match[1].length)}`;
@@ -140,13 +173,16 @@ function linkFirst(html: string, rule: Rule, className: string): string | null {
 /**
  * Escape `text` and link the first mention of up to `max` services, sectors or fixed
  * pages that this page has not linked yet (with `max` 2: one service and one of the
- * rest), plus one glossary term unless `terms` is false. Returns HTML for set:html.
+ * rest), the technologies it names, and one glossary term unless `terms` is false.
+ * Returns HTML for set:html.
  */
 export function linkify(text: string, lang: Lang, pagePath: string, max = 1, terms = true): string {
   const here = norm(pagePath);
   if (!used.has(here)) used.set(here, new Set());
+  if (!usedTech.has(here)) usedTech.set(here, new Set());
   if (!usedTerms.has(here)) usedTerms.set(here, new Set());
   const done = used.get(here)!;
+  const doneTech = usedTech.get(here)!;
   const doneTerms = usedTerms.get(here)!;
   let html = escapeHtml(text);
   let added = 0;
@@ -166,6 +202,16 @@ export function linkify(text: string, lang: Lang, pagePath: string, max = 1, ter
     added++;
     if (service) serviceTaken = true;
     else otherTaken = true;
+  }
+  let techAdded = 0;
+  for (const rule of techRules(lang)) {
+    if (techAdded >= MAX_TECH_PER_PARAGRAPH || doneTech.size >= MAX_TECH_PER_PAGE) break;
+    if (doneTech.has(rule.to) || norm(rule.to) === here) continue;
+    const linked = linkFirst(html, rule, 'ctx-link ctx-tech');
+    if (!linked) continue;
+    html = linked;
+    doneTech.add(rule.to);
+    techAdded++;
   }
   if (!terms) return html;
   for (const rule of termRules(lang, here)) {

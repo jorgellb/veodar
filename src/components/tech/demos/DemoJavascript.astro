@@ -1,0 +1,201 @@
+---
+// JavaScript: a quote calculator for an invented painting company. The total follows
+// what is typed, and the form says what is missing before it lets itself be sent.
+// This one is the real thing: the page's own JavaScript, on made-up rates.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    company: 'Pinturas Ejemplo · calculadora de presupuesto',
+    area: 'Metros cuadrados',
+    finish: 'Acabado',
+    finishes: [['basic', 'Básico'], ['satin', 'Satinado'], ['premium', 'Lavable'],],
+    urgent: 'Lo necesito esta semana (+15 %)',
+    email: 'Correo para recibirlo',
+    send: 'Pedir el presupuesto',
+    result: 'Tu presupuesto',
+    rates: 'Tarifas inventadas para este ejemplo. No son precios de Veodar ni de ninguna empresa real.',
+    js: {
+      base: 'Pintura ({area} m² × {rate})',
+      rush: 'Recargo por urgencia (15 %)',
+      total: 'Total',
+      areaMissing: 'Indica los metros cuadrados: un número mayor que 0.',
+      areaBig: 'Para más de 2.000 m² el cálculo se hace a mano: escríbenos.',
+      emailMissing: 'Falta el correo: lo necesitamos para enviarte el presupuesto.',
+      emailBad: 'Ese correo no parece completo. Revisa que tenga @ y dominio.',
+      fix: 'Antes de enviar falta: {list}.',
+      ready: 'Todo correcto. En una web real, aquí se enviaría la solicitud; en este ejemplo no se manda nada.',
+      names: { area: 'los metros', email: 'el correo' },
+      empty: 'Escribe los metros para ver el cálculo.',
+    },
+  },
+  en: {
+    company: 'Sample Painters · quote calculator',
+    area: 'Square meters',
+    finish: 'Finish',
+    finishes: [['basic', 'Basic'], ['satin', 'Satin'], ['premium', 'Washable'],],
+    urgent: 'I need it this week (+15%)',
+    email: 'Email to receive it',
+    send: 'Request the quote',
+    result: 'Your quote',
+    rates: 'Rates invented for this example. They are not prices of Veodar or of any real company.',
+    js: {
+      base: 'Painting ({area} m² × {rate})',
+      rush: 'Rush surcharge (15%)',
+      total: 'Total',
+      areaMissing: 'Enter the square meters: a number greater than 0.',
+      areaBig: 'For more than 2,000 m² the estimate is done by hand: write to us.',
+      emailMissing: 'The email is missing: we need it to send you the quote.',
+      emailBad: "That email doesn't look complete. Check it has an @ and a domain.",
+      fix: 'Before sending, still missing: {list}.',
+      ready: 'All good. On a real website the request would be sent here; in this example nothing is sent.',
+      names: { area: 'the square meters', email: 'the email' },
+      empty: 'Enter the square meters to see the calculation.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="javascript" strings={T.js} kind="real">
+  <div class="dm-grid dm-grid--2">
+    <form class="dm-panel" data-form novalidate>
+      <p class="dm-cap">{T.company}</p>
+      <label class="dm-field">
+        <span>{T.area}</span>
+        <input class="dm-input" name="area" inputmode="decimal" autocomplete="off" aria-describedby="dv-area-error" />
+        <span class="dm-error" id="dv-area-error" data-error="area" hidden></span>
+      </label>
+      <label class="dm-field">
+        <span>{T.finish}</span>
+        <select class="dm-input" name="finish">{T.finishes.map(([value, label]) => <option value={value}>{label}</option>)}</select>
+      </label>
+      <label class="dm-check"><input type="checkbox" name="urgent" /> <span>{T.urgent}</span></label>
+      <label class="dm-field">
+        <span>{T.email}</span>
+        <input class="dm-input" name="email" type="email" autocomplete="off" aria-describedby="dv-email-error" />
+        <span class="dm-error" id="dv-email-error" data-error="email" hidden></span>
+      </label>
+      <div class="dm-row"><button class="dm-btn" type="submit">{T.send}</button></div>
+      <p class="dm-help" data-outcome role="status"></p>
+    </form>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.result}</p>
+      <dl class="dv-lines" data-lines aria-live="polite"></dl>
+      <p class="dm-help">{T.rates}</p>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  .dv-lines {
+    display: grid;
+    gap: 0.5rem;
+    min-height: 7rem;
+  }
+  .dv-lines :global(div) {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-line);
+    font-size: 14.5px;
+  }
+  .dv-lines :global(dd) {
+    font-family: var(--font-mono);
+    white-space: nowrap;
+  }
+  .dv-lines :global(div[data-total]) {
+    border-bottom: 0;
+    padding-top: 0.3rem;
+    font-size: 1.7rem;
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  .dv-lines :global(div[data-total] dd) {
+    font-family: var(--font-display);
+    color: var(--color-accent-ink);
+  }
+</style>
+
+<script>
+  import { demo, fill } from '../demo-kit';
+
+  // The invented rates, per square meter.
+  const RATES = { basic: 9, satin: 12.5, premium: 16 } as const;
+  const RUSH = 0.15;
+
+  type Strings = Record<string, string> & { names: Record<string, string> };
+  const d = demo<Strings>('javascript');
+  if (d) {
+    const form = d.$<HTMLFormElement>('[data-form]');
+    const lines = d.$('[data-lines]');
+    const outcome = d.$('[data-outcome]');
+    const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
+    const locale = document.documentElement.lang === 'en' ? 'en-US' : 'es-ES';
+    const money = new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' });
+    const plain = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
+    let tried = false;
+
+    const read = () => {
+      // "12,5" and "12.5" both mean twelve and a half.
+      const area = Number(field('area').value.trim().replace(',', '.'));
+      const email = field('email').value.trim();
+      const errors: Record<string, string> = {};
+      if (!field('area').value.trim() || !Number.isFinite(area) || area <= 0) errors.area = d.T.areaMissing;
+      else if (area > 2000) errors.area = d.T.areaBig;
+      if (!email) errors.email = d.T.emailMissing;
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errors.email = d.T.emailBad;
+      return { area, errors };
+    };
+
+    const update = () => {
+      const { area, errors } = read();
+      // The total shows as soon as the meters make sense, whatever else is missing.
+      if (errors.area) lines.innerHTML = `<p class="dm-empty">${field('area').value.trim() ? errors.area : d.T.empty}</p>`;
+      else {
+        const rate = RATES[(form.elements.namedItem('finish') as HTMLSelectElement).value as keyof typeof RATES];
+        const base = area * rate;
+        const rush = field('urgent').checked ? base * RUSH : 0;
+        lines.innerHTML =
+          `<div><dt>${fill(d.T.base, { area: plain.format(area), rate: money.format(rate) })}</dt><dd>${money.format(base)}</dd></div>` +
+          (rush ? `<div><dt>${d.T.rush}</dt><dd>${money.format(rush)}</dd></div>` : '') +
+          `<div data-total><dt>${d.T.total}</dt><dd>${money.format(base + rush)}</dd></div>`;
+      }
+      // Errors appear once someone has tried to send, and then follow the typing.
+      for (const name of ['area', 'email']) {
+        const message = tried ? errors[name] : undefined;
+        const note = d.$(`[data-error="${name}"]`);
+        note.hidden = !message;
+        note.textContent = message ?? '';
+        field(name).setAttribute('aria-invalid', String(Boolean(message)));
+      }
+      return errors;
+    };
+
+    form.addEventListener('input', () => {
+      update();
+      outcome.textContent = '';
+    });
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      tried = true;
+      const errors = update();
+      const missing = Object.keys(errors);
+      if (missing.length) {
+        outcome.textContent = fill(d.T.fix, { list: missing.map((name) => d.T.names[name]).join(', ') });
+        field(missing[0]).focus();
+        return;
+      }
+      outcome.textContent = d.T.ready;
+    });
+    d.onReset(() => {
+      form.reset();
+      tried = false;
+      outcome.textContent = '';
+      update();
+    });
+    update();
+  }
+</script>

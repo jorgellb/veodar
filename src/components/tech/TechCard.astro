@@ -1,0 +1,159 @@
+---
+// One technology as a card: the thumbnail of its scene, the service it stands for
+// and what gets built. The heading is the only link and covers the whole card.
+import Icon from '../Icon.astro';
+import type { Tech } from '../../data/technologies';
+import { smallFigure } from '../../data/small-figures';
+import { langOf, techHref } from '../../i18n';
+
+interface Props {
+  tech: Tech;
+  /** Heading level of the card title: h3 inside a section with its own h2. */
+  level?: 'h2' | 'h3';
+  /** Above the fold on its page: load the picture at once. */
+  eager?: boolean;
+}
+const { tech, level = 'h3', eager = false } = Astro.props;
+const Heading = level;
+const lang = langOf(Astro.url);
+const figure = smallFigure(tech.figure);
+const tintBg: Record<string, string> = { mint: 'bg-mint', sky: 'bg-sky', butter: 'bg-butter', blush: 'bg-blush', lilac: 'bg-lilac', paper: 'bg-paper-2' };
+---
+
+<article class="tk-card spot">
+  <div class:list={['tk-stage', tintBg[tech.tint]]}>
+    <img src={figure.src} alt="" width={figure.width} height={figure.height} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+    <span class="tk-tag">{tech.name}</span>
+    <span class="tk-num" aria-hidden="true">{tech.number}</span>
+  </div>
+  <div class="tk-body">
+    <Heading class="tk-title"><a href={techHref(tech.id, lang)}>{tech.card.title}</a></Heading>
+    <p class="tk-text">{tech.card.text}</p>
+  </div>
+  <span class="tk-go" aria-hidden="true"><Icon name="arrow" size={18} /></span>
+</article>
+
+<style>
+  .tk-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    border-radius: 26px;
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    transition:
+      transform 0.5s var(--ease-spring),
+      box-shadow 0.5s var(--ease-spring);
+  }
+  .tk-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      inset 0 0 0 1px var(--color-ink),
+      0 24px 40px -24px rgb(22 20 44 / 0.45);
+  }
+  /* The stage: a tinted bench where the thumbnail of the scene stands. */
+  .tk-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 18px;
+    box-shadow: inset 0 0 0 1px rgb(22 20 44 / 0.06);
+  }
+  .tk-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgb(22 20 44 / 0.12) 1px, transparent 1px);
+    background-size: 14px 14px;
+    mask-image: linear-gradient(180deg, transparent, #000 150%);
+  }
+  .tk-stage img {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.7s var(--ease-spring);
+  }
+  .tk-card:hover .tk-stage img {
+    transform: scale(1.04);
+  }
+  .tk-tag,
+  .tk-num {
+    position: absolute;
+    top: 12px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+  }
+  .tk-tag {
+    left: 12px;
+    padding: 0.28rem 0.6rem;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.72);
+    color: var(--color-ink);
+    font-weight: 560;
+    text-transform: uppercase;
+    box-shadow: inset 0 0 0 1px rgb(22 20 44 / 0.08);
+  }
+  .tk-num {
+    right: 14px;
+    top: 16px;
+    color: rgb(22 20 44 / 0.55);
+  }
+  .tk-body {
+    padding: 20px 60px 16px 12px;
+  }
+  .tk-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.45rem, 2vw, 1.7rem);
+    font-weight: 400;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  /* The link covers the card, so the whole card is the target. */
+  .tk-title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .tk-title a:focus-visible {
+    outline: none;
+  }
+  .tk-card:has(.tk-title a:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  .tk-text {
+    margin-top: 0.7rem;
+    max-width: 52ch;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-muted);
+    text-wrap: pretty;
+  }
+  .tk-go {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    transition:
+      background-color 0.3s,
+      transform 0.5s var(--ease-spring);
+  }
+  .tk-card:hover .tk-go {
+    background: var(--color-accent);
+    color: #1a0a03;
+    box-shadow: none;
+    transform: rotate(-45deg);
+  }
+</style>

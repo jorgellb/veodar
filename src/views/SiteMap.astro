@@ -5,8 +5,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { categories, termsFor } from '../data/glossary';
 import { sectorsFor } from '../data/sectors';
 import { servicesFor, serviceGroupsFor, serviceHref } from '../data/services';
+import { groupsFor } from '../data/technologies';
 import { breadcrumbLd } from '../data/site';
-import { langOf, pathTo, sectorHref, termHref, type PageKey } from '../i18n';
+import { langOf, pathTo, sectorHref, techHref, termHref, type PageKey } from '../i18n';
 import { UPDATED } from '../data/updated';
 
 const lang = langOf(Astro.url);
@@ -17,11 +18,13 @@ const T = {
     home: 'Inicio',
     name: 'Mapa del sitio',
     title: 'Mapa del sitio de Veodar: todas las páginas',
-    description: 'Todas las páginas de veodar.com en una sola lista: servicios, soluciones, sectores, glosario y textos legales, cada una con su enlace.',
+    description: 'Todas las páginas de veodar.com en una sola lista: servicios, tecnologías, soluciones, sectores, glosario y textos legales, cada una con su enlace.',
     lead: 'Todas las páginas del sitio, agrupadas. Si buscas algo y no lo ves aquí, escríbenos.',
     main: 'Principal',
     services: 'Servicios',
     sectors: 'Sectores',
+    techs: 'Tecnologías',
+    allTechs: 'Todas las tecnologías',
     glossary: 'Glosario',
     legal: 'Textos legales',
     pages: ['Inicio', 'Todos los servicios', 'Soluciones por área', 'Todos los sectores', 'Precios', 'Contacto', 'Glosario', 'Veodar en Almería'],
@@ -31,11 +34,13 @@ const T = {
     home: 'Home',
     name: 'Site map',
     title: 'Veodar Site Map: Every Page on the Site',
-    description: 'Every page on veodar.com in a single list: services, solutions, industries, glossary and legal pages, each with its link.',
+    description: 'Every page on veodar.com in a single list: services, technologies, solutions, industries, glossary and legal pages, each with its link.',
     lead: 'Every page on the site, grouped. If you are looking for something and can’t see it here, write to us.',
     main: 'Main',
     services: 'Services',
     sectors: 'Industries',
+    techs: 'Technologies',
+    allTechs: 'All technologies',
     glossary: 'Glossary',
     legal: 'Legal',
     pages: ['Home', 'All services', 'Solutions by department', 'All industries', 'Pricing', 'Contact', 'Glossary', 'Veodar in Almería'],
@@ -50,6 +55,10 @@ const groups: Group[] = [
   ...serviceGroupsFor(lang).map((group) => ({
     title: `${T.services} · ${group.label}`,
     links: services.filter((service) => service.group === group.id).map((service) => ({ href: serviceHref(service.slug, lang), label: service.name })),
+  })),
+  ...groupsFor(lang).map((group, index) => ({
+    title: `${T.techs} · ${group.name}`,
+    links: [...(index === 0 ? [{ href: pathTo('tecnologias', lang), label: T.allTechs }] : []), ...group.techs.map((tech) => ({ href: techHref(tech.id, lang), label: tech.card.title }))],
   })),
   { title: T.sectors, links: sectorsFor(lang).map((sector) => ({ href: sectorHref(sector.id, lang), label: sector.name })) },
   ...categories.map((category) => ({

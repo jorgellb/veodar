@@ -1,0 +1,25 @@
+---
+// The technologies of one group, or all of them: two columns on a desk, one on a phone.
+import TechCard from './TechCard.astro';
+import { techsFor, techsOf, type TechGroup } from '../../data/technologies';
+import { langOf } from '../../i18n';
+
+interface Props {
+  level?: 'h2' | 'h3';
+  label: string;
+  group?: TechGroup;
+}
+const { level = 'h3', label, group } = Astro.props;
+const lang = langOf(Astro.url);
+const techs = group ? techsOf(group, lang) : techsFor(lang);
+---
+
+<ul class="grid gap-4 md:grid-cols-2" aria-label={label}>
+  {
+    techs.map((tech, index) => (
+      <li data-reveal style={`--d:${(index % 2) * 80}ms`}>
+        <TechCard tech={tech} level={level} />
+      </li>
+    ))
+  }
+</ul>

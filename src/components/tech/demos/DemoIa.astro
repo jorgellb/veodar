@@ -1,0 +1,232 @@
+---
+// IA generativa: a question answered from three sample documents, with each claim
+// tied to the passage it comes from. One question has no answer in them. The
+// answers are written beforehand: there is no model behind this.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    ask: 'Elige una pregunta',
+    answer: 'Respuesta del asistente',
+    idle: 'Aquí aparecerá la respuesta, con el número del documento en el que se apoya cada frase.',
+    review: 'Marcar como revisada',
+    docs: 'Documentos de muestra',
+    docTitles: ['Condiciones de venta', 'Ficha técnica · modelo K2', 'Política de garantías'],
+    passages: [
+      'El cliente dispone de 30 días naturales desde la entrega para devolver el producto, siempre que conserve el embalaje original.',
+      'El modelo K2 admite una carga máxima de 120 kg y se entrega con dos baterías.',
+      'Todos los modelos tienen 3 años de garantía. Las baterías, 1 año.',
+    ],
+    questions: ['¿Cuál es el plazo de devolución?', '¿Qué garantía tiene el modelo K2?', '¿Hacéis envíos a Canarias?'],
+    js: {
+      thinking: 'Buscando en los documentos…',
+      answers: [
+        [['El plazo de devolución es de 30 días naturales desde la entrega', 0], [', siempre que se conserve el embalaje original', 0], ['.', -1]],
+        [['El modelo K2 tiene 3 años de garantía', 2], ['; sus dos baterías', 1], [', 1 año', 2], ['.', -1]],
+        [],
+      ],
+      nothing: 'No encuentro esa información en los documentos de muestra. No voy a suponerla: paso la consulta a una persona.',
+      pending: 'Pendiente de revisión',
+      reviewed: 'Revisada por una persona',
+      handed: 'Enviada a una persona',
+      source: 'Fuente',
+    },
+  },
+  en: {
+    ask: 'Pick a question',
+    answer: "Assistant's answer",
+    idle: 'The answer will appear here, with the number of the document each sentence relies on.',
+    review: 'Mark as reviewed',
+    docs: 'Sample documents',
+    docTitles: ['Terms of sale', 'Spec sheet · model K2', 'Warranty policy'],
+    passages: [
+      'The customer has 30 calendar days from delivery to return the product, provided the original packaging is kept.',
+      'The K2 model supports a maximum load of 120 kg and ships with two batteries.',
+      'All models carry a 3-year warranty. Batteries, 1 year.',
+    ],
+    questions: ['What is the return period?', 'What warranty does the K2 model have?', 'Do you ship to Hawaii?'],
+    js: {
+      thinking: 'Searching the documents…',
+      answers: [
+        [['The return period is 30 calendar days from delivery', 0], [', provided the original packaging is kept', 0], ['.', -1]],
+        [['The K2 model has a 3-year warranty', 2], ['; its two batteries', 1], [', 1 year', 2], ['.', -1]],
+        [],
+      ],
+      nothing: "I can't find that in the sample documents. I won't guess: I'm passing the question to a person.",
+      pending: 'Awaiting review',
+      reviewed: 'Reviewed by a person',
+      handed: 'Passed to a person',
+      source: 'Source',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="ia" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--wide">
+    <div class="dm-panel">
+      <p class="dm-cap" id="di-ask">{T.ask}</p>
+      <div class="di-questions" role="group" aria-labelledby="di-ask">
+        {T.questions.map((question, i) => <button class="dm-btn dm-btn--ghost" type="button" data-q={i} aria-pressed="false">{question}</button>)}
+      </div>
+      <p class="dm-cap">{T.answer}</p>
+      <div class="di-answer" data-answer aria-live="polite"><span class="dm-empty">{T.idle}</span></div>
+      <div class="dm-row">
+        <span class="dm-pill" data-status hidden></span>
+        <button class="dm-btn" type="button" data-review hidden>{T.review}</button>
+      </div>
+    </div>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.docs}</p>
+      <ol class="di-docs">
+        {
+          T.docTitles.map((title, i) => (
+            <li data-doc={i}>
+              <span class="di-num">{i + 1}</span>
+              <div><strong>{title}</strong><p>{T.passages[i]}</p></div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  .di-questions {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .di-questions :global(.dm-btn) {
+    justify-content: flex-start;
+    height: auto;
+    min-height: 42px;
+    padding: 0.55rem 1rem;
+    text-align: left;
+    white-space: normal;
+  }
+  .di-answer {
+    min-height: 6.5rem;
+    padding: 0.9rem 1rem;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .di-answer :global(sup) {
+    margin: 0 1px 0 2px;
+    padding: 0 0.34em;
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: #1a0a03;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+  }
+  .di-docs {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .di-docs li {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
+    background: rgb(22 20 44 / 0.04);
+    transition:
+      background-color 0.3s,
+      box-shadow 0.3s;
+  }
+  .di-docs li[data-cited] {
+    background: var(--color-blush);
+    box-shadow: inset 0 0 0 1.5px var(--color-accent);
+  }
+  .di-num {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+  }
+  .di-docs li[data-cited] .di-num {
+    background: var(--color-accent);
+    color: #1a0a03;
+  }
+  .di-docs strong {
+    font-size: 14.5px;
+    font-weight: 560;
+  }
+  .di-docs p {
+    margin-top: 0.2rem;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--color-ink-2);
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml } from '../demo-kit';
+
+  type Piece = [string, number];
+  const d = demo<Record<string, string> & { answers: Piece[][] }>('ia');
+  if (d) {
+    const buttons = d.$$<HTMLButtonElement>('[data-q]');
+    const answer = d.$('[data-answer]');
+    const docs = d.$$('[data-doc]');
+    const status = d.$('[data-status]');
+    const review = d.$<HTMLButtonElement>('[data-review]');
+    const idle = answer.innerHTML;
+    const tell = (state: 'ok' | 'warn', text: string) => {
+      status.hidden = false;
+      status.dataset.state = state;
+      status.textContent = text;
+    };
+    const cite = (list: number[]) => docs.forEach((doc, i) => doc.toggleAttribute('data-cited', list.includes(i)));
+
+    buttons.forEach((button, at) =>
+      button.addEventListener('click', async () => {
+        const run = d.newRun();
+        buttons.forEach((other) => other.setAttribute('aria-pressed', String(other === button)));
+        cite([]);
+        review.hidden = true;
+        status.hidden = true;
+        d.say('');
+        answer.innerHTML = `<span class="dm-empty">${d.T.thinking}</span>`;
+        await d.wait(800);
+        if (d.stale(run)) return;
+        const pieces = d.T.answers[at];
+        if (!pieces.length) {
+          answer.textContent = d.T.nothing;
+          tell('warn', d.T.handed);
+          return;
+        }
+        // Each sentence carries the number of the document it comes from.
+        answer.innerHTML = pieces.map(([text, doc]) => escapeHtml(text) + (doc >= 0 ? `<sup title="${d.T.source} ${doc + 1}">${doc + 1}</sup>` : '')).join('');
+        cite(pieces.map(([, doc]) => doc));
+        tell('warn', d.T.pending);
+        review.hidden = false;
+      }),
+    );
+    review.addEventListener('click', () => {
+      tell('ok', d.T.reviewed);
+      review.hidden = true;
+      d.say(d.T.reviewed);
+    });
+    d.onReset(() => {
+      buttons.forEach((button) => button.setAttribute('aria-pressed', 'false'));
+      answer.innerHTML = idle;
+      cite([]);
+      status.hidden = true;
+      review.hidden = true;
+      d.say('');
+    });
+  }
+</script>

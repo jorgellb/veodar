@@ -1,0 +1,222 @@
+---
+// Next.js: a public catalog anyone sees and an account that needs a session. The
+// log shows what the server does with each request, in the order it does it.
+import DemoFrame from '../DemoFrame.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    tabs: 'Páginas de la aplicación',
+    catalog: 'Catálogo',
+    account: 'Mi cuenta',
+    public: 'pública',
+    private: 'privada',
+    products: ['Silla Alba', 'Mesa Roble', 'Lámpara Nube'],
+    ref: 'ref.',
+    signIn: 'Hace falta iniciar sesión para ver esta página.',
+    email: 'Correo',
+    password: 'Contraseña',
+    sampleEmail: 'ana@ejemplo.com',
+    enter: 'Entrar con la cuenta de muestra',
+    hello: 'Cuenta de Ana Ejemplo',
+    orders: ['Pedido 2031 · en reparto', 'Pedido 1987 · entregado'],
+    leave: 'Cerrar sesión',
+    log: 'Registro del servidor',
+    js: {
+      catalog: 'GET /catalogo → 200 · no pide sesión',
+      denied: 'GET /cuenta → sin sesión → redirige a /acceso',
+      login: 'POST /acceso → credenciales de muestra válidas → sesión creada',
+      allowed: 'GET /cuenta → sesión válida → 200 · solo los datos de Ana',
+      logout: 'POST /salir → sesión cerrada',
+      say: 'Sesión iniciada. Se muestra la cuenta.',
+    },
+  },
+  en: {
+    tabs: 'Pages of the application',
+    catalog: 'Catalog',
+    account: 'My account',
+    public: 'public',
+    private: 'private',
+    products: ['Alba chair', 'Oak table', 'Cloud lamp'],
+    ref: 'ref.',
+    signIn: 'You need to sign in to see this page.',
+    email: 'Email',
+    password: 'Password',
+    sampleEmail: 'ann@example.com',
+    enter: 'Sign in with the sample account',
+    hello: "Ann Example's account",
+    orders: ['Order 2031 · out for delivery', 'Order 1987 · delivered'],
+    leave: 'Sign out',
+    log: 'Server log',
+    js: {
+      catalog: 'GET /catalog → 200 · no session needed',
+      denied: 'GET /account → no session → redirects to /sign-in',
+      login: 'POST /sign-in → sample credentials valid → session created',
+      allowed: "GET /account → valid session → 200 · Ann's data only",
+      logout: 'POST /sign-out → session closed',
+      say: 'Signed in. The account is shown.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="nextjs" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--wide">
+    <div class="dm-panel">
+      <div class="dm-row" role="tablist" aria-label={T.tabs}>
+        <button type="button" class="dm-btn dm-btn--ghost" role="tab" id="dn-tab-catalog" aria-controls="dn-catalog" aria-selected="true" aria-pressed="true" data-tab="catalog">{T.catalog} · {T.public}</button>
+        <button type="button" class="dm-btn dm-btn--ghost" role="tab" id="dn-tab-account" aria-controls="dn-account" aria-selected="false" aria-pressed="false" tabindex="-1" data-tab="account">{T.account} · {T.private}</button>
+      </div>
+      <div class="dm-window">
+        <div class="dm-window-bar" data-address>/catalogo</div>
+        <div class="dm-window-body">
+          <div id="dn-catalog" role="tabpanel" aria-labelledby="dn-tab-catalog" data-panel="catalog" tabindex="0">
+            <ul class="dn-products">
+              {T.products.map((name, i) => <li><span class="dn-thumb" aria-hidden="true"></span><span>{name}<small>{T.ref} {['A-102', 'M-340', 'L-018'][i]}</small></span></li>)}
+            </ul>
+          </div>
+          <div id="dn-account" role="tabpanel" aria-labelledby="dn-tab-account" data-panel="account" tabindex="0" hidden>
+            <form data-login novalidate>
+              <p class="dm-help">{T.signIn}</p>
+              <label class="dm-field"><span>{T.email}</span><input class="dm-input" name="email" value={T.sampleEmail} readonly /></label>
+              <label class="dm-field"><span>{T.password}</span><input class="dm-input" name="password" value="········" readonly /></label>
+              <div class="dm-row"><button class="dm-btn" type="submit">{T.enter}</button></div>
+            </form>
+            <div data-account hidden>
+              <p class="dn-hello">{T.hello}</p>
+              <ul class="dn-orders">{T.orders.map((order) => <li>{order}</li>)}</ul>
+              <div class="dm-row"><button class="dm-btn dm-btn--ghost" type="button" data-logout>{T.leave}</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="dm-panel dm-panel--dark">
+      <p class="dm-cap">{T.log}</p>
+      <ol class="dm-log" data-log aria-live="polite"></ol>
+    </div>
+  </div>
+</DemoFrame>
+
+<style>
+  .dn-products,
+  .dn-orders {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .dn-products li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 15px;
+    font-weight: 540;
+  }
+  .dn-products small {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+  .dn-thumb {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--color-lilac);
+    box-shadow: inset 0 0 0 1px rgb(22 20 44 / 0.08);
+  }
+  form[data-login] {
+    display: grid;
+    gap: 0.7rem;
+  }
+  .dn-hello {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    letter-spacing: -0.02em;
+  }
+  .dn-orders {
+    margin: 0.7rem 0 1rem;
+    font-size: 14.5px;
+  }
+  .dn-orders li {
+    padding: 0.5rem 0.7rem;
+    border-radius: 10px;
+    background: rgb(22 20 44 / 0.04);
+  }
+</style>
+
+<script>
+  import { demo } from '../demo-kit';
+
+  const d = demo<Record<string, string>>('nextjs');
+  if (d) {
+    const tabs = d.$$<HTMLButtonElement>('[data-tab]');
+    const panels = d.$$('[data-panel]');
+    const address = d.$('[data-address]');
+    const login = d.$<HTMLFormElement>('[data-login]');
+    const account = d.$('[data-account]');
+    const log = d.$('[data-log]');
+    const en = document.documentElement.lang === 'en';
+    const paths = { catalog: en ? '/catalog' : '/catalogo', account: en ? '/account' : '/cuenta', signIn: en ? '/sign-in' : '/acceso' };
+    let session = false;
+
+    const write = (text: string, state: 'ok' | 'warn' | 'err' = 'ok') => {
+      const line = document.createElement('li');
+      line.dataset.state = state;
+      line.textContent = text;
+      log.append(line);
+      while (log.children.length > 6) log.firstElementChild!.remove();
+    };
+    const show = (name: 'catalog' | 'account', record = true) => {
+      tabs.forEach((tab) => {
+        const on = tab.dataset.tab === name;
+        tab.setAttribute('aria-selected', String(on));
+        tab.setAttribute('aria-pressed', String(on));
+        tab.tabIndex = on ? 0 : -1;
+      });
+      panels.forEach((panel) => (panel.hidden = panel.dataset.panel !== name));
+      login.hidden = session;
+      account.hidden = !session;
+      address.textContent = name === 'catalog' ? paths.catalog : session ? paths.account : paths.signIn;
+      if (!record) return;
+      if (name === 'catalog') write(d.T.catalog);
+      else write(session ? d.T.allowed : d.T.denied, session ? 'ok' : 'warn');
+    };
+
+    tabs.forEach((tab, at) => {
+      tab.addEventListener('click', () => show(tab.dataset.tab as 'catalog' | 'account'));
+      // Arrow keys move between the two tabs, as a tab list should.
+      tab.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+        event.preventDefault();
+        const other = tabs[(at + 1) % tabs.length];
+        other.focus();
+        other.click();
+      });
+    });
+    login.addEventListener('submit', (event) => {
+      event.preventDefault();
+      session = true;
+      write(d.T.login);
+      show('account');
+      d.say(d.T.say);
+      d.$<HTMLButtonElement>('[data-logout]').focus();
+    });
+    d.$('[data-logout]').addEventListener('click', () => {
+      session = false;
+      write(d.T.logout, 'warn');
+      show('account');
+      d.say(d.T.logout);
+      d.$<HTMLButtonElement>('[data-login] button').focus();
+    });
+    d.onReset(() => {
+      session = false;
+      log.innerHTML = '';
+      show('catalog');
+      d.say('');
+    });
+    show('catalog');
+  }
+</script>

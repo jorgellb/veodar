@@ -1,0 +1,429 @@
+---
+// /tecnologias/ and /en/technologies/: the technologies we are hired to program in,
+// one section per group (web and server, mobile apps), how they are combined and where
+// to go when the technology is not decided yet.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Figure from '../components/iso/Figure.astro';
+import TechGrid from '../components/tech/TechGrid.astro';
+import { groupsFor, techsFor, type TechId } from '../data/technologies';
+import { breadcrumbLd, site } from '../data/site';
+import { langOf, pathTo, serviceHref, techHref } from '../i18n';
+import { UPDATED } from '../data/updated';
+
+const lang = langOf(Astro.url);
+const techs = techsFor(lang);
+const groups = groupsFor(lang);
+const nameOf = (id: TechId) => techs.find((tech) => tech.id === id)!.name;
+
+type Combo = { title: string; pieces: { id: TechId; role: string }[] };
+const T = {
+  es: {
+    home: 'Inicio',
+    name: 'Tecnologías',
+    crumbs: 'Migas de pan',
+    title: 'Tecnologías: desarrollo y programación a medida',
+    description:
+      'Desarrollo a medida por tecnología: WordPress, Astro, React, Next.js, Node.js y Python en web; React Native, Swift, Kotlin y SQLite en apps móviles.',
+    h1: 'Desarrollo y programación por tecnología',
+    lead: 'A veces el encargo ya viene con nombre: una web en WordPress que hay que ampliar, una app en React Native que continuar, un proceso que alguien empezó en Python. Aquí está lo que desarrollamos con cada tecnología, qué problemas resuelve y cómo sería el encargo.',
+    cta: 'Cuéntanos tu proyecto',
+    scene: 'Banco de trabajo',
+    caption: 'Cuatro módulos, contenido, interfaz, conexiones y datos, esperan al fondo del banco. Cada proyecto trae al frente los que necesita y los une.',
+    count: 'tecnologías',
+    jump: 'Ir a un grupo',
+    comboKicker: 'Cómo se combinan',
+    comboTitle: 'Las piezas se juntan según el proyecto',
+    comboLead: 'Ninguna tecnología hace sola un proyecto entero. Estas son combinaciones habituales, no recetas: cuál conviene lo decide lo que necesitas resolver.',
+    combos: [
+      {
+        title: 'Contenido que se edita en un sitio y se muestra en otro',
+        pieces: [
+          { id: 'wordpress', role: 'guarda el contenido y da a tu equipo el editor que ya conoce.' },
+          { id: 'astro', role: 'lo convierte en páginas ligeras y las sirve.' },
+        ],
+      },
+      {
+        title: 'Una interfaz y lo que necesita alrededor',
+        pieces: [
+          { id: 'react', role: 'construye las pantallas y sus estados.' },
+          { id: 'nextjs', role: 'aporta las rutas, el servidor y el acceso de usuarios.' },
+        ],
+      },
+      {
+        title: 'Una función de IA conectada a tus sistemas',
+        pieces: [
+          { id: 'nodejs', role: 'recibe la petición, comprueba permisos y habla con tus sistemas.' },
+          { id: 'python', role: 'prepara y limpia los documentos y los datos.' },
+          { id: 'ia-generativa', role: 'lee, clasifica y redacta el borrador que alguien revisa.' },
+        ],
+      },
+      {
+        title: 'Una app para los dos sistemas, del código a la tienda',
+        pieces: [
+          { id: 'react-native', role: 'construye las pantallas y la lógica una sola vez.' },
+          { id: 'expo', role: 'la compila, la publica y la mantiene al día.' },
+        ],
+      },
+      {
+        title: 'Interfaces nativas con un mismo diseño',
+        pieces: [
+          { id: 'swiftui', role: 'dibuja la interfaz en iPhone, iPad y reloj.' },
+          { id: 'jetpack-compose', role: 'hace lo propio en móviles, plegables y tabletas Android.' },
+        ],
+      },
+      {
+        title: 'Trabajo de campo que no depende de la cobertura',
+        pieces: [
+          { id: 'sqlite', role: 'guarda y busca en el propio dispositivo.' },
+          { id: 'notificaciones-push', role: 'avisa cuando hay algo nuevo que hacer.' },
+          { id: 'nodejs', role: 'recibe los cambios y los reparte a tus sistemas.' },
+        ],
+      },
+    ] as Combo[],
+    comboNote: 'El cometido de cada pieza es el mismo en todos los proyectos; la combinación, no. A veces basta una sola.',
+    startKicker: 'Si aún no hay tecnología',
+    startTitle: 'Empieza por el resultado',
+    start: [
+      'No hace falta llegar con la tecnología elegida. Si lo que tienes claro es el resultado, una web, una aplicación, una automatización, los servicios lo explican desde ahí y la tecnología la proponemos nosotros.',
+      'Y si tu proyecto ya está hecho con otra herramienta, escríbenos igualmente: las de esta página no son las únicas con las que trabajamos.',
+    ],
+    startLinks: [
+      ['Desarrollo web a medida', 'desarrollo-web'],
+      ['Automatizaciones con IA', 'automatizaciones-ia'],
+      ['Apps móviles', 'aplicaciones-moviles'],
+    ],
+    allServices: 'Todos los servicios',
+    ctaTitle: '¿No sabes qué tecnología necesita tu proyecto?',
+    ctaText: 'No hace falta saberlo. Cuéntanos qué quieres resolver y qué tienes ya; la tecnología la proponemos nosotros.',
+    catalog: 'Tecnologías de Veodar',
+  },
+  en: {
+    home: 'Home',
+    name: 'Technologies',
+    crumbs: 'Breadcrumb',
+    title: 'Technologies: Custom Development and Programming',
+    description:
+      'Custom development by technology: WordPress, Astro, React, Next.js, Node.js and Python for the web; React Native, Swift, Kotlin and SQLite for apps.',
+    h1: 'Development and programming by technology',
+    lead: 'Sometimes the job arrives with a name: a WordPress site to extend, a React Native app to continue, a process someone started in Python. Here is what we build with each technology, which problems it solves and what the job would look like.',
+    cta: 'Tell us about your project',
+    scene: 'Workbench',
+    caption: 'Four modules, content, interface, connections and data, wait at the back of the bench. Each project pulls forward the ones it needs and joins them.',
+    count: 'technologies',
+    jump: 'Go to a group',
+    comboKicker: 'How they combine',
+    comboTitle: 'The pieces come together per project',
+    comboLead: 'No technology builds a whole project alone. These are common combinations, not recipes: what you need to solve decides which one fits.',
+    combos: [
+      {
+        title: 'Content edited in one place and shown in another',
+        pieces: [
+          { id: 'wordpress', role: 'stores the content and gives your team the editor they already know.' },
+          { id: 'astro', role: 'turns it into lightweight pages and serves them.' },
+        ],
+      },
+      {
+        title: 'An interface and what it needs around it',
+        pieces: [
+          { id: 'react', role: 'builds the screens and their states.' },
+          { id: 'nextjs', role: 'adds the routes, the server and user sign-in.' },
+        ],
+      },
+      {
+        title: 'An AI feature connected to your systems',
+        pieces: [
+          { id: 'nodejs', role: 'receives the request, checks permissions and talks to your systems.' },
+          { id: 'python', role: 'prepares and cleans the documents and the data.' },
+          { id: 'ia-generativa', role: 'reads, sorts and writes the draft someone reviews.' },
+        ],
+      },
+      {
+        title: 'One app for both systems, from the code to the store',
+        pieces: [
+          { id: 'react-native', role: 'builds the screens and the logic once.' },
+          { id: 'expo', role: 'builds it, publishes it and keeps it up to date.' },
+        ],
+      },
+      {
+        title: 'Native interfaces from one design',
+        pieces: [
+          { id: 'swiftui', role: 'draws the interface on iPhone, iPad and watch.' },
+          { id: 'jetpack-compose', role: 'does the same on Android phones, foldables and tablets.' },
+        ],
+      },
+      {
+        title: "Field work that doesn't depend on coverage",
+        pieces: [
+          { id: 'sqlite', role: 'stores and searches on the device itself.' },
+          { id: 'notificaciones-push', role: 'alerts when there is something new to do.' },
+          { id: 'nodejs', role: 'receives the changes and hands them to your systems.' },
+        ],
+      },
+    ] as Combo[],
+    comboNote: "Each piece does the same job in every project; the combination doesn't. Sometimes one is enough.",
+    startKicker: 'If there is no technology yet',
+    startTitle: 'Start from the result',
+    start: [
+      "You don't need to arrive with the technology chosen. If what is clear is the result, a website, an application, an automation, our services explain it from there and we propose the technology.",
+      'And if your project is already built with another tool, write to us anyway: the ones on this page are not the only ones we work with.',
+    ],
+    startLinks: [
+      ['Custom web development', 'desarrollo-web'],
+      ['AI automation', 'automatizaciones-ia'],
+      ['Mobile apps', 'aplicaciones-moviles'],
+    ],
+    allServices: 'All services',
+    ctaTitle: "Not sure which technology your project needs?",
+    ctaText: "You don't have to know. Tell us what you want to solve and what you already have; we propose the technology.",
+    catalog: 'Veodar technologies',
+  },
+}[lang];
+
+const crumbs = [
+  { name: T.home, path: pathTo('home', lang) },
+  { name: T.name, path: pathTo('tecnologias', lang) },
+];
+const ld = [
+  breadcrumbLd(crumbs),
+  {
+    '@type': 'ItemList',
+    name: T.catalog,
+    itemListElement: techs.map((tech, index) => ({ '@type': 'ListItem', position: index + 1, name: tech.card.title, url: new URL(techHref(tech.id, lang), site.url).href })),
+  },
+];
+---
+
+<BaseLayout title={T.title} description={T.description} jsonLd={ld} pageType="CollectionPage" updated={UPDATED.tech}>
+  <section class="pt-8 pb-16 md:pt-12 md:pb-24" data-spine="0.4885">
+    <div class="wrap">
+      <nav aria-label={T.crumbs} class="font-mono text-[12px] tracking-[0.04em] text-muted">
+        <ol class="flex flex-wrap items-center gap-2">
+          <li><a href={crumbs[0].path} class="hover:text-ink">{crumbs[0].name}</a></li>
+          <li class="flex items-center gap-2"><span aria-hidden="true">/</span><span aria-current="page" class="text-ink">{crumbs[1].name}</span></li>
+        </ol>
+      </nav>
+      <div class="mt-10 grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
+        <div>
+          <p class="eyebrow" data-reveal>{T.name}</p>
+          <h1 class="display h-xl mt-5 max-w-[13ch]" data-reveal style="--d:60ms">{T.h1}</h1>
+          <p class="lead mt-7 max-w-[54ch]" data-reveal style="--d:120ms">{T.lead}</p>
+          <div class="mt-9 flex flex-wrap gap-3" data-reveal style="--d:180ms">
+            <a href={pathTo('contacto', lang)} class="btn btn-primary">{T.cta} <Icon name="arrow" size={17} class="arrow" /></a>
+          </div>
+          <nav class="ti-jump" aria-label={T.jump} data-reveal style="--d:240ms">
+            <ul>
+              {
+                groups.map((group) => (
+                  <li>
+                    <a href={`#${group.anchor}`}>
+                      {group.name} <span>{group.techs.length}</span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+        </div>
+        <div data-reveal style="--d:140ms">
+          <Figure name="workbench" fig="Fig. 01" title={T.scene} caption={T.caption} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {
+    groups.map((group, index) => (
+      <section id={group.anchor} class:list={['ti-group py-20 md:py-28', index % 2 === 0 ? 'bg-paper-2/60' : 'border-t border-line']} data-spine="0.5" aria-labelledby={`${group.anchor}-title`}>
+        <div class="wrap">
+          <div class="grid gap-6 md:grid-cols-[1.1fr_1fr] md:items-end">
+            <div>
+              <p class="eyebrow">
+                {group.name} · {group.techs.length} {T.count}
+              </p>
+              <h2 id={`${group.anchor}-title`} class="display h-lg mt-5 max-w-[15ch]">
+                {group.index.title}
+              </h2>
+            </div>
+            <div>
+              <p class="lead max-w-[46ch]">{group.index.lead}</p>
+              <a href={serviceHref(group.service, lang)} class="link-arrow mt-5">
+                {group.index.service} <Icon name="arrow" size={16} />
+              </a>
+            </div>
+          </div>
+          <div class="mt-12">
+            <TechGrid level="h3" label={group.block.list} group={group.id} />
+          </div>
+        </div>
+      </section>
+    ))
+  }
+
+  <section id="combinaciones" class="py-20 md:py-28" data-spine="0.331" aria-labelledby="combo-title">
+    <div class="wrap">
+      <div class="grid gap-6 md:grid-cols-[1.1fr_1fr] md:items-end">
+        <div>
+          <p class="eyebrow">{T.comboKicker}</p>
+          <h2 id="combo-title" class="display h-lg mt-5 max-w-[15ch]">{T.comboTitle}</h2>
+        </div>
+        <p class="lead max-w-[46ch]">{T.comboLead}</p>
+      </div>
+      <ul class="mt-12 grid gap-4 lg:grid-cols-3">
+        {
+          T.combos.map((combo, index) => (
+            <li data-reveal style={`--d:${index * 80}ms`}>
+              <article class="ti-combo tile" data-node>
+                <p class="ti-sum" aria-hidden="true">
+                  {combo.pieces.map((piece, at) => (
+                    <>
+                      {at > 0 && <span class="ti-plus">+</span>}
+                      <span class="ti-chip">{nameOf(piece.id)}</span>
+                    </>
+                  ))}
+                </p>
+                <h3>{combo.title}</h3>
+                <dl>
+                  {combo.pieces.map((piece) => (
+                    <div>
+                      <dt>
+                        <a href={techHref(piece.id, lang)} class="ctx-link">{nameOf(piece.id)}</a>
+                      </dt>
+                      <dd>{piece.role}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="mt-8 max-w-[70ch] text-[15px] leading-relaxed text-muted">{T.comboNote}</p>
+    </div>
+  </section>
+
+  <section class="border-t border-line py-16 md:py-24" data-spine="0.342" aria-labelledby="start-title">
+    <div class="wrap grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-16">
+      <div>
+        <p class="eyebrow">{T.startKicker}</p>
+        <h2 id="start-title" class="display h-lg mt-5 max-w-[11ch]">{T.startTitle}</h2>
+      </div>
+      <div>
+        <div class="prose-v max-w-[720px] text-[17px]">
+          {T.start.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
+        <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-3">
+          {
+            T.startLinks.map(([label, id]) => (
+              <li>
+                <a href={serviceHref(id, lang)} class="link-arrow">{label} <Icon name="arrow" size={16} /></a>
+              </li>
+            ))
+          }
+          <li>
+            <a href={pathTo('servicios', lang)} class="link-arrow">{T.allServices} <Icon name="arrow" size={16} /></a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand title={T.ctaTitle} text={T.ctaText} label={T.cta} />
+</BaseLayout>
+
+<style>
+  /* The way to each group, under the introduction. */
+  .ti-jump {
+    margin-top: 2.2rem;
+  }
+  .ti-jump ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .ti-jump a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 40px;
+    padding: 0 0.5rem 0 1rem;
+    border-radius: 999px;
+    background: var(--color-card);
+    font-size: 15px;
+    font-weight: 540;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    transition: box-shadow 0.2s;
+  }
+  .ti-jump a:hover {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+  .ti-jump span {
+    display: grid;
+    place-items: center;
+    min-width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  /* A group reached from the menu lands below the fixed header. */
+  .ti-group {
+    scroll-margin-top: 4.5rem;
+  }
+  .ti-combo {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.6rem 1.5rem 1.7rem;
+    border-radius: 24px;
+  }
+  /* The sum at the top: the pieces of the combination, joined. */
+  .ti-sum {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .ti-chip {
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+  .ti-plus {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--color-accent-ink);
+  }
+  .ti-combo h3 {
+    margin-top: 1.3rem;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  .ti-combo dl {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 1.3rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .ti-combo dt {
+    font-size: 15px;
+  }
+  .ti-combo dd {
+    margin-top: 0.15rem;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--color-muted);
+  }
+</style>

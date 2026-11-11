@@ -8,6 +8,9 @@ interface Props {
   text?: string;
   href?: string;
   label?: string;
+  /** A short list under the text: what to bring to the first message. */
+  pointsTitle?: string;
+  points?: string[];
 }
 
 const lang = langOf(Astro.url);
@@ -27,7 +30,7 @@ const T = {
     figure: 'Morse key',
   },
 }[lang];
-const { title = T.title, text = T.text, href = pathTo('contacto', lang), label = T.label } = Astro.props;
+const { title = T.title, text = T.text, href = pathTo('contacto', lang), label = T.label, pointsTitle, points = [] } = Astro.props;
 // Two more ways forward for whoever is not ready to write: never the page they are on.
 const here = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
 const more = (
@@ -51,6 +54,21 @@ const moreText = { es: ['¿Antes de escribir? Mira ', ' o ', '.'], en: ['Before 
         <p class="eyebrow !text-ink-2">{T.eyebrow}</p>
         <h2 id="cta-title" class="display h-xl mt-5 max-w-[15ch]">{title}</h2>
         <p class="lead mt-6 max-w-[48ch]">{text}</p>
+        {
+          points.length > 0 && (
+            <div class="mt-7 max-w-[56ch]">
+              {pointsTitle && <p class="font-mono text-[11.5px] tracking-[0.12em] text-ink-2 uppercase">{pointsTitle}</p>}
+              <ul class="mt-3 grid gap-x-6 gap-y-2 text-[15px] leading-snug text-ink-2 sm:grid-cols-2">
+                {points.map((point) => (
+                  <li class="flex gap-2.5">
+                    <span class="mt-[0.45em] h-1.5 w-1.5 flex-none rotate-45 rounded-[1px] bg-accent" aria-hidden="true" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
         <div class="mt-9 flex flex-wrap gap-3">
           <a href={href} class="btn btn-primary">{label} <Icon name="arrow" size={17} class="arrow" /></a>
           <a href="mailto:info@veodar.com" class="btn btn-ghost">info@veodar.com</a>

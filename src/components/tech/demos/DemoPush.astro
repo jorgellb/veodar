@@ -1,0 +1,376 @@
+---
+// Push notifications: one notice, sent well. The visitor picks what happened, whether
+// the user gave permission and at what time; the service decides, step by step, whether
+// it goes out now, later, to the app's inbox or not at all. A tap opens the right screen.
+import DemoFrame from '../DemoFrame.astro';
+import DemoPhone from '../DemoPhone.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    notice: 'El aviso',
+    what: 'Qué ha pasado',
+    events: [
+      { id: 'order', label: 'Pedido en reparto' },
+      { id: 'visit', label: 'Cita mañana' },
+      { id: 'offer', label: 'Oferta de la semana' },
+    ],
+    user: 'El usuario',
+    permission: 'Permiso de avisos',
+    promos: 'Acepta promociones',
+    when: 'Cuándo ocurre',
+    times: [
+      { id: 'day', label: '11:30' },
+      { id: 'night', label: '23:40 · descanso' },
+    ],
+    send: 'Enviar el aviso',
+    morning: 'Avanzar a las 8:00',
+    phone: 'Teléfono del usuario',
+    log: 'Lo que decide el servicio',
+    js: {
+      order: { title: 'Tu pedido 1042 sale a reparto', body: 'Llega hoy. Toca para seguirlo.', screen: 'Pedido 1042', detail: 'En reparto · 3 paradas antes de la tuya', kind: 'aviso de servicio' },
+      visit: { title: 'Mañana tienes cita', body: 'Revisión a las 10:00. Toca para confirmarla.', screen: 'Cita de mañana', detail: 'Revisión anual · 10:00 · técnico asignado', kind: 'aviso de servicio' },
+      offer: { title: 'Oferta de la semana', body: 'Filtros con descuento hasta el viernes.', screen: 'Ofertas', detail: 'Filtros F-10 y F-12 · hasta el viernes', kind: 'promoción' },
+      lock: 'Sin avisos',
+      held: 'Retenido hasta las 8:00',
+      openApp: 'Abrir la app',
+      inbox: 'Buzón',
+      inboxEmpty: 'El buzón está vacío.',
+      back: 'Volver',
+      confirm: 'Confirmar',
+      logEvent: 'Evento recibido · {kind}',
+      logNoPromo: 'No ha aceptado promociones → no se envía',
+      logNoPermission: 'Sin permiso de avisos → al buzón de la app',
+      logQuiet: 'Es su hora de descanso → retenido hasta las 8:00',
+      logSent: 'Entregado a Apple y a Google (simulado)',
+      logShown: 'En pantalla',
+      logMorning: 'Son las 8:00 → sale el aviso retenido',
+      logTap: 'Toque → abre «{screen}»',
+      sayShown: 'El aviso aparece en la pantalla bloqueada: {title}.',
+      sayInbox: 'Sin permiso: no aparece en pantalla y queda en el buzón de la app.',
+      sayHeld: 'Hora de descanso: el aviso queda retenido hasta las 8:00.',
+      sayNoPromo: 'No se envía: es una promoción y el usuario no las ha aceptado.',
+      sayOpen: 'Al tocar el aviso se abre la pantalla «{screen}».',
+    },
+  },
+  en: {
+    notice: 'The alert',
+    what: 'What happened',
+    events: [
+      { id: 'order', label: 'Order out for delivery' },
+      { id: 'visit', label: 'Appointment tomorrow' },
+      { id: 'offer', label: 'Offer of the week' },
+    ],
+    user: 'The user',
+    permission: 'Notifications allowed',
+    promos: 'Accepts promotions',
+    when: 'When it happens',
+    times: [
+      { id: 'day', label: '11:30 am' },
+      { id: 'night', label: '11:40 pm · quiet hours' },
+    ],
+    send: 'Send the alert',
+    morning: 'Skip to 8:00 am',
+    phone: "The user's phone",
+    log: 'What the service decides',
+    js: {
+      order: { title: 'Your order 1042 is out for delivery', body: 'It arrives today. Tap to track it.', screen: 'Order 1042', detail: 'Out for delivery · 3 stops before yours', kind: 'service alert' },
+      visit: { title: 'You have an appointment tomorrow', body: 'Check-up at 10:00. Tap to confirm it.', screen: "Tomorrow's appointment", detail: 'Annual check-up · 10:00 · technician assigned', kind: 'service alert' },
+      offer: { title: 'Offer of the week', body: 'Filters at a discount until Friday.', screen: 'Offers', detail: 'F-10 and F-12 filters · until Friday', kind: 'promotion' },
+      lock: 'No notifications',
+      held: 'Held until 8:00 am',
+      openApp: 'Open the app',
+      inbox: 'Inbox',
+      inboxEmpty: 'The inbox is empty.',
+      back: 'Back',
+      confirm: 'Confirm',
+      logEvent: 'Event received · {kind}',
+      logNoPromo: 'Has not accepted promotions → not sent',
+      logNoPermission: "No notification permission → to the app's inbox",
+      logQuiet: 'It is their quiet hours → held until 8:00 am',
+      logSent: 'Handed to Apple and Google (simulated)',
+      logShown: 'On screen',
+      logMorning: 'It is 8:00 am → the held alert goes out',
+      logTap: 'Tap → opens “{screen}”',
+      sayShown: 'The alert shows on the locked screen: {title}.',
+      sayInbox: "No permission: it doesn't show on screen and stays in the app's inbox.",
+      sayHeld: 'Quiet hours: the alert is held until 8:00 am.',
+      sayNoPromo: 'Not sent: it is a promotion and the user has not accepted them.',
+      sayOpen: 'Tapping the alert opens the “{screen}” screen.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="notificaciones-push" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--wide">
+    <div class="dm-panel">
+      <p class="dm-cap" id="dpu-what">{T.what}</p>
+      <div class="dm-row" role="group" aria-labelledby="dpu-what">
+        {T.events.map((item, i) => <button type="button" class="dm-btn dm-btn--ghost" data-event={item.id} aria-pressed={i === 0 ? 'true' : 'false'}>{item.label}</button>)}
+      </div>
+      <p class="dm-cap" style="margin-top:.4rem">{T.user}</p>
+      <label class="dm-check"><input type="checkbox" data-permission checked /> {T.permission}</label>
+      <label class="dm-check"><input type="checkbox" data-promos /> {T.promos}</label>
+      <p class="dm-cap" id="dpu-when" style="margin-top:.4rem">{T.when}</p>
+      <div class="dm-row" role="group" aria-labelledby="dpu-when">
+        {T.times.map((item, i) => <button type="button" class="dm-btn dm-btn--ghost" data-time={item.id} aria-pressed={i === 0 ? 'true' : 'false'}>{item.label}</button>)}
+      </div>
+      <div class="dm-row" style="margin-top:.4rem">
+        <button type="button" class="dm-btn" data-send>{T.send}</button>
+        <button type="button" class="dm-btn dm-btn--ghost" data-morning hidden>{T.morning}</button>
+      </div>
+    </div>
+    <div class="dm-panel dpu-stage">
+      <DemoPhone kind="a" dark name="user" label={T.phone} />
+    </div>
+  </div>
+  <div class="dm-panel dm-panel--dark" style="margin-top:12px">
+    <p class="dm-cap">{T.log}</p>
+    <ol class="dm-log" data-log aria-live="polite"></ol>
+  </div>
+</DemoFrame>
+
+<style is:global>
+  .dpu-stage {
+    justify-content: center;
+    background: var(--color-paper-2);
+    box-shadow: none;
+  }
+  .dpu-clock {
+    margin-top: 18px;
+    font-family: var(--font-display);
+    font-size: 54px;
+    line-height: 1;
+    text-align: center;
+  }
+  .dpu-quiet {
+    text-align: center;
+    font-size: 12px;
+    opacity: 0.6;
+  }
+  .dpu-banner {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 16px;
+    background: rgb(244 240 230 / 0.94);
+    color: var(--color-ink);
+    text-align: left;
+    font-size: 12.5px;
+    line-height: 1.35;
+    cursor: pointer;
+    animation: dpu-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .dpu-banner strong {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+  }
+  .dpu-banner strong::before {
+    content: '';
+    flex: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--color-accent);
+  }
+  @keyframes dpu-in {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+  .dpu-foot {
+    margin-top: auto;
+    display: grid;
+    gap: 6px;
+  }
+  .dpu-foot .dm-phone-btn {
+    background: rgb(244 240 230 / 0.14);
+    color: inherit;
+  }
+  .dpu-count {
+    margin-left: 6px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: #1a0a03;
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .dpu-card {
+    padding: 12px;
+    border-radius: 14px;
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  .dpu-card strong {
+    display: block;
+    margin-bottom: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dpu-banner {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml, fill, redraw } from '../demo-kit';
+
+  type Notice = { title: string; body: string; screen: string; detail: string; kind: string };
+  type Kind = 'order' | 'visit' | 'offer';
+  type Strings = Record<string, string> & Record<Kind, Notice>;
+  const d = demo<Strings>('notificaciones-push');
+  if (d) {
+    const T = d.T;
+    const screen = d.$('[data-phone="user"] [data-screen]');
+    const body = d.$('[data-phone="user"] [data-body]');
+    const clock = d.$('[data-phone="user"] [data-time]');
+    const log = d.$('[data-log]');
+    const events = d.$$<HTMLButtonElement>('[data-event]');
+    const times = d.$$<HTMLButtonElement>('[data-time]').filter((el) => el.tagName === 'BUTTON');
+    const permission = d.$<HTMLInputElement>('[data-permission]');
+    const promos = d.$<HTMLInputElement>('[data-promos]');
+    const morning = d.$<HTMLButtonElement>('[data-morning]');
+    const e = escapeHtml;
+    const fresh = () => ({ event: 'order' as Kind, night: false, banner: '' as Kind | '', held: '' as Kind | '' | 'done', inbox: [] as Kind[], view: 'lock' as 'lock' | 'screen' | 'inbox', open: '' as Kind | '' });
+    let state = fresh();
+    const hour = () => (state.night ? '23:40' : state.held === 'done' ? '8:00' : '11:30');
+
+    const write = (text: string, tone: 'ok' | 'warn' | 'err' = 'ok') => {
+      const line = document.createElement('li');
+      line.dataset.state = tone;
+      line.textContent = text;
+      log.append(line);
+      while (log.children.length > 6) log.firstElementChild!.remove();
+    };
+    const draw = (focus?: string) => {
+      redraw(body, paint, '[data-tap], [data-app], [data-lock]');
+      events.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.event === state.event)));
+      times.forEach((button) => button.setAttribute('aria-pressed', String((button.dataset.time === 'night') === state.night)));
+      morning.hidden = !state.held || state.held === 'done';
+      if (focus) body.querySelector<HTMLElement>(focus)?.focus();
+    };
+    const paint = () => {
+      const dark = state.view === 'lock';
+      screen.toggleAttribute('data-dark', dark);
+      clock.textContent = dark ? '' : hour();
+      if (state.view === 'lock') {
+        const notice = state.banner ? T[state.banner] : null;
+        body.innerHTML =
+          `<p class="dpu-clock">${e(hour())}</p>` +
+          (notice
+            ? `<button type="button" class="dpu-banner" data-tap><strong>${e(notice.title)}</strong><span>${e(notice.body)}</span></button>`
+            : `<p class="dpu-quiet">${e(state.held && state.held !== 'done' ? T.held : T.lock)}</p>`) +
+          `<div class="dpu-foot"><button type="button" class="dm-phone-btn" data-app>${e(T.openApp)}${state.inbox.length ? `<span class="dpu-count">${state.inbox.length}</span>` : ''}</button></div>`;
+      } else if (state.view === 'screen') {
+        const notice = T[state.open as Kind];
+        body.innerHTML =
+          `<p class="dm-phone-title">${e(notice.screen)}</p><div class="dpu-card"><strong>${e(notice.title)}</strong>${e(notice.detail)}</div>` +
+          `<div class="dpu-foot" style="color:var(--color-ink)"><button type="button" class="dm-phone-btn" data-tone="ghost" data-lock>${e(T.back)}</button></div>`;
+      } else {
+        body.innerHTML =
+          `<p class="dm-phone-title">${e(T.inbox)}</p>` +
+          (state.inbox.length ? state.inbox.map((kind) => `<button type="button" class="dm-phone-row" data-read="${kind}">${e(T[kind].title)}</button>`).join('') : `<p class="dm-phone-sub">${e(T.inboxEmpty)}</p>`) +
+          `<div class="dpu-foot" style="color:var(--color-ink)"><button type="button" class="dm-phone-btn" data-tone="ghost" data-lock>${e(T.back)}</button></div>`;
+      }
+    };
+    const deliver = async (kind: Kind, run: number) => {
+      write(T.logSent);
+      await d.wait(600);
+      if (d.stale(run)) return;
+      state.banner = kind;
+      state.view = 'lock';
+      write(T.logShown);
+      d.say(fill(T.sayShown, { title: T[kind].title }));
+      draw();
+    };
+
+    events.forEach((button) => button.addEventListener('click', () => ((state.event = button.dataset.event as Kind), draw())));
+    times.forEach((button) =>
+      button.addEventListener('click', () => {
+        state.night = button.dataset.time === 'night';
+        if (!state.night) state.held = '';
+        draw();
+      }),
+    );
+    d.$('[data-send]').addEventListener('click', async () => {
+      const run = d.newRun();
+      const kind = state.event;
+      state.banner = '';
+      state.held = '';
+      state.view = 'lock';
+      draw();
+      write(fill(T.logEvent, { kind: T[kind].kind }));
+      await d.wait(420);
+      if (d.stale(run)) return;
+      // The order of the questions is the order a real service asks them in.
+      if (kind === 'offer' && !promos.checked) {
+        write(T.logNoPromo, 'err');
+        return d.say(T.sayNoPromo);
+      }
+      if (!permission.checked) {
+        if (!state.inbox.includes(kind)) state.inbox.unshift(kind);
+        write(T.logNoPermission, 'warn');
+        d.say(T.sayInbox);
+        return draw();
+      }
+      if (state.night) {
+        state.held = kind;
+        write(T.logQuiet, 'warn');
+        d.say(T.sayHeld);
+        return draw('[data-app]');
+      }
+      await deliver(kind, run);
+    });
+    morning.addEventListener('click', async () => {
+      const kind = state.held;
+      if (!kind || kind === 'done') return;
+      const run = d.newRun();
+      state.night = false;
+      state.held = 'done';
+      write(T.logMorning);
+      draw();
+      await deliver(kind, run);
+    });
+    body.addEventListener('click', (event) => {
+      const target = (event.target as Element).closest<HTMLElement>('button');
+      if (!target) return;
+      if (target.hasAttribute('data-tap')) {
+        state.open = state.banner;
+        state.banner = '';
+        state.view = 'screen';
+        write(fill(T.logTap, { screen: T[state.open as Kind].screen }));
+        d.say(fill(T.sayOpen, { screen: T[state.open as Kind].screen }));
+        draw('[data-lock]');
+      } else if (target.hasAttribute('data-app')) {
+        state.view = 'inbox';
+        draw('[data-read], [data-lock]');
+      } else if (target.dataset.read) {
+        state.open = target.dataset.read as Kind;
+        state.inbox = state.inbox.filter((kind) => kind !== state.open);
+        state.view = 'screen';
+        draw('[data-lock]');
+      } else if (target.hasAttribute('data-lock')) {
+        state.view = 'lock';
+        draw('[data-tap], [data-app]');
+      }
+    });
+
+    d.onReset(() => {
+      state = fresh();
+      permission.checked = true;
+      promos.checked = false;
+      log.innerHTML = '';
+      draw();
+      d.say('');
+    });
+    draw();
+  }
+</script>

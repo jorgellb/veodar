@@ -18,6 +18,7 @@ const T = {
     cols: ['Ingeniería', 'Estudio', 'Soluciones', 'Sectores', 'Veodar'],
     areas: ['TI', 'Seguridad', 'Finanzas', 'Personas', 'RevOps', 'Legal'],
     more: ['Todos los servicios', 'Cómo trabajamos', 'Precios', 'Glosario', 'Veodar en Almería', 'Preguntas frecuentes', 'Mapa del sitio', 'Contacto'],
+    techs: 'Tecnologías',
     allSectors: 'Todos los sectores',
     made: 'Hecho a medida, como todo lo demás.',
     tech: 'Astro · 0 cookies de seguimiento · AA',
@@ -32,6 +33,7 @@ const T = {
     cols: ['Engineering', 'Studio', 'Solutions', 'Industries', 'Veodar'],
     areas: ['IT', 'Security', 'Finance', 'People', 'RevOps', 'Legal'],
     more: ['All services', 'How we work', 'Pricing', 'Glossary', 'Veodar in Almería', 'FAQ', 'Site map', 'Contact'],
+    techs: 'Technologies',
     allSectors: 'All industries',
     made: 'Custom-made, like everything else.',
     tech: 'Astro · 0 tracking cookies · AA',
@@ -44,7 +46,7 @@ const T = {
 const columns = [
   {
     title: T.cols[0],
-    links: services.filter((s) => s.group === 'ingenieria').map((s) => ({ label: s.name, href: serviceHref(s.slug, lang) })),
+    links: [...services.filter((s) => s.group === 'ingenieria').map((s) => ({ label: s.name, href: serviceHref(s.slug, lang) })), { label: T.techs, href: pathTo('tecnologias', lang) }],
   },
   {
     title: T.cols[1],

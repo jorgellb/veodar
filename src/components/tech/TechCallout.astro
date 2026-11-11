@@ -1,0 +1,140 @@
+---
+// Home: a short call to the technologies index at the end of the services block. The
+// names of each group are links; the cards themselves live on the index.
+import Icon from '../Icon.astro';
+import { groupsFor } from '../../data/technologies';
+import { smallFigure } from '../../data/small-figures';
+import { langOf, pathTo, techHref } from '../../i18n';
+
+const lang = langOf(Astro.url);
+const groups = groupsFor(lang);
+const bench = smallFigure('workbench');
+const T = {
+  es: {
+    kicker: 'Desarrollo por tecnología',
+    title: '¿Tu proyecto ya tiene tecnología?',
+    text: 'Programamos sobre lo que ya usas, o elegimos contigo la pieza que falta.',
+    all: 'Ver todas las tecnologías',
+  },
+  en: {
+    kicker: 'Development by technology',
+    title: 'Does your project already have a technology?',
+    text: 'We program on top of what you already use, or choose the missing piece with you.',
+    all: 'See all technologies',
+  },
+}[lang];
+---
+
+<aside class="tc tile" aria-labelledby="tc-title" data-node data-reveal>
+  <div class="tc-art"><img src={bench.src} alt="" width={bench.width} height={bench.height} loading="lazy" decoding="async" /></div>
+  <div class="tc-text">
+    <p class="eyebrow">{T.kicker}</p>
+    <h3 id="tc-title" class="tc-title">{T.title}</h3>
+    <p class="tc-lead">{T.text}</p>
+    {
+      groups.map((group) => (
+        <div class="tc-group">
+          <p class="tc-group-name">
+            <a href={group.href}>{group.name}</a>
+          </p>
+          <ul class="tc-chips" aria-label={group.name}>
+            {group.techs.map((tech) => (
+              <li>
+                <a href={techHref(tech.id, lang)} class="chip tc-chip">
+                  {tech.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+  <a href={pathTo('tecnologias', lang)} class="btn btn-ghost tc-go">{T.all} <Icon name="arrow" size={17} class="arrow" /></a>
+</aside>
+
+<style>
+  .tc {
+    display: grid;
+    gap: 1.2rem 2rem;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding: 12px;
+    border-radius: 26px;
+  }
+  .tc-art {
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: var(--color-lilac);
+    box-shadow: inset 0 0 0 1px rgb(22 20 44 / 0.06);
+    overflow: hidden;
+  }
+  .tc-art img {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+  }
+  .tc-text {
+    padding: 0 0.6rem;
+  }
+  .tc-title {
+    margin-top: 0.8rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    font-weight: 400;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+  }
+  .tc-lead {
+    margin-top: 0.6rem;
+    max-width: 52ch;
+    font-size: 15.5px;
+    line-height: 1.55;
+    color: var(--color-muted);
+  }
+  .tc-group {
+    margin-top: 1rem;
+  }
+  .tc-group-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .tc-group-name a:hover {
+    color: var(--color-ink);
+  }
+  .tc-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+  .tc-chip {
+    transition:
+      background-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .tc-chip:hover {
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+  .tc-go {
+    justify-self: start;
+    margin: 0 0.6rem 0.6rem;
+  }
+  @media (min-width: 900px) {
+    .tc {
+      grid-template-columns: 240px 1fr auto;
+    }
+    .tc-text {
+      padding: 0.6rem 0;
+    }
+    .tc-go {
+      margin: 0 1rem 0 0;
+    }
+  }
+</style>

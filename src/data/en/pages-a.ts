@@ -180,7 +180,7 @@ export const pagesA: Page[] = [
         nav: 'In the field',
         heading: 'Signal, permissions and alerts worth an interruption.',
         paragraphs: [
-          "The field doesn't have the office network. The app saves the report, sends it when it can, and says so on screen. A report marked as sent that never left is worse than a pending one: the office counts the job as done and the client waits for a visit nobody recorded.",
+          "The field doesn't have the office network. The app saves the report on the phone itself, in a SQLite database, sends it when it can, and says so on screen. A report marked as sent that never left is worse than a pending one: the office counts the job as done and the client waits for a visit nobody recorded.",
           "Camera, location and notifications are requested only if the task uses them, at the moment they're needed, with a plain sentence explaining why. Asking for them at launch “just in case” is how people deny permission and the app stops being useful. Every permission without that sentence gets removed.",
           "An alert has to be worth the interruption. “There's a new job in your area” is. “What's new in the app” isn't. The alert text, who receives it and when it stops making sense are part of the product. They're not a campaign bolted on at the end.",
         ],
@@ -201,6 +201,7 @@ export const pagesA: Page[] = [
         heading: "It's tested on the phones the team actually has, not the ones in the ads.",
         paragraphs: [
           "If the fleet is three-year-old Android phones, that's where it's tested. If management uses iPhone and the field uses Android, both go into the plan and we check which screen breaks on the small one, in direct sunlight with one hand busy. The latest model in the ad isn't the benchmark.",
+          'The technology is chosen by what the app has to do, not the other way round. If it is mostly screens and data, a single codebase in React Native serves both iPhone and Android. If the app lives off the device, the watch or a warehouse handheld, it is built native, in Swift or in Kotlin. We decide with the fleet in front of us and it goes into the scope.',
           "App stores change their rules. If the job includes publishing, ongoing support for the listing and releases is written down. If not, the company knows the binary is in its hands and the listing won't maintain itself. Distributing through the company's own device management is an option, chosen at the start.",
           "AI, if it comes in, comes in as a named task: dictating the report, suggesting the part, classifying the photo. It isn't an open chat with every client's data in someone's pocket. What the model can read is written alongside the rest of the scope, on the same list security reviews.",
         ],
@@ -269,6 +270,7 @@ export const pagesA: Page[] = [
         heading: "You don't need to change your ERP to start.",
         paragraphs: [
           "The workflow relies on what the system really allows. If the ERP only exports a file overnight, the automation works at that pace and doesn't promise real-time magic. Checking that limit is part of the scope, not a surprise in week four.",
+          "Inside, the workflow is small pieces with one job each. A Node.js service receives the email or the other system's notification and queues it. A Python process cleans and matches the data before anyone reads it. And the generative AI part reads, classifies and writes the draft. None of the three decides alone what gets published.",
           "Nor do we ask for a data lake “to be ready”. The first inbox uses the fields of that inbox. Extending to another team is another engagement, once the first one has been used for a full week without going back to the old way.",
         ],
       },

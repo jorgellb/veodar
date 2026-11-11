@@ -100,6 +100,29 @@ export const TERM_SLUGS: Record<string, string> = {
 const TERM_IDS = Object.fromEntries(Object.entries(TERM_SLUGS).map(([id, en]) => [en, id]));
 export const termIdOf = (slug: string, lang: Lang) => (lang === 'en' ? TERM_IDS[slug] : slug);
 
+/** English slug of each technology page, keyed by its Spanish slug (the internal id). */
+export const TECH_SLUGS: Record<string, string> = {
+  wordpress: 'wordpress',
+  astro: 'astro',
+  react: 'react',
+  nextjs: 'nextjs',
+  nodejs: 'nodejs',
+  python: 'python',
+  'ia-generativa': 'generative-ai',
+  javascript: 'javascript',
+  'react-native': 'react-native',
+  expo: 'expo',
+  swift: 'swift',
+  swiftui: 'swiftui',
+  kotlin: 'kotlin',
+  'jetpack-compose': 'jetpack-compose',
+  sqlite: 'sqlite',
+  'notificaciones-push': 'push-notifications',
+};
+const TECH_IDS = Object.fromEntries(Object.entries(TECH_SLUGS).map(([id, en]) => [en, id]));
+/** Technology id (Spanish slug) for a slug in either language, or undefined if there is no such page. */
+export const techIdOf = (slug: string, lang: Lang): string | undefined => (lang === 'en' ? (Object.hasOwn(TECH_IDS, slug) ? TECH_IDS[slug] : undefined) : Object.hasOwn(TECH_SLUGS, slug) ? slug : undefined);
+
 /** Service id (Spanish slug) for a slug in either language. */
 export const serviceIdOf = (slug: string, lang: Lang) => (lang === 'en' ? SERVICE_IDS[slug] : slug);
 
@@ -108,6 +131,7 @@ export const PAGES = {
   servicios: { es: '/servicios/', en: '/en/services/' },
   soluciones: { es: '/soluciones/', en: '/en/solutions/' },
   sectores: { es: '/sectores/', en: '/en/industries/' },
+  tecnologias: { es: '/tecnologias/', en: '/en/technologies/' },
   precios: { es: '/precios/', en: '/en/pricing/' },
   contacto: { es: '/contacto/', en: '/en/contact/' },
   avisoLegal: { es: '/aviso-legal/', en: '/en/legal-notice/' },
@@ -130,6 +154,22 @@ export const serviceHref = (id: string, lang: Lang = 'es') =>
 export const sectorHref = (id: string, lang: Lang = 'es') =>
   lang === 'en' ? `/en/industries/${SECTOR_SLUGS[id]}/` : `/sectores/${id}/`;
 
+/** Path of a technology page in a language. */
+export const techHref = (id: string, lang: Lang = 'es') =>
+  lang === 'en' ? `/en/technologies/${TECH_SLUGS[id]}/` : `/tecnologias/${id}/`;
+
+/**
+ * The section each group of technologies has on the index. The first group needs no
+ * anchor: it opens the page, right under the introduction.
+ */
+export const TECH_GROUP_ANCHORS: Record<string, Record<Lang, string>> = {
+  web: { es: 'web', en: 'web' },
+  movil: { es: 'apps-moviles', en: 'mobile-apps' },
+};
+/** Where a group of technologies is listed: the index, at its section. */
+export const techGroupHref = (group: string, lang: Lang = 'es') =>
+  Object.keys(TECH_GROUP_ANCHORS)[0] === group ? PAGES.tecnologias[lang] : `${PAGES.tecnologias[lang]}#${TECH_GROUP_ANCHORS[group][lang]}`;
+
 /** Path of a glossary term in a language. */
 export const termHref = (id: string, lang: Lang = 'es') =>
   lang === 'en' ? `/en/glossary/${TERM_SLUGS[id]}/` : `/glosario/${id}/`;
@@ -148,6 +188,10 @@ export function alternatesOf(pathname: string): Record<Lang, string> | null {
   if (sEs && SECTOR_SLUGS[sEs[1]]) return { es: path, en: sectorHref(sEs[1], 'en') };
   const sEn = path.match(/^\/en\/industries\/([^/]+)\/$/);
   if (sEn && SECTOR_IDS[sEn[1]]) return { es: sectorHref(SECTOR_IDS[sEn[1]], 'es'), en: path };
+  const kEs = path.match(/^\/tecnologias\/([^/]+)\/$/);
+  if (kEs && Object.hasOwn(TECH_SLUGS, kEs[1])) return { es: path, en: techHref(kEs[1], 'en') };
+  const kEn = path.match(/^\/en\/technologies\/([^/]+)\/$/);
+  if (kEn && Object.hasOwn(TECH_IDS, kEn[1])) return { es: techHref(TECH_IDS[kEn[1]], 'es'), en: path };
   const tEs = path.match(/^\/glosario\/([^/]+)\/$/);
   if (tEs && TERM_SLUGS[tEs[1]]) return { es: path, en: termHref(tEs[1], 'en') };
   const tEn = path.match(/^\/en\/glossary\/([^/]+)\/$/);

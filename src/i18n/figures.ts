@@ -6,6 +6,93 @@ import type { Lang } from './index';
 type FigureText = { label: string; texts?: Record<string, string> };
 
 const en: Record<string, FigureText> = {
+  // ── Technology scenes ──
+  cartridge: {
+    label:
+      'An assembly bench on a plate: at the back, a website made of three stacked modules; in front, its admin panel; on the right, a feature cartridge riding a rail toward a side connector. When it docks, the new block appears on the site and the panel shows it as active.',
+    texts: { 'PLUGIN · A MEDIDA': 'CUSTOM · PLUGIN' },
+  },
+  pagepress: {
+    label:
+      'A page press on a plate: a tray with sheets of content, a bed each sheet travels along, a head that comes down to compose it and, at the far end, the stack of finished pages next to the screen that shows them. A side module lights up only when the page carries an interactive part.',
+    texts: { 'CONTENIDO · HTML': 'CONTENT · HTML' },
+  },
+  instruments: {
+    label:
+      'An instrument desk on a plate: three screens in a row, filters, list and the detail of one record, wired to the same state hub. In front, a knurled wheel with three positions changes that state and the three screens update at once.',
+    texts: { 'ESTADO · COMPARTIDO': 'SHARED · STATE' },
+  },
+  storeys: {
+    label:
+      'A terraced model on a plate: a technical base with the server and the database; above it, the public level with a storefront; and higher up, the private level, reached by stairs closed off by a gate with its reader. A riser runs from each level down to the base: the public request is served from the storefront and the private one does not pass the gate until the reader has checked the session.',
+    texts: { 'SERVIDOR · DATOS': 'SERVER · DATA', PÚBLICO: 'PUBLIC', PRIVADO: 'PRIVATE' },
+  },
+  switchboard: {
+    label:
+      'A switchboard on a plate: a panel of jacks over a desk with three plugs, whose cords run to three systems: a database, a customer card file and a mail tray. The message line comes in from the left; in front, a tray holds the pending jobs. Each message is checked at the board and leaves on the cord of its system, or waits its turn in the tray.',
+    texts: { 'MENSAJES · COLA': 'MESSAGES · QUEUE' },
+  },
+  tabulator: {
+    label:
+      'A data sorter on a plate: on the left, a pile of spreadsheets and a box of cards; both feed a belt that passes under a cleaning station, with a brush roller, and a matching station, with a reader. Repeated cards drop into a bin and the rest stack up as an ordered report next to a counter. A timer starts each run.',
+    texts: { REGISTROS: 'RECORDS', DUPLICADOS: 'DUPLICATES', 'LIMPIAR · CRUZAR · ORDENAR': 'CLEAN · MATCH · SORT' },
+  },
+  archive: {
+    label:
+      'An archive and a core on a plate: on the left, a box of hanging folders; in the middle, a core with a glowing orb between two rings; on the right, a screen with the answer and its numbered references; in front, a console with a review push button. The query raises the folders it needs, the core prepares the answer citing those sources and a person lets it through with the button.',
+    texts: { 'RESPUESTA · CON FUENTES': 'ANSWER · WITH SOURCES' },
+  },
+  chipslot: {
+    label:
+      'A web page laid out as a board: its header and text are printed on it, and on top sit a calculator, a three-field form and an empty socket. A small module drops into the socket and joins the two: the calculator works out the figure, the form flags the missing field and the result shows on a screen.',
+    texts: { 'MÓDULO · JS': 'MODULE · JS' },
+  },
+  workbench: {
+    label:
+      "Veodar's workbench: four modules wait at the back, content, interface, connections and data, and in front there is a bed with four bays. Each project pulls forward the modules it needs and lights the links between the ones left side by side: sometimes two, sometimes three, sometimes all four.",
+    texts: { CONTENIDO: 'CONTENT', INTERFAZ: 'INTERFACE', CONEXIONES: 'CONNECTIONS', DATOS: 'DATA', 'ENSAMBLAJE · POR PROYECTO': 'ASSEMBLY · PER PROJECT' },
+  },
+  // ── Mobile technology scenes ──
+  twinbench: {
+    label:
+      'A twin-output bench on a plate: at the back, a console with its keyboard and, beside it, a monitor; in front, a bridge with two cables running to two docks, each with a standing phone and a small module of its own. What is typed at the console runs down to the bridge and reaches both phones at once, and they show the same screen with the controls of their system; the monitor shows the same logic on the web.',
+    texts: { 'Parte 0142': 'Report 0142', 'UN CÓDIGO · DOS SISTEMAS': 'ONE CODE · TWO SYSTEMS' },
+  },
+  dispatch: {
+    label:
+      "A shipping dock on a plate: on the left, a build machine with a hopper the project goes into; a belt runs from it to a turntable that sends things two ways. One continues on another belt, passes under the review arch and ends on the store shelf, from which a phone lying on its dock installs it. The other runs down a direct cable to that same phone. In front, the team's test phone gets every build before anyone else.",
+    texts: { PRUEBA: 'TEST', 'Mi app': 'My app', 'COMPILAR · PUBLICAR · ACTUALIZAR': 'BUILD · PUBLISH · UPDATE' },
+  },
+  fixture: {
+    label:
+      'A test bench on a plate: a phone lying in its cradle with three probes around it: a lens on an arm, which tries the camera; a coil with a tag, which tries NFC; and a ring on a foot, which reads a face. What the app saves travels along a cable to a tablet on its stand and to a watch on its charging puck. In front, a press seals the build before it is published.',
+    texts: { 'Inspección 27': 'Inspection 27', 'CÁMARA · NFC · BIOMETRÍA': 'CAMERA · NFC · BIOMETRICS' },
+  },
+  composer: {
+    label:
+      'A screen composer on a plate: at the back, a case of loose pieces, a button, a switch, a row, and a state unit with a window and a slider; in front, an old one-piece plate with one block already replaced and a frame where the pieces make up a screen. On the right, a standing phone and a widget. Moving the slider changes the value and the pieces in the frame rearrange themselves; the phone and the widget show the same.',
+    texts: { ESTADO: 'STATE', Pedidos: 'Orders', 'ESTADO · VISTA': 'STATE · VIEW' },
+  },
+  fleet: {
+    label:
+      'A device fleet station on a plate: at the back, a rack with a phone, a warehouse handheld with its scanner head and a tablet, each with its lamp; on the left, the console that hands them the version. In front, a box with two wheels under glass and a tray of jobs: the background mechanism, wired to a database. On the right, a scanner over a barcode and a printer with a label coming out.',
+    texts: { 'PARQUE · SEGUNDO PLANO': 'FLEET · BACKGROUND' },
+  },
+  stretcher: {
+    label:
+      'An extending frame on a plate: a bed with a fixed jaw and a moving one, with the screen between them; a crank on the left moves the jaw and, in front, a rule marks three widths: compact, medium and expanded. As it widens, the screen rearranges: one column, then list and detail, then a side menu as well. Behind, a needle meter shows the width, and a theme unit holds the brand colors. On the right, an old panel comes in through an adapter.',
+    texts: { COMPACTO: 'COMPACT', MEDIO: 'MEDIUM', AMPLIO: 'EXPANDED', 'DISEÑO ADAPTABLE': 'ADAPTIVE LAYOUT' },
+  },
+  cardvault: {
+    label:
+      'Data drawers on a plate: a phone lying on a cabinet of three drawers, reports, customers and photos, one of them open with its cards on edge. On the left, a journal with a paper strip where every change is noted; on one side, a lock with its key. On the right, a tray with the pending changes, a track, a barrier and, beyond it, the office database: when the connection returns the barrier lifts and the changes cross.',
+    texts: { 'Parte 0142': 'Report 0142', PARTES: 'REPORTS', CLIENTES: 'CUSTOMERS', FOTOS: 'PHOTOS', 'GUARDAR · BUSCAR · SINCRONIZAR': 'SAVE · SEARCH · SYNC' },
+  },
+  annunciator: {
+    label:
+      "A notification board on a plate: on the left, a console with three event keys and, in front, an audience selector; in the middle, two relays with aerials, one for each family of phones; on the right, three phones standing on a dock. When a key is pressed, the alert passes through the relays and lights a banner on the screen of the two phones that allowed it; the third, with no permission, gets it in the app's inbox, a tray in front of it. A tap on the banner opens the order.",
+    texts: { DESTINO: 'AUDIENCE', 'EVENTO · PERMISO · PANTALLA': 'EVENT · PERMISSION · SCREEN' },
+  },
   configurator: {
     label:
       'A product configurator: a modular cabinet grows from one to three modules and gains a second height, doors and a finish as four controls move; a screen recalculates the price and at the end the quote is printed.',

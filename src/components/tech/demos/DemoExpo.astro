@@ -1,0 +1,251 @@
+---
+// Expo: one change, two ways to the phone. What only touches JavaScript goes out as an
+// update the phone picks up when the app opens; what touches native code needs a new
+// version and a trip through the store.
+import DemoFrame from '../DemoFrame.astro';
+import DemoPhone from '../DemoPhone.astro';
+import { langOf } from '../../../i18n';
+
+const lang = langOf(Astro.url);
+const T = {
+  es: {
+    what: '¿Qué ha cambiado en la app?',
+    changes: [
+      { id: 'text', label: 'El texto de un botón', kind: 'Solo JavaScript' },
+      { id: 'total', label: 'El cálculo del total', kind: 'Solo JavaScript' },
+      { id: 'camera', label: 'Un permiso de cámara', kind: 'Código nativo' },
+      { id: 'pay', label: 'Una biblioteca de pagos', kind: 'Código nativo' },
+    ],
+    publish: 'Publicar el cambio',
+    direct: 'Actualización directa',
+    directSteps: ['Empaquetar el código', 'Canal de producción', 'El teléfono la descarga al abrir'],
+    store: 'Versión nueva en la tienda',
+    storeSteps: ['Compilar en la nube', 'Firmar', 'Revisión de la tienda', 'El usuario actualiza'],
+    phone: 'Teléfono de un usuario',
+    log: 'Registro',
+    js: {
+      app: 'Mi app',
+      version: 'Versión {v} · actualización {n}',
+      send: 'Enviar',
+      sendNew: 'Enviar el parte',
+      total: 'Total: {amount}',
+      camera: 'Adjuntar una foto',
+      pay: 'Pagar ahora',
+      notNeeded: 'no hace falta',
+      blocked: 'toca código nativo',
+      waits: 'depende de la tienda',
+      already: 'Ese cambio ya está en el teléfono. Elige otro.',
+      logDirect: '{label}: solo JavaScript → sale como actualización',
+      logStore: '{label}: código nativo → hace falta una versión nueva',
+      logReview: 'Enviada a revisión; el plazo lo marca la tienda',
+      sayDirect: '{label}: ha llegado al abrir la app, sin pasar por la tienda. Versión {v}, actualización {n}.',
+      sayStore: '{label}: ha hecho falta compilar, firmar y pasar la revisión. Versión nueva: {v}.',
+    },
+  },
+  en: {
+    what: 'What changed in the app?',
+    changes: [
+      { id: 'text', label: 'The text of a button', kind: 'JavaScript only' },
+      { id: 'total', label: 'How the total is worked out', kind: 'JavaScript only' },
+      { id: 'camera', label: 'A camera permission', kind: 'Native code' },
+      { id: 'pay', label: 'A payments library', kind: 'Native code' },
+    ],
+    publish: 'Publish the change',
+    direct: 'Direct update',
+    directSteps: ['Bundle the code', 'Production channel', 'The phone downloads it on opening'],
+    store: 'New version on the store',
+    storeSteps: ['Build in the cloud', 'Sign', 'Store review', 'The user updates'],
+    phone: "A user's phone",
+    log: 'Log',
+    js: {
+      app: 'My app',
+      version: 'Version {v} · update {n}',
+      send: 'Send',
+      sendNew: 'Send the report',
+      total: 'Total: {amount}',
+      camera: 'Attach a photo',
+      pay: 'Pay now',
+      notNeeded: 'not needed',
+      blocked: 'touches native code',
+      waits: 'up to the store',
+      already: 'That change is already on the phone. Pick another.',
+      logDirect: '{label}: JavaScript only → goes out as an update',
+      logStore: '{label}: native code → a new version is needed',
+      logReview: 'Sent for review; the store sets the pace',
+      sayDirect: '{label}: it arrived when the app was opened, without the store. Version {v}, update {n}.',
+      sayStore: '{label}: it had to be built, signed and reviewed. New version: {v}.',
+    },
+  },
+}[lang];
+---
+
+<DemoFrame id="expo" strings={T.js} kind="simulated">
+  <div class="dm-grid dm-grid--wide">
+    <div class="dm-panel">
+      <p class="dm-cap" id="dx-what">{T.what}</p>
+      <div class="dx-changes" role="group" aria-labelledby="dx-what">
+        {
+          T.changes.map((change, i) => (
+            <button type="button" class="dx-change" data-change={change.id} data-label={change.label} data-native={i > 1 ? '' : undefined} aria-pressed={i === 0 ? 'true' : 'false'}>
+              <span>{change.label}</span>
+              <span class="dm-pill" data-state={i > 1 ? 'warn' : 'ok'}>{change.kind}</span>
+            </button>
+          ))
+        }
+      </div>
+      <div class="dm-row"><button class="dm-btn" type="button" data-publish>{T.publish}</button></div>
+    </div>
+    <div class="dm-panel dx-stage">
+      <DemoPhone kind="a" name="user" label={T.phone} />
+    </div>
+  </div>
+  <div class="dm-grid dm-grid--2" style="margin-top:12px">
+    <div class="dm-panel">
+      <p class="dm-cap">{T.direct}</p>
+      <ol class="dm-steps" data-lane="direct">{T.directSteps.map((step) => <li data-state="idle">{step}<small></small></li>)}</ol>
+    </div>
+    <div class="dm-panel">
+      <p class="dm-cap">{T.store}</p>
+      <ol class="dm-steps" data-lane="store">{T.storeSteps.map((step) => <li data-state="idle">{step}<small></small></li>)}</ol>
+    </div>
+  </div>
+  <div class="dm-panel dm-panel--dark" style="margin-top:12px">
+    <p class="dm-cap">{T.log}</p>
+    <ol class="dm-log" data-log aria-live="polite"></ol>
+  </div>
+</DemoFrame>
+
+<style is:global>
+  .dx-changes {
+    display: grid;
+    gap: 6px;
+  }
+  .dx-change {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 0.8rem;
+    min-height: 44px;
+    padding: 0.5rem 0.8rem;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 14px;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .dx-change:hover {
+    background: #fff;
+  }
+  .dx-change[aria-pressed='true'] {
+    background: #fff;
+    box-shadow: inset 0 0 0 2px var(--color-ink);
+  }
+  .dx-stage {
+    justify-content: center;
+    background: var(--color-paper-2);
+    box-shadow: none;
+  }
+  .dx-ver {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-muted);
+  }
+  .dx-new {
+    box-shadow: inset 0 0 0 2px var(--color-accent) !important;
+  }
+</style>
+
+<script>
+  import { demo, escapeHtml, fill, setStep } from '../demo-kit';
+
+  const d = demo<Record<string, string>>('expo');
+  if (d) {
+    const T = d.T;
+    const body = d.$('[data-phone="user"] [data-body]');
+    const lanes = { direct: d.$$('[data-lane="direct"] li'), store: d.$$('[data-lane="store"] li') };
+    const log = d.$('[data-log]');
+    const picks = d.$$<HTMLButtonElement>('[data-change]');
+    let chosen = picks[0];
+    // What the user's phone has: a store version, the updates on top of it and the changes they brought.
+    let phone = { minor: 5, update: 0, has: new Set<string>(), last: '' };
+
+    const version = () => `1.${phone.minor}.0`;
+    const write = (text: string, state: 'ok' | 'warn' | 'err' = 'ok') => {
+      const line = document.createElement('li');
+      line.dataset.state = state;
+      line.textContent = text;
+      log.append(line);
+      while (log.children.length > 6) log.firstElementChild!.remove();
+    };
+    const draw = () => {
+      const mark = (id: string) => (phone.last === id ? ' dx-new' : '');
+      body.innerHTML =
+        `<p class="dm-phone-title">${escapeHtml(T.app)}</p><p class="dx-ver">${escapeHtml(fill(T.version, { v: version(), n: phone.update }))}</p>` +
+        `<div class="dm-phone-row${mark('total')}">${escapeHtml(fill(T.total, { amount: phone.has.has('total') ? '120,00' : '119,99' }))}</div>` +
+        (phone.has.has('camera') ? `<div class="dm-phone-row${mark('camera')}">${escapeHtml(T.camera)}</div>` : '') +
+        `<div style="margin-top:auto;display:grid;gap:6px">` +
+        (phone.has.has('pay') ? `<div class="dm-phone-btn${mark('pay')}" data-tone="ghost">${escapeHtml(T.pay)}</div>` : '') +
+        `<div class="dm-phone-btn${mark('text')}">${escapeHtml(phone.has.has('text') ? T.sendNew : T.send)}</div></div>`;
+      picks.forEach((button) => button.setAttribute('aria-pressed', String(button === chosen)));
+    };
+    const idle = () => [...lanes.direct, ...lanes.store].forEach((step) => setStep(step, 'idle'));
+
+    d.root.addEventListener('click', async (event) => {
+      const target = (event.target as Element).closest<HTMLButtonElement>('button');
+      if (!target) return;
+      if (target.dataset.change) {
+        chosen = target;
+        return draw();
+      }
+      if (!target.hasAttribute('data-publish')) return;
+      const id = chosen.dataset.change!;
+      const label = chosen.dataset.label!;
+      if (phone.has.has(id)) {
+        d.say(T.already);
+        return write(T.already, 'warn');
+      }
+      const run = d.newRun();
+      const native = chosen.hasAttribute('data-native');
+      idle();
+      const walk = async (steps: Element[], pause: (i: number) => number, note: (i: number) => string = () => '') => {
+        for (let i = 0; i < steps.length; i++) {
+          setStep(steps[i], 'run', note(i));
+          await d.wait(pause(i));
+          if (d.stale(run)) return false;
+          setStep(steps[i], 'ok');
+        }
+        return true;
+      };
+      if (!native) {
+        lanes.store.forEach((step) => setStep(step, 'idle', T.notNeeded));
+        write(fill(T.logDirect, { label }));
+        if (!(await walk(lanes.direct, () => 520))) return;
+        phone.update++;
+      } else {
+        setStep(lanes.direct[0], 'warn', T.blocked);
+        write(fill(T.logStore, { label }), 'warn');
+        // The review is the step nobody controls: it is shown waiting, with no time on it.
+        if (!(await walk(lanes.store, (i) => (i === 2 ? 1400 : 520), (i) => (i === 2 ? T.waits : '')))) return;
+        write(T.logReview);
+        phone.minor++;
+        phone.update = 0;
+      }
+      phone.has.add(id);
+      phone.last = id;
+      draw();
+      d.say(fill(native ? T.sayStore : T.sayDirect, { label, v: version(), n: phone.update }));
+    });
+
+    d.onReset(() => {
+      phone = { minor: 5, update: 0, has: new Set(), last: '' };
+      chosen = picks[0];
+      log.innerHTML = '';
+      idle();
+      draw();
+      d.say('');
+    });
+    draw();
+  }
+</script>

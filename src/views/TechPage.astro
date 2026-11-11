@@ -1,0 +1,696 @@
+---
+// One technology page, in the language of its URL: what can be hired in that
+// technology, shown with its scene, the modules of that scene, a working example,
+// what it connects to and how the job runs.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import Faq from '../components/Faq.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Figure from '../components/iso/Figure.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import CrossLinks from '../components/CrossLinks.astro';
+import Pager from '../components/Pager.astro';
+import Connections from '../components/tech/Connections.astro';
+import ProcessSteps from '../components/tech/ProcessSteps.astro';
+import TechDemo from '../components/tech/TechDemo.astro';
+import { servicesFor, serviceHref } from '../data/services';
+import { PROCESS_STEPS, techsFor, type Tech } from '../data/technologies';
+import { smallFigure } from '../data/small-figures';
+import { breadcrumbLd, faqLd, site } from '../data/site';
+import { langOf, pathTo, techHref } from '../i18n';
+import { linkify, startLinks } from '../i18n/links';
+import { UPDATED } from '../data/updated';
+
+interface Props {
+  tech: Tech;
+}
+const { tech } = Astro.props;
+const lang = langOf(Astro.url);
+const path = techHref(tech.id, lang);
+const url = new URL(path, site.url).href;
+startLinks(Astro.url.pathname);
+const linked = (text: string) => linkify(text, lang, Astro.url.pathname, 1, false);
+
+const T = {
+  es: {
+    home: 'Inicio',
+    techs: 'Tecnologías',
+    crumbs: 'Migas de pan',
+    cta: 'Cuéntanos tu proyecto',
+    seeExample: 'Ver un ejemplo',
+    with: 'Se combina con',
+    onPage: 'En esta página',
+    nav: ['Qué puedes resolver', 'Qué desarrollamos', 'Un ejemplo', 'Cómo encaja', 'Cómo trabajamos', 'Preguntas'],
+    solve: 'Situaciones',
+    build: 'Servicios',
+    module: 'Módulo',
+    examples: 'Ejemplos de entregables',
+    example: 'Un ejemplo en funcionamiento',
+    fit: 'Integración',
+    process: 'Cómo trabajamos y qué entregamos',
+    faqTitle: `Preguntas sobre ${tech.name}`,
+    services: 'Servicios relacionados',
+    servicesTitle: `Dónde suele entrar ${tech.name}`,
+    allServices: 'Todos los servicios',
+    near: 'Otras tecnologías',
+    nearTitle: 'Con qué se combina',
+    allTechs: 'Todas las tecnologías',
+    prev: 'Tecnología anterior',
+    next: 'Tecnología siguiente',
+    pager: 'Otras tecnologías',
+    updated: 'Actualizado',
+    catalog: `Qué desarrollamos con ${tech.name}`,
+    areas: [{ '@type': 'Country', name: 'España' }, { '@type': 'Place', name: 'Latinoamérica' }, { '@type': 'Place', name: 'Europa' }],
+  },
+  en: {
+    home: 'Home',
+    techs: 'Technologies',
+    crumbs: 'Breadcrumb',
+    cta: 'Tell us about your project',
+    seeExample: 'See an example',
+    with: 'Often combined with',
+    onPage: 'On this page',
+    nav: ['What you can solve', 'What we build', 'An example', 'How it fits', 'How we work', 'Questions'],
+    solve: 'Situations',
+    build: 'Services',
+    module: 'Module',
+    examples: 'Examples of deliverables',
+    example: 'A working example',
+    fit: 'Integration',
+    process: 'How we work and what we deliver',
+    faqTitle: `Questions about ${tech.name}`,
+    services: 'Related services',
+    servicesTitle: `Where ${tech.name} usually comes in`,
+    allServices: 'All services',
+    near: 'Other technologies',
+    nearTitle: 'What it is combined with',
+    allTechs: 'All technologies',
+    prev: 'Previous technology',
+    next: 'Next technology',
+    pager: 'Other technologies',
+    updated: 'Updated',
+    catalog: `What we build with ${tech.name}`,
+    areas: [{ '@type': 'Country', name: 'Spain' }, { '@type': 'Place', name: 'Latin America' }, { '@type': 'Place', name: 'Europe' }],
+  },
+}[lang];
+
+const techs = techsFor(lang);
+const services = servicesFor(lang);
+const related = tech.services.map((slug) => services.find((service) => service.slug === slug)!);
+const combined = tech.techs.map((id) => techs.find((item) => item.id === id)!);
+const near = combined.map((other) => ({ href: techHref(other.id, lang), anchor: other.card.title, text: other.card.text, icon: other.icon, tint: other.tint }));
+// Previous and next walk the technologies of the same group, as a ring.
+const siblings = techs.filter((item) => item.group === tech.group);
+const at = siblings.findIndex((item) => item.id === tech.id);
+const prev = siblings[(at - 1 + siblings.length) % siblings.length];
+const next = siblings[(at + 1) % siblings.length];
+const steps = PROCESS_STEPS[lang].map((title, index) => ({ title, text: tech.process.steps[index] }));
+const detail = smallFigure(tech.figure, tech.solve.part);
+const anchors = ['resolver', 'desarrollamos', 'ejemplo', 'integracion', 'proceso', 'preguntas'];
+const updated = new Date(`${UPDATED.tech}T12:00:00Z`).toLocaleDateString(lang === 'en' ? 'en-US' : 'es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+const tintBg: Record<string, string> = { mint: 'bg-mint', sky: 'bg-sky', butter: 'bg-butter', blush: 'bg-blush', lilac: 'bg-lilac', paper: 'bg-paper-2' };
+
+const crumbs = [
+  { name: T.home, path: pathTo('home', lang) },
+  { name: T.techs, path: pathTo('tecnologias', lang) },
+  { name: tech.name, path },
+];
+const serviceLd = {
+  '@type': 'Service',
+  '@id': `${url}#service`,
+  name: tech.card.title,
+  serviceType: tech.h1,
+  description: tech.description,
+  url,
+  provider: { '@id': `${site.url}/#organization` },
+  areaServed: T.areas,
+  availableLanguage: ['Spanish', 'English'],
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog',
+    name: T.catalog,
+    itemListElement: tech.build.items.map((item) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: item.name, description: item.text } })),
+  },
+  isRelatedTo: related.map((service) => ({ '@type': 'Service', name: service.name, url: new URL(serviceHref(service.slug, lang), site.url).href })),
+  mainEntityOfPage: { '@id': `${url}#webpage` },
+};
+---
+
+<BaseLayout title={tech.title} description={tech.description} jsonLd={[breadcrumbLd(crumbs), faqLd(tech.faq), serviceLd]} updated={UPDATED.tech} mainEntity={`${url}#service`}>
+  <div class="read-progress" aria-hidden="true"></div>
+
+  <section class="pt-8 pb-14 md:pt-12 md:pb-20" data-spine="0.4885">
+    <div class="wrap">
+      <nav aria-label={T.crumbs} class="font-mono text-[12px] tracking-[0.04em] text-muted">
+        <ol class="flex flex-wrap items-center gap-2">
+          {
+            crumbs.map((crumb, index) => (
+              <li class="flex items-center gap-2">
+                {index > 0 && <span aria-hidden="true">/</span>}
+                {index < crumbs.length - 1 ? (
+                  <a href={crumb.path} class="hover:text-ink">
+                    {crumb.name}
+                  </a>
+                ) : (
+                  <span aria-current="page" class="text-ink">
+                    {crumb.name}
+                  </span>
+                )}
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+
+      <div class="mt-10 grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
+        <div>
+          <p class="eyebrow" data-reveal>{tech.kicker}</p>
+          <h1 class="display h-lg mt-5 max-w-[17ch]" data-reveal style="--d:60ms">{tech.h1}</h1>
+          <p class="lead mt-7 max-w-[56ch]" data-reveal style="--d:120ms">{tech.lead}</p>
+          <div class="mt-9 flex flex-wrap gap-3" data-reveal style="--d:180ms">
+            <a href={pathTo('contacto', lang)} class="btn btn-primary">
+              {T.cta} <Icon name="arrow" size={17} class="arrow" />
+            </a>
+            <a href="#ejemplo" class="btn btn-ghost">{T.seeExample}</a>
+          </div>
+          <div class="mt-10" data-reveal style="--d:240ms">
+            <p class="mb-3 font-mono text-[11px] tracking-[0.12em] text-muted uppercase">{T.with}</p>
+            <ul class="flex flex-wrap gap-1.5">
+              {
+                combined.map((other) => (
+                  <li>
+                    <a href={techHref(other.id, lang)} class="chip chip-link">
+                      {other.name}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </div>
+        <div data-reveal style="--d:140ms">
+          <Figure name={tech.figure} fig="Fig. 01" title={tech.scene.title} caption={tech.scene.caption} />
+        </div>
+      </div>
+
+      <nav class="tp-index" aria-label={T.onPage} data-reveal style="--d:280ms">
+        <ul>
+          {
+            T.nav.map((label, index) => (
+              <li>
+                <a href={`#${anchors[index]}`}>{label}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <!-- What it solves, and what to look at first -->
+  <section id="resolver" class="border-t border-line py-20 md:py-28" data-spine="0.416" aria-labelledby="resolver-title">
+    <div class="wrap grid gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:gap-20">
+      <div>
+        <p class="eyebrow">{T.solve}</p>
+        <h2 id="resolver-title" class="display h-lg mt-5 max-w-[14ch]">{tech.solve.heading}</h2>
+        <p class="lead mt-6 max-w-[40ch]" set:html={linked(tech.solve.intro)} />
+      </div>
+      <ul class="tp-cases">
+        {
+          tech.solve.cases.map((item, index) => (
+            <li data-reveal style={`--d:${index * 70}ms`}>
+              <h3>{item.h}</h3>
+              <p set:html={linked(item.p)} />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <div class="wrap mt-14 md:mt-20">
+      <div class="tp-check tile" data-node data-reveal>
+        <figure class:list={['tp-detail', tintBg[tech.tint]]}>
+          <img src={detail.src} alt="" width={detail.width} height={detail.height} loading="lazy" decoding="async" />
+          <figcaption>{tech.solve.detail}</figcaption>
+        </figure>
+        <div class="tp-check-text">
+          <h3 class="display h-md">{tech.solve.checkTitle}</h3>
+          <ul>
+            {
+              tech.solve.checks.map((item) => (
+                <li>
+                  <span class="tp-tick"><Icon name="check" size={14} /></span>
+                  {item}
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What we build: each service beside the module of the scene it stands for -->
+  <section id="desarrollamos" class="bg-paper-2/60 py-20 md:py-28" data-spine="0.5" aria-labelledby="desarrollamos-title">
+    <div class="wrap">
+      <div class="grid gap-6 md:grid-cols-[1.1fr_1fr] md:items-end">
+        <div>
+          <p class="eyebrow">{T.build}</p>
+          <h2 id="desarrollamos-title" class="display h-lg mt-5 max-w-[16ch]">{tech.build.heading}</h2>
+        </div>
+        <p class="lead max-w-[46ch]">{tech.build.intro}</p>
+      </div>
+      <ul class="mt-12 grid gap-4 md:grid-cols-2">
+        {
+          tech.build.items.map((item, index) => {
+            const figure = smallFigure(tech.figure, item.part);
+            return (
+              <li data-reveal style={`--d:${(index % 2) * 80}ms`}>
+                <article class="tp-service tile">
+                  <div class:list={['tp-module', tintBg[tech.tint]]}>
+                    <img src={figure.src} alt="" width={figure.width} height={figure.height} loading="lazy" decoding="async" />
+                    <span class="tp-module-label">
+                      {T.module} {index + 1} · {item.label}
+                    </span>
+                  </div>
+                  <div class="tp-service-text">
+                    <h3>{item.name}</h3>
+                    <p>{item.text}</p>
+                    <p class="tp-examples-title">{T.examples}</p>
+                    <ul class="tp-examples">
+                      {item.examples.map((example) => (
+                        <li class="chip">{example}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </article>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- A working example -->
+  <section id="ejemplo" class="py-20 md:py-28" data-spine="0.5" aria-labelledby="ejemplo-title">
+    <div class="wrap">
+      <div class="grid gap-6 md:grid-cols-[1.1fr_1fr] md:items-end">
+        <div>
+          <p class="eyebrow">{T.example}</p>
+          <h2 id="ejemplo-title" class="display h-lg mt-5 max-w-[18ch]">{tech.example.heading}</h2>
+        </div>
+        <p class="lead max-w-[46ch]">{tech.example.intro}</p>
+      </div>
+      <div class="mt-10">
+        <TechDemo id={tech.id} />
+      </div>
+      <p class="tp-note">
+        <Icon name="compass" size={16} />
+        <span>{tech.example.note}</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- What it connects to -->
+  <section id="integracion" class="border-t border-line py-20 md:py-28" data-spine="0.404" aria-labelledby="integracion-title">
+    <div class="wrap">
+      <div class="grid gap-6 md:grid-cols-[1.1fr_1fr] md:items-end">
+        <div>
+          <p class="eyebrow">{T.fit}</p>
+          <h2 id="integracion-title" class="display h-lg mt-5 max-w-[16ch]">{tech.fit.heading}</h2>
+        </div>
+        <p class="lead max-w-[46ch]" set:html={linked(tech.fit.intro)} />
+      </div>
+      <div class="tp-plan" data-node data-reveal>
+        <Connections name={tech.name} inputs={tech.fit.inputs} core={tech.fit.core} outputs={tech.fit.outputs} />
+      </div>
+      <div class="tp-depends">
+        <h3 class="display h-md">{tech.fit.checkTitle}</h3>
+        <ul>
+          {
+            tech.fit.checks.map((item) => (
+              <li>
+                <span class="tp-tick"><Icon name="check" size={14} /></span>
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- How the job runs and what is handed over -->
+  <section id="proceso" class="bg-night py-20 text-paper md:py-28" data-dark data-spine="0.576" aria-labelledby="proceso-title">
+    <div class="wrap grid gap-14 lg:grid-cols-[1.25fr_0.9fr] lg:gap-20">
+      <div>
+        <p class="eyebrow !text-paper/60">{T.process}</p>
+        <h2 id="proceso-title" class="display h-lg mt-5 max-w-[16ch] !text-paper">{tech.process.heading}</h2>
+        <div class="mt-12">
+          <ProcessSteps steps={steps} />
+        </div>
+      </div>
+      <div class="lg:pt-24">
+        <div class="tp-handover" data-reveal>
+          <h3>{tech.process.deliverablesTitle}</h3>
+          <ul>
+            {
+              tech.process.deliverables.map((item) => (
+                <li>
+                  <span class="tp-tick tp-tick--accent"><Icon name="check" size={14} /></span>
+                  {item}
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div>
+    <Faq items={tech.faq} title={T.faqTitle} />
+    <p class="wrap -mt-14 pb-14 font-mono text-[11.5px] tracking-[0.06em] text-muted md:-mt-20 md:pb-20">
+      {T.updated}: <time datetime={UPDATED.tech}>{updated}</time>
+    </p>
+  </div>
+
+  <section class="border-t border-line py-20 md:py-28" data-spine="0.331" aria-labelledby="related-title">
+    <div class="wrap">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">{T.services}</p>
+          <h2 id="related-title" class="display h-lg mt-4 max-w-[18ch]">{T.servicesTitle}</h2>
+        </div>
+        <a href={pathTo('servicios', lang)} class="link-arrow">
+          {T.allServices} <Icon name="arrow" size={16} />
+        </a>
+      </div>
+      <ul class="mt-10 grid gap-4 md:grid-cols-3">
+        {
+          related.map((service) => (
+            <li>
+              <ServiceCard service={service} />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <CrossLinks id="near-title" kicker={T.near} title={T.nearTitle} items={near} allHref={pathTo('tecnologias', lang)} allLabel={T.allTechs} columns={3} />
+  <Pager prev={{ href: techHref(prev.id, lang), label: prev.name }} next={{ href: techHref(next.id, lang), label: next.name }} prevLabel={T.prev} nextLabel={T.next} ariaLabel={T.pager} />
+
+  <CtaBand title={tech.cta.title} text={tech.cta.text} label={T.cta} pointsTitle={tech.cta.bringTitle} points={tech.cta.bring} />
+</BaseLayout>
+
+<style>
+  /* The index of the page, under the first screen. */
+  .tp-index {
+    margin-top: 3.5rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .tp-index ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+  /* Opaque: the fibre trunk of the page runs behind this row, not through its words. */
+  .tp-index a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    background: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    color: var(--color-ink-2);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    transition:
+      background-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .tp-index a:hover {
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+
+  .tp-cases {
+    border-top: 1px solid var(--color-line);
+  }
+  .tp-cases li {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .tp-cases h3 {
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 1.9vw, 1.6rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+  }
+  .tp-cases p {
+    margin-top: 0.6rem;
+    max-width: 58ch;
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--color-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* The close-up of the scene beside what to check first. */
+  .tp-check {
+    display: grid;
+    gap: 0;
+    padding: 10px;
+    border-radius: 28px;
+  }
+  .tp-detail {
+    position: relative;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 2.4rem 1.2rem 3.4rem;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .tp-detail img {
+    width: min(100%, 440px);
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+  }
+  .tp-detail figcaption {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    color: var(--color-ink-2);
+  }
+  .tp-check-text {
+    padding: 1.8rem 1.2rem 1.4rem;
+  }
+  .tp-check-text ul,
+  .tp-depends ul,
+  .tp-handover ul {
+    display: grid;
+    gap: 0.85rem;
+    margin-top: 1.5rem;
+  }
+  .tp-check-text li,
+  .tp-depends li,
+  .tp-handover li {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 15.5px;
+    line-height: 1.45;
+  }
+  .tp-tick {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    margin-top: 0.05em;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .tp-tick--accent {
+    background: var(--color-accent);
+    color: #1a0a03;
+  }
+  @media (min-width: 900px) {
+    .tp-check {
+      grid-template-columns: 1.05fr 1fr;
+      align-items: stretch;
+    }
+    .tp-check-text {
+      align-self: center;
+      padding: 2rem 2.4rem;
+    }
+  }
+
+  /* A service and its module. */
+  .tp-service {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    border-radius: 26px;
+  }
+  .tp-module {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: clamp(200px, 23vw, 290px);
+    padding: 1.4rem 1.2rem 2.6rem;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  /* The picture fills the stage whatever its proportions, and never grows past it. */
+  .tp-module img {
+    position: absolute;
+    top: 1.3rem;
+    left: 1.2rem;
+    width: calc(100% - 2.4rem);
+    height: calc(100% - 4.1rem);
+    object-fit: contain;
+  }
+  /* The label of the module: real text, tied to the drawing by a short lead. */
+  .tp-module-label {
+    position: absolute;
+    left: 14px;
+    bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.28rem 0.65rem;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.78);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 560;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: inset 0 0 0 1px rgb(22 20 44 / 0.08);
+  }
+  .tp-module-label::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 1.5px;
+    background: var(--color-accent);
+    transform: rotate(45deg);
+  }
+  .tp-service-text {
+    padding: 1.4rem 0.9rem 1rem;
+  }
+  .tp-service-text h3 {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 2vw, 1.65rem);
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+  }
+  .tp-service-text > p {
+    margin-top: 0.65rem;
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--color-ink-2);
+    text-wrap: pretty;
+  }
+  .tp-service-text .tp-examples-title {
+    margin-top: 1.3rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .tp-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+  }
+
+  .tp-note {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    max-width: 78ch;
+    margin-top: 1.1rem;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--color-muted);
+  }
+  .tp-note :global(svg) {
+    flex: none;
+    margin-top: 0.2em;
+    color: var(--color-accent-ink);
+  }
+
+  /* The diagram sits on its own sheet, so the page's fibre passes behind it. */
+  .tp-plan {
+    margin-top: 3rem;
+    padding: 2.6rem 1.1rem 1.4rem;
+    border-radius: 28px;
+    background: var(--color-paper-2);
+    background-image: radial-gradient(rgb(22 20 44 / 0.09) 1px, transparent 1px);
+    background-size: 16px 16px;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  @media (min-width: 900px) {
+    .tp-plan {
+      margin-top: 4rem;
+      padding: 4.2rem 2.4rem 2.6rem;
+    }
+  }
+  .tp-depends {
+    margin-top: 3.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--color-line);
+  }
+  @media (min-width: 900px) {
+    .tp-depends {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 3rem;
+      margin-top: 5rem;
+    }
+    .tp-depends ul {
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem 2rem;
+      margin-top: 0.3rem;
+    }
+  }
+
+  .tp-handover {
+    padding: 2rem 1.8rem 2.1rem;
+    border-radius: 24px;
+    background: rgb(244 240 230 / 0.06);
+    box-shadow: inset 0 0 0 1px rgb(244 240 230 / 0.14);
+  }
+  .tp-handover h3 {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    font-weight: 400;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+  }
+  .tp-handover li {
+    color: rgb(244 240 230 / 0.86);
+  }
+  @media (min-width: 1024px) {
+    .tp-handover {
+      position: sticky;
+      top: 7rem;
+    }
+  }
+</style>
