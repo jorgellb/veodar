@@ -1,0 +1,258 @@
+---
+// One glossary term: the definition first (it has to stand on its own), then how it
+// works, how it shows up in a project, and where on this site it is used.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CrossLinks from '../components/CrossLinks.astro';
+import Pager from '../components/Pager.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { categoryName, termDescription, termsFor, type Term } from '../data/glossary';
+import { servicesFor, serviceHref } from '../data/services';
+import { sectorsFor } from '../data/sectors';
+import { sectorAnchor, serviceAnchor } from '../data/crosslinks';
+import { breadcrumbLd, site } from '../data/site';
+import { langOf, pathTo, sectorHref, termHref } from '../i18n';
+import { linkify, startLinks } from '../i18n/links';
+import { UPDATED } from '../data/updated';
+
+interface Props {
+  term: Term;
+}
+const { term } = Astro.props;
+const lang = langOf(Astro.url);
+const terms = termsFor(lang);
+const url = new URL(termHref(term.id, lang), site.url).href;
+const hubUrl = new URL(pathTo('glosario', lang), site.url).href;
+startLinks(Astro.url.pathname);
+const linked = (text: string) => linkify(text, lang, Astro.url.pathname, 2);
+
+const T = {
+  es: {
+    home: 'Inicio',
+    glossary: 'Glosario',
+    crumbs: 'Migas de pan',
+    detail: `${term.name}, en detalle`,
+    project: `${term.name} en un proyecto`,
+    card: 'Ficha',
+    category: 'Categoría',
+    updated: 'Actualizado',
+    whereKicker: 'En este sitio',
+    whereTitle: 'Dónde lo aplicamos',
+    allServices: 'Todos los servicios',
+    seeKicker: 'Glosario',
+    seeTitle: 'Términos relacionados',
+    allTerms: 'Ver todo el glosario',
+    prev: 'Término anterior',
+    next: 'Término siguiente',
+    pager: 'Otros términos',
+    ctaTitle: `¿${term.name} aparece en vuestro proyecto?`,
+    ctaText: 'Cuéntanos qué sistema tenéis y qué se sigue haciendo a mano. Te decimos por dónde empezaríamos y si encaja.',
+  },
+  en: {
+    home: 'Home',
+    glossary: 'Glossary',
+    crumbs: 'Breadcrumb',
+    detail: `${term.name}: the details`,
+    project: `${term.name} in a project`,
+    card: 'At a glance',
+    category: 'Category',
+    updated: 'Updated',
+    whereKicker: 'On this site',
+    whereTitle: 'Where we apply it',
+    allServices: 'All services',
+    seeKicker: 'Glossary',
+    seeTitle: 'Related terms',
+    allTerms: 'See the whole glossary',
+    prev: 'Previous term',
+    next: 'Next term',
+    pager: 'Other terms',
+    ctaTitle: 'Does this come up in your project?',
+    ctaText: 'Tell us which system you have and what is still done by hand. We’ll tell you where we would start and whether it fits.',
+  },
+}[lang];
+
+const at = terms.findIndex((item) => item.id === term.id);
+const services = servicesFor(lang);
+const sectors = sectorsFor(lang);
+// Where the term is used: its services, then its sectors. Anchors rotate with the
+// position of the term, so these pages are not always linked with the same words.
+const where = [
+  ...term.services.map((slug, index) => {
+    const service = services.find((item) => item.slug === slug)!;
+    return { href: serviceHref(slug, lang), anchor: serviceAnchor(slug, lang, at + index), text: service.menu, icon: service.icon, tint: service.tint };
+  }),
+  ...term.sectors.map((id, index) => {
+    const sector = sectors.find((item) => item.id === id)!;
+    return { href: sectorHref(id, lang), anchor: sectorAnchor(id, lang, at + index), text: sector.menu, icon: sector.icon, tint: sector.tint };
+  }),
+];
+const see = term.see
+  .map((id) => terms.find((item) => item.id === id))
+  .filter((item) => item !== undefined)
+  .map((item) => ({ href: termHref(item.id, lang), anchor: item.name, text: item.long ?? categoryName(item.cat, lang), icon: 'layers' }));
+const prev = terms[(at - 1 + terms.length) % terms.length];
+const next = terms[(at + 1) % terms.length];
+
+const updatedIso = UPDATED.glossary;
+const updated = new Date(`${updatedIso}T12:00:00Z`).toLocaleDateString(lang === 'en' ? 'en-US' : 'es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+const sameAs = (['es', 'en'] as const).filter((code) => term.wiki?.[code]).map((code) => `https://${code}.wikipedia.org/wiki/${encodeURI(term.wiki![code]!)}`);
+const crumbs = [
+  { name: T.home, path: pathTo('home', lang) },
+  { name: T.glossary, path: pathTo('glosario', lang) },
+  { name: term.name, path: termHref(term.id, lang) },
+];
+const ld = [
+  breadcrumbLd(crumbs),
+  {
+    '@type': 'DefinedTerm',
+    '@id': `${url}#term`,
+    name: term.name,
+    ...(term.long ? { alternateName: term.long } : {}),
+    description: term.def,
+    url,
+    inDefinedTermSet: { '@id': `${hubUrl}#glossary` },
+    ...(sameAs.length ? { sameAs } : {}),
+  },
+];
+---
+
+<BaseLayout title={term.title} description={termDescription(term)} jsonLd={ld} updated={updatedIso} mainEntity={`${url}#term`} ogType="article">
+  <div class="read-progress" aria-hidden="true"></div>
+  <section class="pt-8 pb-14 md:pt-12 md:pb-20">
+    <div class="wrap">
+      <nav aria-label={T.crumbs} class="font-mono text-[12px] tracking-[0.04em] text-muted">
+        <ol class="flex flex-wrap items-center gap-2">
+          {
+            crumbs.map((crumb, index) => (
+              <li class="flex items-center gap-2">
+                {index > 0 && <span aria-hidden="true">/</span>}
+                {index < crumbs.length - 1 ? (
+                  <a href={crumb.path} class="hover:text-ink">
+                    {crumb.name}
+                  </a>
+                ) : (
+                  <span aria-current="page" class="text-ink">
+                    {crumb.name}
+                  </span>
+                )}
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+
+      <p class="eyebrow mt-10" data-reveal>{T.glossary} · {categoryName(term.cat, lang)}</p>
+      <h1 class="term-h1 mt-5" data-reveal style="--d:60ms">
+        <span class="display h-hero block">{term.name}</span>
+        {term.long && <span class="term-long">{term.long}</span>}
+      </h1>
+      <p class="term-def mt-9" data-reveal style="--d:120ms">{term.def}</p>
+    </div>
+  </section>
+
+  <section class="border-t border-line py-16 md:py-24" data-trunk-start="0.5">
+    <div class="wrap grid gap-12 lg:grid-cols-[1fr_340px] lg:gap-20">
+      <div class="max-w-[720px]">
+        <article>
+          <h2 class="display h-md">{T.detail}</h2>
+          <div class="prose-v mt-6 text-[17px]">
+            {term.body.map((paragraph) => <p set:html={linked(paragraph)} />)}
+          </div>
+        </article>
+        <article class="term-use mt-14">
+          <h2 class="display h-md">{T.project}</h2>
+          <div class="prose-v mt-6 text-[17px]">
+            <p set:html={linked(term.use)} />
+          </div>
+        </article>
+      </div>
+
+      <aside>
+        <div class="term-card lg:sticky lg:top-28">
+          <p class="font-mono text-[11.5px] tracking-[0.12em] text-muted uppercase">{T.card}</p>
+          <dl class="mt-4">
+            {
+              (term.facts ?? []).map(([label, value]) => (
+                <div class="term-row">
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </div>
+              ))
+            }
+            <div class="term-row">
+              <dt>{T.category}</dt>
+              <dd>
+                <a href={pathTo('glosario', lang, term.cat)} class="ctx-link">{categoryName(term.cat, lang)}</a>
+              </dd>
+            </div>
+            <div class="term-row">
+              <dt>{T.updated}</dt>
+              <dd><time datetime={updatedIso}>{updated}</time></dd>
+            </div>
+          </dl>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <CrossLinks id="where-title" kicker={T.whereKicker} title={T.whereTitle} items={where} allHref={pathTo('servicios', lang)} allLabel={T.allServices} />
+  <CrossLinks id="see-title" kicker={T.seeKicker} title={T.seeTitle} items={see} allHref={pathTo('glosario', lang)} allLabel={T.allTerms} columns={3} compact />
+  <Pager
+    prev={{ href: termHref(prev.id, lang), label: prev.name }}
+    next={{ href: termHref(next.id, lang), label: next.name }}
+    prevLabel={T.prev}
+    nextLabel={T.next}
+    ariaLabel={T.pager}
+  />
+  <CtaBand title={T.ctaTitle} text={T.ctaText} />
+</BaseLayout>
+
+<style>
+  .term-long {
+    display: block;
+    margin-top: 1.1rem;
+    font-family: var(--font-mono);
+    font-size: clamp(0.82rem, 1.1vw, 0.95rem);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  /* The definition: large, with the accent rule that marks it as the answer. */
+  .term-def {
+    max-width: 44ch;
+    padding-left: 1.4rem;
+    border-left: 3px solid var(--color-accent);
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+    line-height: 1.28;
+    letter-spacing: -0.015em;
+    font-weight: 380;
+    text-wrap: pretty;
+  }
+  .term-use {
+    padding-top: 3.5rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .term-card {
+    padding: 22px 22px 8px;
+    border-radius: 22px;
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  .term-row {
+    display: grid;
+    gap: 4px;
+    padding: 14px 0;
+    border-top: 1px solid var(--color-line);
+  }
+  .term-row dt {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .term-row dd {
+    font-size: 15px;
+    line-height: 1.45;
+  }
+</style>

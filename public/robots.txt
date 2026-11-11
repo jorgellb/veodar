@@ -26,3 +26,4 @@ Allow: /
 
 Sitemap: https://veodar.com/sitemap.xml
 # Resumen para asistentes de IA · Summary for AI assistants: https://veodar.com/llms.txt
+# Contenido completo · Full content: https://veodar.com/llms-full-es.txt (es) · https://veodar.com/llms-full.txt (en)

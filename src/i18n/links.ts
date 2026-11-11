@@ -4,11 +4,15 @@
 // "click here", in both languages.
 //
 // Rules keep it natural: one link per target per page, at most MAX_PER_PAGE links
-// per page, never a link to the page itself, and never inside headings.
+// to services, sectors and fixed pages plus MAX_TERMS_PER_PAGE to glossary terms,
+// never a link to the page itself, and never inside headings.
 
-import { pathTo, sectorHref, serviceHref, type Lang } from './index';
+import { termsFor } from '../data/glossary';
+import { pathTo, sectorHref, serviceHref, termHref, type Lang } from './index';
 
 type Rule = { to: string; terms: string[] };
+
+const isService = (to: string) => /^\/(servicios|en\/services)\/[^/]+\/$/.test(to);
 
 const svc = (id: string, lang: Lang) => serviceHref(id, lang);
 
@@ -45,6 +49,7 @@ const rules = (lang: Lang): Rule[] =>
         { to: sectorHref('agroalimentacion', lang), terms: ['cooperativas agroalimentarias', 'cooperativas', 'agroalimentaria'] },
         { to: sectorHref('hosteleria-turismo', lang), terms: ['hoteles y restaurantes', 'hoteles', 'hostelería'] },
         { to: pathTo('sectores', lang), terms: ['cada sector', 'por sector'] },
+        { to: pathTo('almeria', lang), terms: ['Vera (Almería)', 'provincia de Almería', 'Almería'] },
       ]
     : [
         { to: svc('automatizaciones-ia', lang), terms: ['AI automations', 'AI automation', 'AI agents', 'automation', 'the AI'] },
@@ -74,10 +79,40 @@ const rules = (lang: Lang): Rule[] =>
         { to: sectorHref('agroalimentacion', lang), terms: ['agricultural cooperatives', 'cooperatives', 'agrifood'] },
         { to: sectorHref('hosteleria-turismo', lang), terms: ['hotels and restaurants', 'hotels', 'hospitality'] },
         { to: pathTo('sectores', lang), terms: ['every industry', 'by industry'] },
+        { to: pathTo('almeria', lang), terms: ['Vera (Almería)', 'province of Almería', 'Almería'] },
       ];
 
-const MAX_PER_PAGE = 6;
+// Glossary terms: the phrases each term declares in `match`. They come after the
+// rules above, so a phrase that already sells a service keeps pointing at that page.
+// Order: the terms that belong to the page being rendered (its sector or its service)
+// go first, so the cap is spent on them; then terms that only match spelled-out
+// phrases before those with an acronym, because an acronym usually comes back later
+// in the text and a phrase does not.
+const termRuleCache = new Map<string, Rule[]>();
+function termRules(lang: Lang, here: string): Rule[] {
+  const key = `${lang} ${here}`;
+  const cached = termRuleCache.get(key);
+  if (cached) return cached;
+  const scored = termsFor(lang)
+    .filter((term) => term.match?.length)
+    .map((term, index) => {
+      const own = term.sectors.some((id) => sectorHref(id, lang) === here) || term.services.some((id) => serviceHref(id, lang) === here);
+      const phraseOnly = term.match!.every((text) => !isAcronym(text));
+      return { rule: { to: termHref(term.id, lang), terms: term.match! }, score: (own ? 0 : 2) + (phraseOnly ? 0 : 1), index };
+    })
+    .sort((a, b) => a.score - b.score || a.index - b.index)
+    .map((item) => item.rule);
+  termRuleCache.set(key, scored);
+  return scored;
+}
+
+const MAX_PER_PAGE = 8;
+const MAX_TERMS_PER_PAGE = 6;
 const used = new Map<string, Set<string>>();
+const usedTerms = new Map<string, Set<string>>();
+
+// An acronym (MES, GEO, POS) only matches as written: "mes" is also a month.
+const isAcronym = (term: string) => /^[A-Z0-9][A-Z0-9 .*-]*$/.test(term) && /[A-Z]{2}/.test(term);
 
 const escapeHtml = (text: string) =>
   text.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]!);
@@ -87,31 +122,60 @@ const norm = (path: string) => (path.endsWith('/') ? path : `${path}/`);
 /** Forget what a page has linked: call once at the top of every page render (dev re-renders pages). */
 export function startLinks(pagePath: string) {
   used.set(norm(pagePath), new Set());
+  usedTerms.set(norm(pagePath), new Set());
+}
+
+/** Link the first mention of one of `rule.terms` in `html`, or return null if none is there. */
+function linkFirst(html: string, rule: Rule, className: string): string | null {
+  for (const term of rule.terms) {
+    // Whole words only (accents count as letters), and never inside a link we already added.
+    const re = new RegExp(`(?<![\\p{L}\\p{N}>])(${escapeRe(escapeHtml(term))})(?![\\p{L}\\p{N}])(?![^<]*</a>)`, isAcronym(term) ? 'u' : 'iu');
+    const match = re.exec(html);
+    if (!match) continue;
+    return `${html.slice(0, match.index)}<a class="${className}" href="${rule.to}">${match[1]}</a>${html.slice(match.index + match[1].length)}`;
+  }
+  return null;
 }
 
 /**
- * Escape `text` and link the first mention of up to `max` targets that this page
- * has not linked yet. Returns HTML for set:html.
+ * Escape `text` and link the first mention of up to `max` services, sectors or fixed
+ * pages that this page has not linked yet (with `max` 2: one service and one of the
+ * rest), plus one glossary term unless `terms` is false. Returns HTML for set:html.
  */
-export function linkify(text: string, lang: Lang, pagePath: string, max = 1): string {
+export function linkify(text: string, lang: Lang, pagePath: string, max = 1, terms = true): string {
   const here = norm(pagePath);
   if (!used.has(here)) used.set(here, new Set());
+  if (!usedTerms.has(here)) usedTerms.set(here, new Set());
   const done = used.get(here)!;
+  const doneTerms = usedTerms.get(here)!;
   let html = escapeHtml(text);
   let added = 0;
+  // With two links in a paragraph, one goes to a service and the other elsewhere
+  // (a sector, pricing, solutions), so no paragraph turns into a list of services.
+  let serviceTaken = false;
+  let otherTaken = false;
   for (const rule of rules(lang)) {
     if (added >= max || done.size >= MAX_PER_PAGE) break;
     if (done.has(rule.to) || norm(rule.to.split('#')[0]) === here) continue;
-    for (const term of rule.terms) {
-      // Whole words only (accents count as letters), and never inside a link we already added.
-      const re = new RegExp(`(?<![\\p{L}\\p{N}>])(${escapeRe(escapeHtml(term))})(?![\\p{L}\\p{N}])(?![^<]*</a>)`, 'iu');
-      const match = re.exec(html);
-      if (!match) continue;
-      html = `${html.slice(0, match.index)}<a class="ctx-link" href="${rule.to}">${match[1]}</a>${html.slice(match.index + match[1].length)}`;
-      done.add(rule.to);
-      added++;
-      break;
-    }
+    const service = isService(rule.to);
+    if (max === 2 && (service ? serviceTaken : otherTaken)) continue;
+    const linked = linkFirst(html, rule, 'ctx-link');
+    if (!linked) continue;
+    html = linked;
+    done.add(rule.to);
+    added++;
+    if (service) serviceTaken = true;
+    else otherTaken = true;
+  }
+  if (!terms) return html;
+  for (const rule of termRules(lang, here)) {
+    if (doneTerms.size >= MAX_TERMS_PER_PAGE) break;
+    if (doneTerms.has(rule.to) || norm(rule.to) === here) continue;
+    const linked = linkFirst(html, rule, 'ctx-link ctx-term');
+    if (!linked) continue;
+    html = linked;
+    doneTerms.add(rule.to);
+    break; // one glossary link per paragraph is enough
   }
   return html;
 }

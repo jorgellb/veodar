@@ -1,0 +1,57 @@
+---
+// /desarrollo-software-almeria/ and /en/software-development-almeria/: the studio's
+// location page. Same template as a service page, plus the local-business schema.
+import DocPage from '../components/DocPage.astro';
+import { localFor } from '../data/local';
+import { sectorsFor } from '../data/sectors';
+import { servicesFor, serviceHref } from '../data/services';
+import { sectorAnchor } from '../data/crosslinks';
+import { localBusinessLd, site } from '../data/site';
+import { langOf, pathTo, sectorHref } from '../i18n';
+import { UPDATED } from '../data/updated';
+
+const lang = langOf(Astro.url);
+const page = localFor(lang);
+const sectors = sectorsFor(lang);
+const services = servicesFor(lang);
+const T = {
+  es: { home: 'Inicio', here: 'Almería', allSectors: 'Todos los sectores', allServices: 'Todos los servicios' },
+  en: { home: 'Home', here: 'Almería', allSectors: 'All industries', allServices: 'All services' },
+}[lang];
+const inSectors = page.sectors.map((item) => {
+  const sector = sectors.find((s) => s.id === item.id)!;
+  // "Software para…": the anchor names what the sector page is about.
+  return { href: sectorHref(sector.id, lang), anchor: sectorAnchor(sector.id, lang, 1), text: item.text, icon: sector.icon, tint: sector.tint };
+});
+const allServices = services.map((service) => ({ href: serviceHref(service.slug, lang), anchor: service.name, text: service.menu, icon: service.icon, tint: service.tint }));
+const url = new URL(pathTo('almeria', lang), site.url).href;
+---
+
+<DocPage
+  title={page.title}
+  description={page.description}
+  kicker={page.kicker}
+  h1={page.h1}
+  lead={page.lead}
+  blocks={page.blocks}
+  faq={page.faq}
+  deliverablesTitle={page.deliverablesTitle}
+  deliverables={page.deliverables}
+  related={[]}
+  ctaTitle={page.ctaTitle}
+  ctaText={page.ctaText}
+  crumbs={[
+    { name: T.home, path: pathTo('home', lang) },
+    { name: T.here, path: pathTo('almeria', lang) },
+  ]}
+  figure="solar"
+  sceneTitle={page.sceneTitle}
+  sceneCaption={page.sceneCaption}
+  tint="butter"
+  extraLd={[{ ...localBusinessLd(lang), mainEntityOfPage: { '@id': `${url}#webpage` } }]}
+  updated={UPDATED.local}
+  cross={[
+    { id: 'local-sectors', kicker: page.sectorsKicker, title: page.sectorsTitle, items: inSectors, allHref: pathTo('sectores', lang), allLabel: T.allSectors },
+    { id: 'local-services', kicker: page.servicesKicker, title: page.servicesTitle, items: allServices, allHref: pathTo('servicios', lang), allLabel: T.allServices, columns: 3, compact: true },
+  ]}
+/>

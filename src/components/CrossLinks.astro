@@ -1,0 +1,55 @@
+---
+// A block of internal links with a line of context each: sectors on a service
+// page, services on a sector page, sibling sectors… Each row is a LinkRow.
+import Icon from './Icon.astro';
+import LinkRow from './LinkRow.astro';
+
+export interface CrossItem {
+  href: string;
+  anchor: string;
+  text?: string;
+  icon?: string;
+  tint?: string;
+}
+interface Props {
+  id: string;
+  title: string;
+  kicker?: string;
+  items: CrossItem[];
+  allHref?: string;
+  allLabel?: string;
+  columns?: 2 | 3;
+  compact?: boolean;
+  spine?: string;
+}
+const { id, title, kicker, items, allHref, allLabel, columns = 2, compact = false, spine = '0.331' } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <section class="border-t border-line py-16 md:py-24" data-spine={spine} aria-labelledby={id}>
+      <div class="wrap">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            {kicker && <p class="eyebrow">{kicker}</p>}
+            <h2 id={id} class:list={['display h-lg max-w-[20ch]', kicker && 'mt-4']}>
+              {title}
+            </h2>
+          </div>
+          {allHref && (
+            <a href={allHref} class="link-arrow">
+              {allLabel} <Icon name="arrow" size={16} />
+            </a>
+          )}
+        </div>
+        <ul class:list={['mt-10 grid gap-3', columns === 3 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2']}>
+          {items.map((item, index) => (
+            <li data-reveal style={`--d:${(index % 3) * 60}ms`}>
+              <LinkRow {...item} compact={compact} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}

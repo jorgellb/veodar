@@ -15,20 +15,25 @@ interface Props {
   bare?: boolean;
   readout?: boolean;
   node?: boolean;
+  /** Below the first screen: leave the drawing out of the HTML and fetch it when it comes near. */
+  lazy?: boolean;
 }
 
 const lang = langOf(Astro.url);
-const { name, fig, title, hint = lang === 'en' ? 'Looping' : 'En bucle', caption, compact = false, bare = false, readout = true, node = !bare } = Astro.props;
+const { name, fig, title, hint = lang === 'en' ? 'Looping' : 'En bucle', caption, compact = false, bare = false, readout = true, node = !bare, lazy = false } = Astro.props;
 const raw = svgs[`../../generated/${name}.svg`];
 if (!raw) throw new Error(`Figura sin generar: ${name}`);
 const svg = localizeSvg(raw, name, lang);
+// A lazy figure keeps its box (same viewBox) and its description; only the drawing waits.
+const viewBox = svg.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 720 480';
+const label = svg.match(/aria-label="([^"]*)"/)?.[1] ?? title;
 ---
 
 <figure class:list={['veo-fig iso', compact && 'veo-fig--compact', bare && 'veo-fig--bare']} data-theme="light" data-figure={name}>
   <div class="veo-plate" data-node={node ? '' : undefined}>
     <span class="veo-corner" data-corner="fig">{fig}</span>
     <span class="veo-corner" data-corner="title">{title}</span>
-    <Fragment set:html={svg} />
+    {lazy ? <svg class={`iso-svg fig-${name}`} viewBox={viewBox} role="img" aria-label={label} data-lazy={`/figures/${lang}/${name}.svg`} /> : <Fragment set:html={svg} />}
     <span class="veo-corner" data-corner="hint">{hint}</span>
     {
       readout ? (
@@ -51,6 +56,17 @@ const svg = localizeSvg(raw, name, lang);
     if (root.dataset.ready) return;
     root.dataset.ready = '1';
     const name = root.dataset.figure!;
+    // A lazy figure brings its drawing first; the box is already the right size.
+    const slot = root.querySelector<SVGElement>('svg[data-lazy]');
+    if (slot) {
+      try {
+        const response = await fetch(slot.dataset.lazy!);
+        if (!response.ok) return;
+        slot.outerHTML = await response.text();
+      } catch {
+        return;
+      }
+    }
     const live = lives[`../../iso/live/fig-${name}.ts`];
     const motion = motions[`../../generated/${name}.json`];
     if (!live || !motion) return;
@@ -67,7 +83,7 @@ const svg = localizeSvg(raw, name, lang);
         mount(entry.target as HTMLElement);
       }
     },
-    { rootMargin: '400px' },
+    { rootMargin: '700px' },
   );
   document.querySelectorAll<HTMLElement>('[data-figure]').forEach((el) => io.observe(el));
 </script>
@@ -75,6 +91,10 @@ const svg = localizeSvg(raw, name, lang);
 <style>
   .veo-fig {
     margin: 0;
+  }
+  /* The kit's caption grey is 3.9:1 on the page; the site's muted ink reaches AA. */
+  .veo-fig figcaption {
+    color: var(--color-muted);
   }
   .veo-fig :global(svg) {
     display: block;

@@ -7,8 +7,10 @@ import { langOf } from '../i18n';
 interface Props {
   service: Service;
   big?: boolean;
+  /** A line specific to where the card is shown (a sector page), instead of the generic one. */
+  note?: string;
 }
-const { service, big = false } = Astro.props;
+const { service, big = false, note } = Astro.props;
 
 const tintBg: Record<string, string> = {
   mint: 'bg-mint',
@@ -33,7 +35,7 @@ const number = String(servicesFor(lang).findIndex((item) => item.slug === servic
     <span class:list={['block font-display tracking-[-0.03em]', big ? 'text-[clamp(1.8rem,2.6vw,2.4rem)] leading-[1]' : 'text-[1.5rem] leading-[1.05]']}>
       {service.name}
     </span>
-    <span class="mt-2.5 block text-[14.5px] leading-relaxed text-muted">{service.menu}</span>
+    <span class="mt-2.5 block text-[14.5px] leading-relaxed text-muted">{note ?? service.menu}</span>
     {
       big && (
         <span class="mt-5 flex flex-wrap gap-1.5">

@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import { site, organizationLdFor, websiteLd } from '../data/site';
 import { alternatesOf, htmlLang, langOf, ogLocale, LANGS } from '../i18n';
 import CookieBox from '../components/CookieBox.astro';
+import { UPDATED } from '../data/updated';
 
 interface Props {
   title: string;
@@ -15,9 +16,15 @@ interface Props {
   darkHero?: boolean;
   /** schema.org type of the page itself: WebPage, CollectionPage, ContactPage, AboutPage… */
   pageType?: string;
+  /** ISO date the page's content last changed (see src/data/updated.ts). */
+  updated?: string;
+  /** @id of the thing this page is about (its Service, its DefinedTerm…), if it has one. */
+  mainEntity?: string;
+  /** Open Graph type: "website" for hubs and landing pages, "article" for reference pages. */
+  ogType?: 'website' | 'article';
 }
 
-const { title, description, jsonLd = [], ogImage = '/og.png', noindex = false, darkHero = false, pageType = 'WebPage' } = Astro.props;
+const { title, description, jsonLd = [], ogImage = '/og.png', noindex = false, darkHero = false, pageType = 'WebPage', updated = UPDATED.pages, mainEntity, ogType = 'website' } = Astro.props;
 const lang = langOf(Astro.url);
 const origin = Astro.site ?? new URL(site.url);
 const canonical = new URL(Astro.url.pathname, origin);
@@ -35,7 +42,8 @@ const webPageLd = {
   inLanguage: htmlLang[lang],
   isPartOf: { '@id': `${site.url}/#website` },
   about: { '@id': `${site.url}/#organization` },
-  dateModified: new Date().toISOString().slice(0, 10),
+  dateModified: updated,
+  ...(mainEntity ? { mainEntity: { '@id': mainEntity } } : {}),
 };
 const graph = {
   '@context': 'https://schema.org',
@@ -64,7 +72,8 @@ const skip = { es: 'Saltar al contenido', en: 'Skip to content' }[lang];
     <meta name="robots" content={noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large,max-snippet:-1'} />
     <meta name="theme-color" content={darkHero ? '#121026' : '#f4f0e6'} />
     <meta name="color-scheme" content="light" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
+    {ogType === 'article' && <meta property="article:modified_time" content={updated} />}
     <meta property="og:locale" content={ogLocale[lang]} />
     {alternates && <meta property="og:locale:alternate" content={ogLocale[otherLang]} />}
     <meta property="og:site_name" content={site.name} />
@@ -80,6 +89,8 @@ const skip = { es: 'Saltar al contenido', en: 'Skip to content' }[lang];
     <meta name="twitter:image" content={image.href} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="sitemap" href="/sitemap.xml" />
     <script type="application/ld+json" set:html={JSON.stringify(graph)} />
     <script is:inline>document.documentElement.classList.add('js');</script>
@@ -148,6 +159,9 @@ const skip = { es: 'Saltar al contenido', en: 'Skip to content' }[lang];
       };
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
         document.querySelectorAll<HTMLElement>('h1.display, h2.display').forEach((el) => {
+          // First-screen headings are already painted (see reveal-first in global.css):
+          // splitting them now would hide and replay them.
+          if (el.closest('main > section:first-of-type')) return;
           el.setAttribute('data-split', '');
           if (!el.hasAttribute('data-reveal')) el.setAttribute('data-reveal', '');
           splitWords(el);

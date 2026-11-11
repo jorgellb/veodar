@@ -1,0 +1,143 @@
+---
+// One internal link with a line of context: icon, anchor phrase and what the reader
+// finds there. The <a> holds only the anchor (so the link text is precise) and its
+// ::after covers the row, which makes the whole card the target.
+import Icon from './Icon.astro';
+
+interface Props {
+  href: string;
+  anchor: string;
+  text?: string;
+  icon?: string;
+  tint?: string;
+  /** Tighter row, for long lists. */
+  compact?: boolean;
+}
+const { href, anchor, text, icon, tint = 'paper', compact = false } = Astro.props;
+const tintBg: Record<string, string> = {
+  mint: 'bg-mint',
+  sky: 'bg-sky',
+  butter: 'bg-butter',
+  blush: 'bg-blush',
+  lilac: 'bg-lilac',
+  paper: 'bg-paper-2',
+};
+---
+
+<div class:list={['xl-row spot', compact && 'xl-row--compact']}>
+  {
+    icon && (
+      <span class:list={['xl-ico', tintBg[tint] ?? tintBg.paper]}>
+        <Icon name={icon} size={compact ? 17 : 19} />
+      </span>
+    )
+  }
+  <span class="min-w-0">
+    <a href={href} class="xl-anchor">{anchor}</a>
+    {text && <span class="xl-text">{text}</span>}
+  </span>
+  <span class="xl-go" aria-hidden="true">
+    <Icon name="arrow" size={compact ? 14 : 16} />
+  </span>
+</div>
+
+<style>
+  .xl-row {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    height: 100%;
+    padding: 18px 18px 18px 16px;
+    border-radius: 20px;
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    transition:
+      transform 0.45s var(--ease-spring),
+      box-shadow 0.45s var(--ease-spring);
+  }
+  .xl-row:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      inset 0 0 0 1px var(--color-ink),
+      0 18px 30px -22px rgb(22 20 44 / 0.45);
+  }
+  .xl-ico {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 1px rgb(22 20 44 / 0.06);
+  }
+  .xl-anchor {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.22rem;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+  /* The link covers the row, so the whole card is the target. */
+  .xl-anchor::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .xl-anchor:focus-visible {
+    outline: none;
+  }
+  .xl-row:has(.xl-anchor:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  .xl-text {
+    display: block;
+    margin-top: 6px;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+  .xl-go {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    margin-left: auto;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    transition:
+      background-color 0.3s,
+      transform 0.45s var(--ease-spring);
+  }
+  .xl-row:hover .xl-go {
+    background: var(--color-accent);
+    box-shadow: none;
+    transform: rotate(-45deg);
+  }
+  .xl-row--compact {
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px 12px 12px;
+    border-radius: 16px;
+  }
+  .xl-row--compact .xl-ico {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+  .xl-row--compact .xl-anchor {
+    font-size: 1.08rem;
+  }
+  .xl-row--compact .xl-text {
+    margin-top: 3px;
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+  .xl-row--compact .xl-go {
+    width: 28px;
+    height: 28px;
+  }
+</style>

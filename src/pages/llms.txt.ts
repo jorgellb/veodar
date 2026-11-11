@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
 import { servicesFor, serviceGroupsFor, serviceHref } from '../data/services';
 import { sectorsFor } from '../data/sectors';
+import { termDescription, termsFor } from '../data/glossary';
 import { company, site, siteText } from '../data/site';
-import { pathTo, sectorHref, type Lang } from '../i18n';
+import { pathTo, sectorHref, termHref, type Lang } from '../i18n';
 
 // llms.txt (llmstxt.org): a plain summary for AI assistants and answer engines,
 // with the site in both languages and the questions people actually ask.
@@ -21,6 +22,10 @@ export const GET: APIRoute = () => {
     sectorsFor(lang)
       .map((sector) => `- [${sector.name}](${url(sectorHref(sector.id, lang))}): ${sector.description}`)
       .join('\n');
+  const glossary = (lang: Lang) =>
+    termsFor(lang)
+      .map((term) => `- [${term.name}${term.long ? ` (${term.long})` : ''}](${url(termHref(term.id, lang))}): ${termDescription(term)}`)
+      .join('\n');
   const asks = (lang: Lang) => sectorsFor(lang).map((sector) => `- ${sector.ask} ${url(sectorHref(sector.id, lang))}`);
 
   const body = `# ${site.name}
@@ -31,7 +36,9 @@ Veodar is an engineering and design studio based in Spain. One team designs and 
 
 Company: ${company.legalName} (Spanish tax ID ${company.taxId}), ${company.street}, ${company.postalCode} ${company.locality}, ${company.region}, Spain
 Contact: ${site.email} · ${url(pathTo('contacto', 'en'))}
+Based in: Vera, Almería, Spain (${url(pathTo('almeria', 'en'))})
 Languages: Spanish (${url('/')}) and English (${url('/en/')})
+Full content in one file: ${url('/llms-full.txt')} (English) · ${url('/llms-full-es.txt')} (Spanish)
 
 ## Services (English)
 
@@ -48,6 +55,16 @@ ${industries('en')}
 ## Sectores (español)
 
 ${industries('es')}
+
+## Glossary (English)
+
+Plain definitions of the terms that come up in projects, each on its own page.
+
+${glossary('en')}
+
+## Glosario (español)
+
+${glossary('es')}
 
 ## Questions Veodar answers
 
@@ -75,6 +92,9 @@ ${asks('es').join('\n')}
 - [Solutions by department](${url(pathTo('soluciones', 'en'))}) · [Soluciones por área](${url(pathTo('soluciones', 'es'))})
 - [Industries](${url(pathTo('sectores', 'en'))}) · [Sectores](${url(pathTo('sectores', 'es'))})
 - [How projects are priced](${url(pathTo('precios', 'en'))}) · [Cómo se presupuesta](${url(pathTo('precios', 'es'))})
+- [Glossary](${url(pathTo('glosario', 'en'))}) · [Glosario](${url(pathTo('glosario', 'es'))})
+- [Veodar in Almería](${url(pathTo('almeria', 'en'))}) · [Veodar en Almería](${url(pathTo('almeria', 'es'))})
+- [Site map](${url(pathTo('mapa', 'en'))}) · [Mapa del sitio](${url(pathTo('mapa', 'es'))})
 - [Contact](${url(pathTo('contacto', 'en'))}) · [Contacto](${url(pathTo('contacto', 'es'))})
 `;
   return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });

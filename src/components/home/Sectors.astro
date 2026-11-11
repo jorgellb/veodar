@@ -1,0 +1,47 @@
+---
+// Home: the twelve sectors, each linking to its page. Heading on the left (it stays
+// in view on wide screens), the list on the right.
+import Icon from '../Icon.astro';
+import LinkRow from '../LinkRow.astro';
+import { sectorsFor } from '../../data/sectors';
+import { langOf, pathTo, sectorHref } from '../../i18n';
+
+const lang = langOf(Astro.url);
+const sectors = sectorsFor(lang);
+const T = {
+  es: {
+    eyebrow: 'Sectores',
+    lead: 'Una fábrica y una clínica no tienen el mismo problema. Por eso cada sector tiene su página: qué construimos, sobre qué sistemas y por dónde se empieza.',
+    all: 'Ver los doce sectores',
+    list: 'Sectores',
+  },
+  en: {
+    eyebrow: 'Industries',
+    lead: 'A factory and a clinic don’t share a problem. So every industry has its own page: what we build, on top of which systems, and where to start.',
+    all: 'See all twelve industries',
+    list: 'Industries',
+  },
+}[lang];
+---
+
+<section id="sectores" class="border-t border-line py-24 md:py-36" data-spine="0.5" aria-labelledby="sectors-title">
+  <div class="wrap grid gap-12 lg:grid-cols-[0.9fr_1.6fr] lg:gap-16">
+    <div class="lg:sticky lg:top-28 lg:self-start">
+      <p class="eyebrow" data-reveal>{T.eyebrow}</p>
+      <h2 id="sectors-title" class="display h-xl mt-5 max-w-[11ch]">
+        {lang === 'en' ? <>Software and AI <em>for your industry</em>.</> : <>Software e IA <em>para tu sector</em>.</>}
+      </h2>
+      <p class="lead mt-6 max-w-[40ch]" data-reveal style="--d:100ms">{T.lead}</p>
+      <a href={pathTo('sectores', lang)} class="link-arrow mt-6" data-reveal style="--d:140ms">{T.all} <Icon name="arrow" size={16} /></a>
+    </div>
+    <ul class="grid gap-3 sm:grid-cols-2" aria-label={T.list}>
+      {
+        sectors.map((sector, index) => (
+          <li data-reveal style={`--d:${(index % 2) * 70}ms`}>
+            <LinkRow href={sectorHref(sector.id, lang)} anchor={sector.name} text={sector.menu} icon={sector.icon} tint={sector.tint} />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

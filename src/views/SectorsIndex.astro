@@ -3,13 +3,19 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectorCard from '../components/SectorCard.astro';
 import CtaBand from '../components/CtaBand.astro';
+import CrossLinks from '../components/CrossLinks.astro';
 import Icon from '../components/Icon.astro';
 import { sectorsFor } from '../data/sectors';
+import { servicesFor, serviceHref } from '../data/services';
+import { serviceAnchor } from '../data/crosslinks';
 import { breadcrumbLd, site } from '../data/site';
 import { langOf, pathTo, sectorHref } from '../i18n';
+import { UPDATED } from '../data/updated';
 
 const lang = langOf(Astro.url);
 const sectors = sectorsFor(lang);
+// Each service under a different name than the one the services index uses.
+const byService = servicesFor(lang).map((service) => ({ href: serviceHref(service.slug, lang), anchor: serviceAnchor(service.slug, lang, 1), text: service.menu, icon: service.icon, tint: service.tint }));
 const T = {
   es: {
     home: 'Inicio',
@@ -26,6 +32,9 @@ const T = {
       ['Un papel primero', 'Empezamos por el documento que más horas cuesta y medimos el antes y el después.'],
       ['La IA propone, una persona confirma', 'Ningún pedido, abono o cita se cierra sin una regla escrita o una persona.'],
     ],
+    serviceKicker: 'Por servicio',
+    serviceTitle: 'Con qué lo construimos',
+    allServices: 'Todos los servicios',
     missing: '¿No ves tu sector?',
     missingText: 'Trabajamos con más sectores de los que caben en esta página. Cuéntanos el problema y te decimos si encaja.',
     missingCta: 'Cuéntanos el problema',
@@ -45,6 +54,9 @@ const T = {
       ['One document first', 'We start with the paperwork that costs the most hours and measure before and after.'],
       ['AI proposes, a person confirms', 'No order, refund or appointment closes without a written rule or a person.'],
     ],
+    serviceKicker: 'By service',
+    serviceTitle: 'What we build it with',
+    allServices: 'All services',
     missing: 'Don’t see your industry?',
     missingText: 'We work with more industries than fit on this page. Tell us the problem and we’ll tell you whether it fits.',
     missingCta: 'Tell us the problem',
@@ -69,7 +81,7 @@ const ld = [
 ];
 ---
 
-<BaseLayout title={T.title} description={T.description} jsonLd={ld} pageType="CollectionPage">
+<BaseLayout title={T.title} description={T.description} jsonLd={ld} pageType="CollectionPage" updated={UPDATED.sectors}>
   <section class="pt-14 pb-10 md:pt-20" data-trunk-start="0.5">
     <div class="wrap">
       <p class="eyebrow" data-reveal>{T.sectors}</p>
@@ -119,5 +131,6 @@ const ld = [
     </div>
   </section>
 
+  <CrossLinks id="by-service" kicker={T.serviceKicker} title={T.serviceTitle} items={byService} allHref={pathTo('servicios', lang)} allLabel={T.allServices} columns={3} compact />
   <CtaBand />
 </BaseLayout>

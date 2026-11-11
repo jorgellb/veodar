@@ -1,10 +1,13 @@
 ---
 // One sector page, in the language of its URL.
 import DocPage from '../components/DocPage.astro';
-import type { Sector } from '../data/sectors';
+import { sectorsFor, type Sector } from '../data/sectors';
 import { servicesFor, serviceHref } from '../data/services';
+import { pairText, sectorAnchor, servicesOfSector, siblings } from '../data/crosslinks';
+import { termsOfSector } from '../data/glossary';
 import { site } from '../data/site';
-import { langOf, pathTo, sectorHref } from '../i18n';
+import { langOf, pathTo, sectorHref, termHref } from '../i18n';
+import { UPDATED } from '../data/updated';
 
 interface Props {
   sector: Sector;
@@ -17,6 +20,18 @@ const T = {
     home: 'Inicio',
     sectors: 'Sectores',
     stack: 'Sistemas habituales en el sector',
+    more: 'También en este sector',
+    moreTitle: `Más servicios para ${sector.short.toLowerCase()}`,
+    allServices: 'Todos los servicios',
+    terms: 'Glosario del sector',
+    termsTitle: 'Las siglas de este sector, explicadas',
+    allTerms: 'Ver todo el glosario',
+    near: 'Sectores afines',
+    nearTitle: 'Problemas parecidos, en otros sectores',
+    allSectors: 'Todos los sectores',
+    prev: 'Sector anterior',
+    next: 'Sector siguiente',
+    pager: 'Otros sectores',
     type: 'Desarrollo de software e IA',
     catalog: `Qué construimos para ${sector.short.toLowerCase()}`,
     areas: [{ '@type': 'Country', name: 'España' }, { '@type': 'Place', name: 'Latinoamérica' }, { '@type': 'Place', name: 'Europa' }],
@@ -25,12 +40,45 @@ const T = {
     home: 'Home',
     sectors: 'Industries',
     stack: 'Systems common in this industry',
+    more: 'Also in this industry',
+    moreTitle: `More services for ${sector.short.toLowerCase()}`,
+    allServices: 'All services',
+    terms: 'Industry glossary',
+    termsTitle: 'This industry’s acronyms, explained',
+    allTerms: 'See the whole glossary',
+    near: 'Related industries',
+    nearTitle: 'Similar problems, in other industries',
+    allSectors: 'All industries',
+    prev: 'Previous industry',
+    next: 'Next industry',
+    pager: 'Other industries',
     type: 'Software development and AI',
     catalog: `What we build for ${sector.short.toLowerCase()}`,
     areas: [{ '@type': 'Country', name: 'Spain' }, { '@type': 'Place', name: 'Latin America' }, { '@type': 'Place', name: 'Europe' }],
   },
 }[lang];
 const services = servicesFor(lang);
+const sectors = sectorsFor(lang);
+// What each related service does in this sector (shown on its card instead of the generic line).
+const relatedNotes = Object.fromEntries(sector.related.map((slug) => [slug, pairText(slug, sector.id, lang)]));
+// Services used in this sector that are not already among the three cards above.
+const moreServices = servicesOfSector(sector.id, lang)
+  .filter((item) => !sector.related.includes(item.service))
+  .map((item) => {
+    const service = services.find((s) => s.slug === item.service)!;
+    return { href: serviceHref(service.slug, lang), anchor: item.anchor, text: item.text, icon: service.icon, tint: service.tint };
+  });
+// Sectors with similar problems. The anchor rotates with the position of this sector, so
+// a sector is not always linked with the same words.
+const at = sectors.findIndex((s) => s.id === sector.id);
+const nearSectors = (siblings[sector.id] ?? []).map((id, index) => {
+  const other = sectors.find((s) => s.id === id)!;
+  return { href: sectorHref(other.id, lang), anchor: sectorAnchor(other.id, lang, at + index + 1), text: other.menu, icon: other.icon, tint: other.tint };
+});
+// Glossary terms that belong to this sector.
+const glossary = termsOfSector(sector.id, lang).map((term) => ({ href: termHref(term.id, lang), anchor: term.name, text: term.long ?? term.title, icon: 'layers' }));
+const prevSector = sectors[(at - 1 + sectors.length) % sectors.length];
+const nextSector = sectors[(at + 1) % sectors.length];
 const serviceLd = {
   '@type': 'Service',
   '@id': `${url}#service`,
@@ -80,4 +128,18 @@ const serviceLd = {
   stackLabel={T.stack}
   tint={sector.tint}
   extraLd={[serviceLd]}
+  updated={UPDATED.sectors}
+  relatedNotes={relatedNotes}
+  cross={[
+    { id: 'more-title', kicker: T.more, title: T.moreTitle, items: moreServices, allHref: pathTo('servicios', lang), allLabel: T.allServices },
+    { id: 'terms-title', kicker: T.terms, title: T.termsTitle, items: glossary, allHref: pathTo('glosario', lang), allLabel: T.allTerms, columns: 3, compact: true },
+    { id: 'near-title', kicker: T.near, title: T.nearTitle, items: nearSectors, allHref: pathTo('sectores', lang), allLabel: T.allSectors, columns: 3 },
+  ]}
+  pager={{
+    prev: { href: sectorHref(prevSector.id, lang), label: prevSector.name },
+    next: { href: sectorHref(nextSector.id, lang), label: nextSector.name },
+    prevLabel: T.prev,
+    nextLabel: T.next,
+    ariaLabel: T.pager,
+  }}
 />

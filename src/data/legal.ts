@@ -24,7 +24,7 @@ const registry = (lang: Lang) =>
 
 const es: Record<LegalKey, LegalDoc> = {
   avisoLegal: {
-    title: 'Aviso legal',
+    title: 'Aviso legal y condiciones de uso',
     description: 'Aviso legal de veodar.com: titular de la web, Veodar S.L., datos de contacto, condiciones de uso, propiedad intelectual y legislación aplicable.',
     eyebrow: 'Legal',
     h1: 'Aviso legal',
@@ -133,7 +133,7 @@ const es: Record<LegalKey, LegalDoc> = {
     ],
   },
   cookies: {
-    title: 'Política de cookies',
+    title: 'Política de cookies: qué guarda esta web',
     description: 'Política de cookies de veodar.com: la web no usa cookies de seguimiento ni publicidad. Qué guarda en tu navegador, para qué y cómo cambiar tu elección.',
     eyebrow: 'Legal',
     h1: 'Política de cookies',
@@ -169,7 +169,7 @@ const es: Record<LegalKey, LegalDoc> = {
 
 const en: Record<LegalKey, LegalDoc> = {
   avisoLegal: {
-    title: 'Legal Notice',
+    title: 'Legal Notice and Terms of Use',
     description: 'Legal notice for veodar.com: site owner Veodar S.L., contact details, terms of use, intellectual property and governing law.',
     eyebrow: 'Legal',
     h1: 'Legal notice',
@@ -215,7 +215,7 @@ const en: Record<LegalKey, LegalDoc> = {
     note: 'This English version is a translation for convenience. If there is any discrepancy, the Spanish version prevails.',
   },
   privacidad: {
-    title: 'Privacy Policy',
+    title: 'Privacy Policy: How We Handle Your Data',
     description: 'Privacy policy of Veodar S.L.: what data we process when you write to us, why, on what legal basis, for how long and how to exercise your rights.',
     eyebrow: 'Legal',
     h1: 'Privacy policy',
@@ -276,7 +276,7 @@ const en: Record<LegalKey, LegalDoc> = {
     note: 'This English version is a translation for convenience. If there is any discrepancy, the Spanish version prevails.',
   },
   cookies: {
-    title: 'Cookie Policy',
+    title: 'Cookie Policy: What This Site Stores',
     description: 'Cookie policy for veodar.com: no tracking or advertising cookies. What the site stores in your browser, why, and how to change your choice.',
     eyebrow: 'Legal',
     h1: 'Cookie policy',
