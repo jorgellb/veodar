@@ -7,6 +7,9 @@
 // Each page is loaded twice at each width: with the .woff2 files blocked, which is what
 // is on screen until the fonts load, and with them. The number is how many pixels the
 // content of the first screen moves between one and the other; a dot means under 3 px.
+//
+// Point it at a local preview. The full sweep is some 500 page loads in a row, and
+// against veodar.com that many make Vercel answer with its bot check instead of the page.
 import { openPage } from './chrome.mjs';
 
 const args = process.argv.slice(2);
@@ -51,7 +54,7 @@ try {
     rows.push(row);
   }
 } finally {
-  page.close();
+  await page.close();
 }
 
 const cell = (value) => String(value).padStart(6);
