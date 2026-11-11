@@ -14,7 +14,9 @@
     "test": "node --test tests/",
     "seo:audit": "node scripts/seo-audit.mjs",
     "seo:indexnow": "node scripts/indexnow.mjs",
-    "icons": "node scripts/icons.mjs"
+    "icons": "node scripts/icons.mjs",
+    "fonts:fallbacks": "node scripts/font-fallbacks.mjs",
+    "fonts:check": "node scripts/font-swap-check.mjs"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

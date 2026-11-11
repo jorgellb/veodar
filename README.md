@@ -9,10 +9,12 @@ Web de Veodar: automatizaciones con IA, desarrollo web, apps móviles y de escri
 | `astro dev --background` | Servidor de desarrollo (`astro dev stop` / `status` / `logs`) |
 | `npm run build` | Genera el sitio en `dist/` |
 | `npm run figures` | Regenera todas las figuras isométricas en `src/generated/` |
-| `npm test` | Pruebas del formulario de contacto |
+| `npm test` | Pruebas del formulario de contacto, del aviso a IndexNow y de las tipografías de reserva |
 | `npm run seo:audit` | Audita `dist/` tras compilar: enlaces rotos, huérfanas, profundidad, enlaces entrantes, títulos, descripciones, hreflang, sitemap y JSON-LD (`-- --verbose`, `-- --json fichero`) |
 | `npm run seo:indexnow` | Avisa a IndexNow de las páginas cambiadas (`-- --all`, `-- --dry`) |
 | `npm run icons` | Regenera los iconos PNG a partir del dibujo del favicon |
+| `npm run fonts:fallbacks` | Regenera `src/styles/font-fallbacks.css` (`-- --measure` vuelve a medir las tipografías) |
+| `npm run fonts:check` | Con `astro preview` en marcha, dice cuánto se mueve cada página al llegar las tipografías |
 
 ## Estructura
 
@@ -58,6 +60,18 @@ Todo sale de datos, así que una página nueva queda enlazada sin tocar las dem�
 - **IndexNow**: la clave pública está en `public/<clave>.txt`. `.github/workflows/indexnow.yml` ejecuta `scripts/indexnow.mjs` con cada push a `main`: espera a que veodar.com sirva ese commit (lo lee en `/version.txt`), compara el sitemap publicado con el que avisó la última vez (guardado en la caché de Actions) y envía solo las páginas nuevas, las que cambiaron de `<lastmod>` y las retiradas. Un despliegue que no cambia ninguna página no envía nada. También se puede lanzar a mano desde la pestaña Actions, con una casilla para enviar todo el sitemap. En local, sin esa memoria, `npm run seo:indexnow` envía las páginas con `<lastmod>` de los dos últimos días.
 - **Rendimiento**: lo primero que se ve se pinta sin esperar a JavaScript (`reveal-first` en `global.css`) y las figuras que quedan lejos (`<Figure lazy />`) se sirven desde `/figures/<idioma>/<nombre>.svg` cuando se acercan a la pantalla.
 - Lo que no se hace aquí, a propósito: reseñas o valoraciones inventadas en los datos estructurados, texto oculto, páginas clonadas por ciudad ni contenido distinto para el buscador. Son motivo de penalización.
+
+## Tipografías de reserva
+
+Fraunces y Geist se cargan con `font-display: swap`: el texto se pinta al instante con una tipografía del sistema y cambia cuando llega la de la web. Si la del sistema ocupa otro ancho, un titular rompe en otro número de líneas y todo lo que hay debajo salta; es lo que Core Web Vitals mide como CLS.
+
+`src/styles/font-fallbacks.css` lo evita con tipografías de reserva: Times New Roman y Arial (Noto Serif y Roboto en Android) escaladas con `size-adjust` hasta ocupar lo mismo que las reales. Solo se ven mientras cargan las de verdad; con ellas cargadas la página queda idéntica.
+
+- Cada reserva son dos reglas `@font-face`: las cifras, ajustadas para que el «0» mida lo mismo (de él sale la unidad `ch` de los `max-w-[…ch]`), y el resto, ajustado para que el texto del propio sitio mida lo mismo.
+- Fraunces estrecha sus letras al crecer (eje de tamaño óptico), así que hay una reserva por tramo de tamaño y cada clase de titular (`.h-hero`, `.h-xl`, `.h-lg`) elige la suya según el ancho de pantalla.
+- El archivo lo escribe `npm run fonts:fallbacks` a partir de `scripts/font-fallbacks.json` (las medidas) y de los `font-size` de `global.css`. **Si cambias el tamaño de un titular, vuelve a lanzarlo**: `npm test` falla si el CSS quedó desfasado.
+- `npm run fonts:fallbacks -- --measure` vuelve a medir. Hace falta si cambia una tipografía; necesita Chrome, un `dist/` compilado y las tipografías de comparación instaladas (la cabecera de `scripts/font-fallbacks.mjs` dice cuáles y cómo medir una desde un archivo).
+- `npm run fonts:check` carga cada página dos veces por ancho, con los `.woff2` bloqueados y sin bloquear, y cuenta los píxeles que se mueve el primer pantallazo. En la muestra de 21 páginas y 12 anchos se movía en 120 de 252 cargas (hasta 131 px); ahora en 15, y nunca más de una línea. Lo que queda son titulares que caben o no en una línea por un par de píxeles: el ajuste es estadístico, no exacto.
 
 ## Despliegue (Vercel)
 

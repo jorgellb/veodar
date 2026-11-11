@@ -3,6 +3,9 @@
 @import "@fontsource-variable/fraunces/opsz-italic.css";
 @import "@fontsource-variable/geist/index.css";
 @import "@fontsource-variable/geist-mono/index.css";
+/* Local fonts scaled to stand in for Fraunces and Geist while they load, so nothing
+   moves when they arrive (README, "Tipografías de reserva"). Generated: npm run fonts:fallbacks. */
+@import "./font-fallbacks.css";
 
 @theme {
   --color-paper: #f4f0e6;
@@ -22,8 +25,8 @@
   --color-line: color-mix(in srgb, #16142c 13%, transparent);
   --color-line-strong: color-mix(in srgb, #16142c 24%, transparent);
 
-  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Fraunces Variable", Georgia, serif;
+  --font-sans: "Geist Variable", "Geist Arial", "Geist Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces Variable", "Fraunces Times 28", "Fraunces Noto 28", Georgia, serif;
   --font-mono: "Geist Mono Variable", ui-monospace, monospace;
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -86,7 +89,8 @@
   }
 
   .display {
-    font-family: var(--font-display);
+    /* Each heading class sets --display-fallback to the fallback measured for its size (font-fallbacks.css). */
+    font-family: "Fraunces Variable", var(--display-fallback, "Fraunces Times 28", "Fraunces Noto 28"), Georgia, serif;
     font-weight: 380;
     font-optical-sizing: auto;
     letter-spacing: -0.035em;
