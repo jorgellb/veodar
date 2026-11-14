@@ -1,0 +1,482 @@
+---
+// The signature of the VeodarDental page: both dental arches seen from above, as the
+// program's odontogram numbers them (FDI: 18…11 | 21…28 on top, 48…41 | 31…38 below,
+// the patient's right on the viewer's left). On load each tooth draws itself from the
+// midline outwards, then treatments appear in the colours the program uses: planned in
+// red, done in blue, existing in green. Planned ones keep breathing.
+//
+// The geometry is worked out here, at build time: each tooth sits on an ellipse at its
+// share of the arch length, turned along the curve. With "reduce motion" the drawing is
+// shown finished and still.
+import { vdFor } from '../../data/veodardental';
+import { langOf } from '../../i18n';
+
+const lang = langOf(Astro.url);
+const text = vdFor(lang);
+const T = {
+  es: { right: 'Derecha', left: 'Izquierda', upper: 'Arcada superior', lower: 'Arcada inferior' },
+  en: { right: 'Right', left: 'Left', upper: 'Upper arch', lower: 'Lower arch' },
+}[lang];
+
+const W = 600;
+const H = 600;
+const CX = W / 2;
+
+// Width along the arch and depth of each tooth, from the midline back (1 = central incisor).
+const UPPER = [
+  { w: 30, d: 20, kind: 'incisor' },
+  { w: 24, d: 18, kind: 'incisor' },
+  { w: 26, d: 24, kind: 'canine' },
+  { w: 25, d: 26, kind: 'premolar' },
+  { w: 25, d: 26, kind: 'premolar' },
+  { w: 35, d: 34, kind: 'molar' },
+  { w: 32, d: 32, kind: 'molar' },
+  { w: 28, d: 29, kind: 'molar' },
+];
+const LOWER = [
+  { w: 21, d: 17, kind: 'incisor' },
+  { w: 22, d: 17, kind: 'incisor' },
+  { w: 25, d: 22, kind: 'canine' },
+  { w: 25, d: 24, kind: 'premolar' },
+  { w: 26, d: 25, kind: 'premolar' },
+  { w: 37, d: 32, kind: 'molar' },
+  { w: 34, d: 30, kind: 'molar' },
+  { w: 31, d: 28, kind: 'molar' },
+];
+const GAP = 4;
+// The tables above are in tenths of a millimetre, more or less; this sets them to the drawing.
+const SCALE = 1.22;
+
+type Placed = { fdi: number; x: number; y: number; angle: number; w: number; d: number; kind: string; nx: number; ny: number; order: number };
+
+/**
+ * Places the teeth of one arch. The arch is half an ellipse with its vertex at
+ * (CX, vertexY), opening down (upper) or up (lower). Teeth go from the midline outwards
+ * on both sides, each at the arc length it takes.
+ */
+function arch(teeth: typeof UPPER, vertexY: number, a: number, b: number, upper: boolean): Placed[] {
+  const dir = upper ? 1 : -1;
+  // Arc length table along θ ∈ [0, π·0.7].
+  const steps = 1400;
+  const max = Math.PI * 0.72;
+  const table: { t: number; s: number }[] = [{ t: 0, s: 0 }];
+  let s = 0;
+  let px = 0;
+  let py = 0;
+  for (let i = 1; i <= steps; i++) {
+    const t = (max * i) / steps;
+    const x = a * Math.sin(t);
+    const y = b * (1 - Math.cos(t));
+    s += Math.hypot(x - px, y - py);
+    px = x;
+    py = y;
+    table.push({ t, s });
+  }
+  const thetaAt = (len: number) => table.find((row) => row.s >= len)?.t ?? max;
+  const out: Placed[] = [];
+  let along = GAP / 2;
+  teeth.forEach((raw, index) => {
+    const tooth = { ...raw, w: raw.w * SCALE, d: raw.d * SCALE };
+    const centre = along + tooth.w / 2;
+    along += tooth.w + GAP;
+    const t = thetaAt(centre);
+    for (const side of [-1, 1]) {
+      const x = CX + side * a * Math.sin(t);
+      const y = vertexY + dir * b * (1 - Math.cos(t));
+      // Tangent of the curve, then the outward normal (away from the arch's inside).
+      const tx = side * a * Math.cos(t);
+      const ty = dir * b * Math.sin(t);
+      const len = Math.hypot(tx, ty);
+      let nx = ty / len;
+      let ny = -tx / len;
+      // Point the normal away from the centre of the arch.
+      const inside = { x: CX, y: vertexY + dir * b };
+      if ((x - inside.x) * nx + (y - inside.y) * ny < 0) {
+        nx = -nx;
+        ny = -ny;
+      }
+      const angle = (Math.atan2(ty, tx) * 180) / Math.PI;
+      // FDI: patient's right is the viewer's left. Upper right 1x, upper left 2x, lower left 3x, lower right 4x.
+      const quadrant = upper ? (side < 0 ? 1 : 2) : side < 0 ? 4 : 3;
+      out.push({ fdi: quadrant * 10 + index + 1, x, y, angle, w: tooth.w, d: tooth.d, kind: tooth.kind, nx, ny, order: index });
+    }
+  });
+  return out;
+}
+
+const upper = arch(UPPER, 84, 214, 142, true);
+const lower = arch(LOWER, H - 84, 206, 138, false);
+const teeth = [...upper, ...lower];
+const byFdi = Object.fromEntries(teeth.map((t) => [t.fdi, t]));
+
+const r = (n: number) => Math.round(n * 10) / 10;
+/** A rounded box centred on 0,0: `w` along the arch, `d` across it. */
+function box(w: number, d: number, round: number) {
+  const x = -w / 2;
+  const y = -d / 2;
+  const k = Math.min(round, w / 2, d / 2);
+  return `M${r(x + k)} ${r(y)}H${r(x + w - k)}Q${r(x + w)} ${r(y)} ${r(x + w)} ${r(y + k)}V${r(y + d - k)}Q${r(x + w)} ${r(y + d)} ${r(x + w - k)} ${r(y + d)}H${r(x + k)}Q${r(x)} ${r(y + d)} ${r(x)} ${r(y + d - k)}V${r(y + k)}Q${r(x)} ${r(y)} ${r(x + k)} ${r(y)}Z`;
+}
+/** The outline of a tooth seen from above, by kind. */
+function outline(t: Placed) {
+  if (t.kind === 'incisor') return box(t.w, t.d, t.d * 0.48);
+  if (t.kind === 'canine') return box(t.w, t.d, t.d * 0.5);
+  if (t.kind === 'premolar') return box(t.w, t.d, t.d * 0.44);
+  return box(t.w, t.d, t.d * 0.36);
+}
+/** The grooves on the biting surface. */
+function grooves(t: Placed) {
+  const w = t.w / 2;
+  const d = t.d / 2;
+  if (t.kind === 'incisor') return `M${r(-w * 0.62)} ${r(-d * 0.28)}Q0 ${r(-d * 0.42)} ${r(w * 0.62)} ${r(-d * 0.28)}`;
+  if (t.kind === 'canine') return `M${r(-w * 0.35)} ${r(-d * 0.1)}L0 ${r(-d * 0.42)}L${r(w * 0.35)} ${r(-d * 0.1)}`;
+  if (t.kind === 'premolar') return `M${r(-w * 0.5)} 0Q0 ${r(d * 0.18)} ${r(w * 0.5)} 0`;
+  return `M${r(-w * 0.6)} ${r(-d * 0.05)}Q${r(-w * 0.2)} ${r(d * 0.2)} 0 0T${r(w * 0.6)} ${r(-d * 0.05)}M0 ${r(-d * 0.55)}Q${r(w * 0.12)} 0 0 ${r(d * 0.55)}`;
+}
+
+// Delay of each tooth: from the midline out, the upper arch a beat ahead of the lower.
+const delay = (t: Placed) => 260 + t.order * 95 + (t.fdi >= 30 ? 160 : 0);
+
+// Treatments drawn on the teeth, and the notes that name four of them.
+type State = 'planned' | 'done' | 'prior';
+const marks: { fdi: number; state: State; shape: 'filling' | 'crown' | 'implant' | 'extract' | 'endo'; at: number }[] = [
+  { fdi: 16, state: 'done', shape: 'filling', at: 1900 },
+  { fdi: 21, state: 'prior', shape: 'crown', at: 2250 },
+  { fdi: 26, state: 'planned', shape: 'implant', at: 2600 },
+  { fdi: 36, state: 'planned', shape: 'filling', at: 2950 },
+  { fdi: 14, state: 'done', shape: 'endo', at: 3250 },
+  { fdi: 46, state: 'planned', shape: 'extract', at: 3500 },
+  { fdi: 25, state: 'prior', shape: 'filling', at: 3700 },
+];
+const markOf = (fdi: number) => marks.find((m) => m.fdi === fdi);
+
+// Each note sits in a place of its own, clear of the teeth and their numbers: three along
+// the top edge and one at the bottom right. A thin line joins it to its tooth.
+const SLOTS: Record<string, 'tl' | 'tc' | 'tr' | 'br'> = { '16': 'tl', '21': 'tc', '26': 'tr', '36': 'br' };
+const notes = text.archNotes.map((note) => {
+  const t = byFdi[Number(note.tooth)];
+  const m = markOf(Number(note.tooth))!;
+  const label = `${note.tooth} · ${note.what}`;
+  const width = Math.round(label.length * 6.4 + 38);
+  const slot = SLOTS[note.tooth] ?? 'tr';
+  const x = slot === 'tl' ? 4 : slot === 'tc' ? Math.round(t.x - width / 2) : W - width - 4;
+  const y = slot === 'br' ? H - 30 : 4;
+  // The line leaves the tooth on its outer side and ends at the nearest edge of the box.
+  const tx = t.x + t.nx * (t.d / 2 + 1);
+  const ty = t.y + t.ny * (t.d / 2 + 1);
+  const anchorX = Math.max(x + 14, Math.min(x + width - 14, tx));
+  const anchorY = slot === 'br' ? y : y + 26;
+  return { ...note, label, width, x, y, anchorX, anchorY, tx, ty, at: m.at + 150 };
+});
+const legend: { state: State; label: string }[] = [
+  { state: 'planned', label: text.archLegend.planned },
+  { state: 'done', label: text.archLegend.done },
+  { state: 'prior', label: text.archLegend.prior },
+];
+---
+
+<figure class="vd-arch" aria-labelledby="vd-arch-title">
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="vd-arch-title vd-arch-desc">
+    <title id="vd-arch-title">{text.archTitle}</title>
+    <desc id="vd-arch-desc">{text.archNotes.map((n) => `${n.tooth}: ${n.what} (${text.archLegend[n.state].toLowerCase()})`).join('. ')}</desc>
+    <defs>
+      <radialGradient id="vd-enamel" cx="50%" cy="38%" r="70%">
+        <stop offset="0" stop-color="#f7f3ea" stop-opacity="0.22"></stop>
+        <stop offset="1" stop-color="#f7f3ea" stop-opacity="0.04"></stop>
+      </radialGradient>
+      <linearGradient id="vd-scan" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2dd4bf" stop-opacity="0"></stop>
+        <stop offset="0.85" stop-color="#2dd4bf" stop-opacity="0.22"></stop>
+        <stop offset="1" stop-color="#5eead4" stop-opacity="0.9"></stop>
+      </linearGradient>
+      <pattern id="vd-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+        <path d="M20 0H0V20" fill="none" stroke="#9fb0c8" stroke-opacity="0.07" stroke-width="1"></path>
+      </pattern>
+    </defs>
+
+    <rect x="0" y="0" width={W} height={H} fill="url(#vd-grid)" class="vd-arch-grid"></rect>
+
+    <!-- midline and the side of each half, as the program labels them -->
+    <line x1={CX} y1="18" x2={CX} y2={H - 18} class="vd-arch-mid"></line>
+    <text x="22" y={H / 2 - 22} class="vd-arch-side">{T.right.toUpperCase()}</text>
+    <text x={W - 22} y={H / 2 - 22} class="vd-arch-side" text-anchor="end">{T.left.toUpperCase()}</text>
+
+    {
+      teeth.map((t) => {
+        const m = markOf(t.fdi);
+        const lx = t.x + t.nx * (t.d / 2 + 13);
+        const ly = t.y + t.ny * (t.d / 2 + 13);
+        return (
+          <g class="vd-tooth" style={`--t:${delay(t)}ms`}>
+            <g transform={`translate(${r(t.x)} ${r(t.y)}) rotate(${r(t.angle)})`}>
+              <path d={outline(t)} class="vd-tooth-fill" />
+              <path d={outline(t)} class="vd-tooth-line" pathLength="1" />
+              <path d={grooves(t)} class="vd-tooth-groove" />
+              {m && (
+                <g class:list={['vd-mark', `vd-mark--${m.state}`]} style={`--t:${m.at}ms`}>
+                  {m.shape === 'filling' && <path d={box(t.w * 0.46, t.d * 0.44, t.d * 0.16)} transform={`translate(${r(-t.w * 0.08)} 0)`} class="vd-mark-solid" />}
+                  {m.shape === 'crown' && <path d={box(t.w + 7, t.d + 7, (t.d + 7) * 0.48)} class="vd-mark-ring" />}
+                  {m.shape === 'implant' && (
+                    <>
+                      <circle r={t.d * 0.34} class="vd-mark-ring vd-mark-dash" />
+                      <path d={`M${r(-t.d * 0.18)} ${r(-t.d * 0.12)}H${r(t.d * 0.18)}M${r(-t.d * 0.18)} 0H${r(t.d * 0.18)}M${r(-t.d * 0.18)} ${r(t.d * 0.12)}H${r(t.d * 0.18)}`} class="vd-mark-thread" />
+                    </>
+                  )}
+                  {m.shape === 'endo' && (
+                    <>
+                      <circle r={t.d * 0.16} class="vd-mark-solid" />
+                      <circle r={t.d * 0.34} class="vd-mark-ring" />
+                    </>
+                  )}
+                  {m.shape === 'extract' && <path d={`M${r(-t.w * 0.42)} ${r(-t.d * 0.42)}L${r(t.w * 0.42)} ${r(t.d * 0.42)}M${r(t.w * 0.42)} ${r(-t.d * 0.42)}L${r(-t.w * 0.42)} ${r(t.d * 0.42)}`} class="vd-mark-cross" />}
+                </g>
+              )}
+            </g>
+            <text x={r(lx)} y={r(ly + 3.5)} class="vd-fdi" text-anchor="middle">
+              {t.fdi}
+            </text>
+          </g>
+        );
+      })
+    }
+
+    <!-- the scan that opens the drawing -->
+    <rect x="0" y="-120" width={W} height="120" fill="url(#vd-scan)" class="vd-arch-scan"></rect>
+
+    <!-- legend, in the gap between the arches -->
+    <g class="vd-legend" transform={`translate(${CX} ${H / 2 + 6})`}>
+      {
+        legend.map((item, index) => (
+          <g transform={`translate(${(index - 1) * 104} 0)`}>
+            <circle cx="-30" cy="-4" r="4.5" class:list={['vd-dot', `vd-dot--${item.state}`]} />
+            <text x="-20" y="0" class="vd-legend-text">
+              {item.label}
+            </text>
+          </g>
+        ))
+      }
+    </g>
+
+    {
+      notes.map((note) => (
+        <g class="vd-note" style={`--t:${note.at}ms`}>
+          <path d={`M${r(note.tx)} ${r(note.ty)}L${r(note.anchorX)} ${r(note.anchorY)}`} class="vd-note-line" />
+          <circle cx={r(note.tx)} cy={r(note.ty)} r="2.2" class="vd-note-pin" />
+          <rect x={note.x} y={note.y} width={note.width} height="26" rx="13" class="vd-note-box" />
+          <circle cx={note.x + 14} cy={note.y + 13} r="4" class:list={['vd-dot', `vd-dot--${note.state}`]} />
+          <text x={note.x + 24} y={note.y + 17} class="vd-note-text">
+            {note.label}
+          </text>
+        </g>
+      ))
+    }
+  </svg>
+</figure>
+
+<style>
+  .vd-arch {
+    position: relative;
+    margin: 0;
+  }
+  .vd-arch svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .vd-arch-mid {
+    stroke: #9fb0c8;
+    stroke-opacity: 0.16;
+    stroke-dasharray: 3 6;
+  }
+  .vd-arch-side {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    fill: #9fb0c8;
+    fill-opacity: 0.55;
+  }
+  .vd-tooth-fill {
+    fill: url(#vd-enamel);
+  }
+  .vd-tooth-line {
+    fill: none;
+    stroke: #f4f0e6;
+    stroke-opacity: 0.82;
+    stroke-width: 1.4;
+    stroke-linejoin: round;
+  }
+  .vd-tooth-groove {
+    fill: none;
+    stroke: #f4f0e6;
+    stroke-opacity: 0.32;
+    stroke-width: 1;
+    stroke-linecap: round;
+  }
+  .vd-fdi {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    fill: #9fb0c8;
+  }
+  .vd-mark-solid {
+    stroke: none;
+  }
+  .vd-mark-ring,
+  .vd-mark-thread,
+  .vd-mark-cross {
+    fill: none;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+  .vd-mark-dash {
+    stroke-dasharray: 4 3;
+  }
+  .vd-mark--planned {
+    --c: #fb7185;
+  }
+  .vd-mark--done {
+    --c: #60a5fa;
+  }
+  .vd-mark--prior {
+    --c: #34d399;
+  }
+  .vd-mark .vd-mark-solid {
+    fill: var(--c);
+  }
+  .vd-mark .vd-mark-ring,
+  .vd-mark .vd-mark-thread,
+  .vd-mark .vd-mark-cross {
+    stroke: var(--c);
+  }
+  .vd-dot--planned {
+    fill: #fb7185;
+  }
+  .vd-dot--done {
+    fill: #60a5fa;
+  }
+  .vd-dot--prior {
+    fill: #34d399;
+  }
+  .vd-legend-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    fill: #c9d4e3;
+  }
+  .vd-note-line {
+    fill: none;
+    stroke: #c9d4e3;
+    stroke-opacity: 0.55;
+    stroke-width: 1;
+  }
+  .vd-note-pin {
+    fill: #c9d4e3;
+  }
+  .vd-note-box {
+    fill: #0b1729;
+    stroke: rgb(201 212 227 / 0.28);
+    stroke-width: 1;
+  }
+  .vd-note-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    fill: #eef2f7;
+  }
+
+  /* ── The opening: scan, teeth drawing themselves, treatments, notes ── */
+  @media (prefers-reduced-motion: no-preference) {
+    .vd-arch-scan {
+      animation: vd-scan 1.5s cubic-bezier(0.45, 0, 0.2, 1) 0.1s both;
+    }
+    .vd-tooth-line {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: vd-draw 0.9s var(--ease-out-soft) var(--t) forwards;
+    }
+    .vd-tooth-fill,
+    .vd-tooth-groove,
+    .vd-fdi {
+      opacity: 0;
+      animation: vd-fade 0.8s ease-out calc(var(--t) + 380ms) forwards;
+    }
+    .vd-mark {
+      opacity: 0;
+      transform: scale(0.4);
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: vd-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) var(--t) forwards;
+    }
+    .vd-mark--planned {
+      animation:
+        vd-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) var(--t) forwards,
+        vd-breathe 2.4s ease-in-out calc(var(--t) + 700ms) infinite;
+    }
+    .vd-note {
+      opacity: 0;
+      animation: vd-note 0.7s var(--ease-out-soft) var(--t) forwards;
+    }
+    .vd-legend {
+      opacity: 0;
+      animation: vd-fade 0.8s ease-out 1.6s forwards;
+    }
+  }
+  @keyframes vd-scan {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    80% {
+      opacity: 1;
+    }
+    to {
+      transform: translateY(720px);
+      opacity: 0;
+    }
+  }
+  @keyframes vd-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes vd-fade {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes vd-pop {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes vd-breathe {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+  @keyframes vd-note {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vd-arch-scan {
+      display: none;
+    }
+  }
+  /* On a phone the notes would cover the teeth: the legend says enough there. */
+  @media (max-width: 520px) {
+    .vd-note {
+      display: none;
+    }
+  }
+</style>

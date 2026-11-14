@@ -2,6 +2,7 @@
 // One service page, in the language of its URL.
 import DocPage from '../components/DocPage.astro';
 import TechBlock from '../components/tech/TechBlock.astro';
+import Promo from '../components/veodardental/Promo.astro';
 import { serviceHref, servicesFor, type Service } from '../data/services';
 import { sectorsFor } from '../data/sectors';
 import { sectorsOfService } from '../data/crosslinks';
@@ -18,8 +19,8 @@ const { service } = Astro.props;
 const lang = langOf(Astro.url);
 const url = new URL(serviceHref(service.slug, lang), site.url).href;
 const T = {
-  es: { home: 'Inicio', services: 'Servicios', techs: 'Tecnologías', where: 'Por sector', whereTitle: 'Dónde más lo aplicamos', allSectors: 'Todos los sectores', prev: 'Servicio anterior', next: 'Servicio siguiente', pager: 'Otros servicios', terms: 'Glosario', termsTitle: 'Conceptos que conviene conocer', allTerms: 'Ver todo el glosario', audience: 'Empresas de', areas: [{ '@type': 'Country', name: 'España' }, { '@type': 'Place', name: 'Latinoamérica' }, { '@type': 'Place', name: 'Europa' }] },
-  en: { home: 'Home', services: 'Services', techs: 'Technologies', where: 'By industry', whereTitle: 'Where we apply it most', allSectors: 'All industries', prev: 'Previous service', next: 'Next service', pager: 'Other services', terms: 'Glossary', termsTitle: 'Terms worth knowing', allTerms: 'See the whole glossary', audience: 'Companies in', areas: [{ '@type': 'Country', name: 'Spain' }, { '@type': 'Place', name: 'Latin America' }, { '@type': 'Place', name: 'Europe' }] },
+  es: { home: 'Inicio', services: 'Servicios', techs: 'Tecnologías', vd: 'Caso: VeodarDental', where: 'Por sector', whereTitle: 'Dónde más lo aplicamos', allSectors: 'Todos los sectores', prev: 'Servicio anterior', next: 'Servicio siguiente', pager: 'Otros servicios', terms: 'Glosario', termsTitle: 'Conceptos que conviene conocer', allTerms: 'Ver todo el glosario', audience: 'Empresas de', areas: [{ '@type': 'Country', name: 'España' }, { '@type': 'Place', name: 'Latinoamérica' }, { '@type': 'Place', name: 'Europa' }] },
+  en: { home: 'Home', services: 'Services', techs: 'Technologies', vd: 'Case: VeodarDental', where: 'By industry', whereTitle: 'Where we apply it most', allSectors: 'All industries', prev: 'Previous service', next: 'Next service', pager: 'Other services', terms: 'Glossary', termsTitle: 'Terms worth knowing', allTerms: 'See the whole glossary', audience: 'Companies in', areas: [{ '@type': 'Country', name: 'Spain' }, { '@type': 'Place', name: 'Latin America' }, { '@type': 'Place', name: 'Europe' }] },
 }[lang];
 const sectors = sectorsFor(lang);
 const services = servicesFor(lang);
@@ -84,7 +85,7 @@ const serviceLd = {
   stackHrefs={stackHrefs}
   h1Max={lang === 'es' ? H1_MAX[service.slug] : undefined}
   afterDetail={!!group}
-  tocExtra={group ? [{ id: 'tecnologias', label: T.techs }] : []}
+  tocExtra={[...(group ? [{ id: 'tecnologias', label: T.techs }] : []), ...(service.slug === 'aplicaciones-escritorio' ? [{ id: 'veodardental', label: T.vd }] : [])]}
   cross={[
     { id: 'where-title', kicker: T.where, title: T.whereTitle, items: inSectors, allHref: pathTo('sectores', lang), allLabel: T.allSectors },
     { id: 'terms-title', kicker: T.terms, title: T.termsTitle, items: glossary, allHref: pathTo('glosario', lang), allLabel: T.allTerms, columns: 3, compact: true },
@@ -98,4 +99,5 @@ const serviceLd = {
   }}
 >
   {group && <TechBlock slot="after-detail" group={group.id} />}
+  {service.slug === 'aplicaciones-escritorio' && <Promo slot="after-detail" variant="service" />}
 </DocPage>

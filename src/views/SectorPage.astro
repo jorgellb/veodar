@@ -7,7 +7,8 @@ import { pairText, sectorAnchor, servicesOfSector, siblings } from '../data/cros
 import { termsOfSector } from '../data/glossary';
 import { site } from '../data/site';
 import { langOf, pathTo, sectorHref, termHref } from '../i18n';
-import { UPDATED } from '../data/updated';
+import { sectorUpdated } from '../data/updated';
+import Promo from '../components/veodardental/Promo.astro';
 
 interface Props {
   sector: Sector;
@@ -128,7 +129,7 @@ const serviceLd = {
   stackLabel={T.stack}
   tint={sector.tint}
   extraLd={[serviceLd]}
-  updated={UPDATED.sectors}
+  updated={sectorUpdated(sector.id)}
   relatedNotes={relatedNotes}
   cross={[
     { id: 'more-title', kicker: T.more, title: T.moreTitle, items: moreServices, allHref: pathTo('servicios', lang), allLabel: T.allServices },
@@ -142,4 +143,6 @@ const serviceLd = {
     nextLabel: T.next,
     ariaLabel: T.pager,
   }}
-/>
+>
+  {sector.id === 'salud' && <Promo slot="after-hero" variant="sector" />}
+</DocPage>

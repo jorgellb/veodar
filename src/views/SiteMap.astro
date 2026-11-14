@@ -60,7 +60,14 @@ const groups: Group[] = [
     title: `${T.techs} · ${group.name}`,
     links: [...(index === 0 ? [{ href: pathTo('tecnologias', lang), label: T.allTechs }] : []), ...group.techs.map((tech) => ({ href: techHref(tech.id, lang), label: tech.card.title }))],
   })),
-  { title: T.sectors, links: sectorsFor(lang).map((sector) => ({ href: sectorHref(sector.id, lang), label: sector.name })) },
+  {
+    title: T.sectors,
+    links: sectorsFor(lang).flatMap((sector) => [
+      { href: sectorHref(sector.id, lang), label: sector.name },
+      // Our product for dental clinics, right after the healthcare sector it hangs from.
+      ...(sector.id === 'salud' ? [{ href: pathTo('veodardental', lang), label: 'VeodarDental' }] : []),
+    ]),
+  },
   ...categories.map((category) => ({
     title: `${T.glossary} · ${category[lang]}`,
     links: terms.filter((term) => term.cat === category.id).map((term) => ({ href: termHref(term.id, lang), label: term.long ? `${term.name} (${term.long})` : term.name })),

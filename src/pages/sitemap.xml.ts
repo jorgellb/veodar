@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { servicesFor } from '../data/services';
 import { sectorsFor } from '../data/sectors';
 import { site } from '../data/site';
-import { UPDATED, serviceUpdated } from '../data/updated';
+import { UPDATED, sectorUpdated, serviceUpdated } from '../data/updated';
 import { techsFor } from '../data/technologies';
 import { termsFor } from '../data/glossary';
 import { LANGS, PAGES, sectorHref, serviceHref, techHref, termHref, type Lang } from '../i18n';
@@ -33,8 +33,9 @@ export const GET: APIRoute = ({ site: astroSite }) => {
     ...sectorsFor('es').map((sector) => ({
       paths: { es: sectorHref(sector.id, 'es'), en: sectorHref(sector.id, 'en') },
       priority: '0.7',
-      updated: UPDATED.sectors,
+      updated: sectorUpdated(sector.id),
     })),
+    { paths: PAGES.veodardental, priority: '0.8', updated: UPDATED.veodardental },
     { paths: PAGES.almeria, priority: '0.7', updated: UPDATED.local },
     { paths: PAGES.glosario, priority: '0.6', updated: UPDATED.glossary },
     ...termsFor('es').map((term) => ({

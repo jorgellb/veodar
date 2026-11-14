@@ -1,0 +1,234 @@
+---
+// The VERI*FACTU chain as the program keeps it: each invoice carries the hash of the one
+// before, so changing any of them breaks every link after it. Three invoices from the
+// demo data, the matching hashes lit up one after another, and the integrity check at
+// the end. It plays once in view; with "reduce motion" it is shown finished.
+import Icon from '../Icon.astro';
+import { vdFor } from '../../data/veodardental';
+import { langOf } from '../../i18n';
+
+const lang = langOf(Astro.url);
+const { chain } = vdFor(lang).money;
+// Hashes of the demo data's invoices (first twelve characters, as the program shows them).
+const invoices = [
+  { number: 'F2026-00001', date: '27/06/2026', hash: '8A63455A3C69', prev: '' },
+  { number: 'F2026-00002', date: '10/09/2026', hash: '80D00B68FFA0', prev: '8A63455A3C69' },
+  { number: 'F2026-00003', date: '20/10/2026', hash: 'FE3F8313CA8F', prev: '80D00B68FFA0' },
+];
+---
+
+<div class="vd-chain" data-reveal>
+  <ol class="vd-chain-list">
+    {
+      invoices.map((inv, index) => (
+        <li class="vd-inv" style={`--t:${200 + index * 650}ms`}>
+          <p class="vd-inv-head">
+            <span>{chain.invoice}</span>
+            <span class="vd-inv-date">{inv.date}</span>
+          </p>
+          <p class="vd-inv-number">{inv.number}</p>
+          <dl class="vd-inv-hashes">
+            <div class:list={['vd-inv-row', index > 0 && 'vd-inv-row--link']} style={`--t:${200 + index * 650 + 250}ms`}>
+              <dt>{chain.prev}</dt>
+              <dd>{inv.prev ? `${inv.prev}…` : chain.first}</dd>
+            </div>
+            <div class="vd-inv-row vd-inv-row--own" style={`--t:${200 + index * 650 + 450}ms`}>
+              <dt>{chain.hash}</dt>
+              <dd>{inv.hash}…</dd>
+            </div>
+          </dl>
+          {index < invoices.length - 1 && <span class="vd-link" style={`--t:${200 + index * 650 + 500}ms`} aria-hidden="true" />}
+        </li>
+      ))
+    }
+  </ol>
+  <p class="vd-chain-ok">
+    <span class="vd-chain-ok-icon">
+      <Icon name="shield" size={16} />
+    </span>
+    {chain.ok}
+  </p>
+</div>
+
+<style>
+  .vd-chain {
+    padding: 1.75rem;
+    border-radius: 28px;
+    background: #0d1c31;
+    color: #eef2f7;
+    box-shadow: 0 30px 70px -36px rgb(13 28 49 / 0.8);
+  }
+  .vd-chain-list {
+    display: grid;
+    gap: 2.2rem;
+  }
+  @media (min-width: 720px) {
+    .vd-chain-list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2.4rem;
+    }
+  }
+  .vd-inv {
+    position: relative;
+    padding: 1rem 1rem 1.1rem;
+    border-radius: 16px;
+    background: #16253d;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+  }
+  .vd-inv-head {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #9fb0c8;
+  }
+  .vd-inv-date {
+    letter-spacing: 0.02em;
+  }
+  .vd-inv-number {
+    margin-top: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 560;
+  }
+  .vd-inv-hashes {
+    margin-top: 0.9rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .vd-inv-row {
+    padding: 0.45rem 0.6rem;
+    border-radius: 9px;
+    background: rgb(255 255 255 / 0.04);
+  }
+  .vd-inv-row dt {
+    font-size: 11px;
+    color: #9fb0c8;
+  }
+  .vd-inv-row dd {
+    margin-top: 2px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    color: #c9d4e3;
+    overflow-wrap: anywhere;
+  }
+  /* A hash and the same hash in the next invoice share a colour. */
+  .vd-inv-row--own,
+  .vd-inv-row--link {
+    box-shadow: inset 0 0 0 1px rgb(45 212 191 / 0.45);
+    background: rgb(45 212 191 / 0.1);
+  }
+  .vd-inv-row--own dd,
+  .vd-inv-row--link dd {
+    color: #5eead4;
+  }
+  /* The link from one invoice to the next: across on wide screens, down on phones. */
+  .vd-link {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 2px;
+    height: 2.2rem;
+    transform: translateX(-50%);
+    background: linear-gradient(#2dd4bf, #2dd4bf) no-repeat center / 100% 100%;
+  }
+  @media (min-width: 720px) {
+    .vd-link {
+      left: 100%;
+      top: auto;
+      bottom: 2.05rem;
+      width: 2.4rem;
+      height: 2px;
+      transform: none;
+    }
+  }
+  .vd-chain-ok {
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 15px;
+    font-weight: 560;
+    color: #5eead4;
+  }
+  .vd-chain-ok-icon {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: rgb(45 212 191 / 0.14);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .vd-chain .vd-inv {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    :global(.js) .vd-chain .vd-inv-row--own,
+    :global(.js) .vd-chain .vd-inv-row--link {
+      box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0);
+      background: rgb(255 255 255 / 0.04);
+    }
+    :global(.js) .vd-chain .vd-inv-row--own dd,
+    :global(.js) .vd-chain .vd-inv-row--link dd {
+      color: #c9d4e3;
+    }
+    :global(.js) .vd-chain .vd-link {
+      background-size: 0 100%;
+      background-position: left center;
+    }
+    :global(.js) .vd-chain .vd-chain-ok {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    :global(.js) .vd-chain.is-in .vd-inv {
+      animation: vd-chain-in 0.6s var(--ease-out-soft) var(--t) forwards;
+    }
+    :global(.js) .vd-chain.is-in .vd-inv-row--own,
+    :global(.js) .vd-chain.is-in .vd-inv-row--link {
+      animation: vd-chain-lit 0.5s ease var(--t) forwards;
+    }
+    :global(.js) .vd-chain.is-in .vd-inv-row--own dd,
+    :global(.js) .vd-chain.is-in .vd-inv-row--link dd {
+      animation: vd-chain-text 0.5s ease var(--t) forwards;
+    }
+    :global(.js) .vd-chain.is-in .vd-link {
+      animation: vd-chain-link 0.5s ease var(--t) forwards;
+    }
+    :global(.js) .vd-chain.is-in .vd-chain-ok {
+      animation: vd-chain-in 0.6s var(--ease-out-soft) 2.2s forwards;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) and (max-width: 719px) {
+    :global(.js) .vd-chain .vd-link {
+      background-size: 100% 0;
+      background-position: center top;
+    }
+  }
+  @keyframes vd-chain-in {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes vd-chain-lit {
+    to {
+      box-shadow: inset 0 0 0 1px rgb(45 212 191 / 0.45);
+      background: rgb(45 212 191 / 0.1);
+    }
+  }
+  @keyframes vd-chain-text {
+    to {
+      color: #5eead4;
+    }
+  }
+  @keyframes vd-chain-link {
+    to {
+      background-size: 100% 100%;
+    }
+  }
+</style>
