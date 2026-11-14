@@ -202,6 +202,10 @@ const ld = [breadcrumbLd(p.crumbs), faqLd(p.faq), ...(p.extraLd ?? [])];
     </div>
   </section>
 
+  {/* A page can put a full-width block of its own between the headline and the detail
+      (the healthcare page puts VeodarDental there). */}
+  {Astro.slots.has('after-hero') && <slot name="after-hero" />}
+
   <section id="detalle" class="border-t border-line py-20 md:py-28" data-spine="0.226">
     <div class="wrap grid gap-12 lg:grid-cols-[240px_1fr] lg:gap-20">
       <aside class:list={['hidden lg:block', p.afterDetail && 'lg:row-span-2']}>

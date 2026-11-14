@@ -11,6 +11,7 @@ export const UPDATED = {
   glossary: '2026-11-10',
   local: '2026-11-10',
   legal: '2026-11-10',
+  veodardental: '2026-11-14',
 } as const;
 export type UpdatedKey = keyof typeof UPDATED;
 
@@ -21,7 +22,15 @@ const SERVICE_UPDATED: Record<string, string> = {
   'desarrollo-web': '2026-11-11',
   'automatizaciones-ia': '2026-11-11',
   'aplicaciones-moviles': '2026-11-11',
-  'aplicaciones-escritorio': '2026-11-11',
+  // 2026-11-14: VeodarDental, our own desktop product, shown as a case.
+  'aplicaciones-escritorio': '2026-11-14',
 };
 /** The date a service page last changed in substance. */
 export const serviceUpdated = (id: string) => SERVICE_UPDATED[id] ?? UPDATED.services;
+
+// Sector pages that changed after the rest: healthcare gained the VeodarDental block.
+const SECTOR_UPDATED: Record<string, string> = {
+  salud: '2026-11-14',
+};
+/** The date a sector page last changed in substance. */
+export const sectorUpdated = (id: string) => SECTOR_UPDATED[id] ?? UPDATED.sectors;

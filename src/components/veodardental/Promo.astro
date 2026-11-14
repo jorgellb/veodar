@@ -1,0 +1,164 @@
+---
+// VeodarDental shown on another page:
+// - "sector": a full-width dark block on the healthcare page, right after the headline;
+// - "service": a case inside the desktop apps page (our own Rust desktop program).
+// Both lead to the product page.
+import AppShot from './AppShot.astro';
+import Icon from '../Icon.astro';
+import { vdFor } from '../../data/veodardental';
+import { langOf, pathTo } from '../../i18n';
+
+interface Props {
+  variant: 'sector' | 'service';
+}
+const { variant } = Astro.props;
+const lang = langOf(Astro.url);
+const { promo, shotNote } = vdFor(lang);
+const href = pathTo('veodardental', lang);
+---
+
+{
+  variant === 'sector' ? (
+    <section class="vd-promo" data-dark data-spine="0.43" aria-labelledby="vd-promo-title">
+      <div class="wrap vd-promo-grid">
+        <div class="vd-promo-copy" data-reveal>
+          <p class="eyebrow vd-promo-eyebrow">{promo.kicker}</p>
+          <h2 id="vd-promo-title" class="display h-lg mt-5 max-w-[16ch]">
+            {promo.title}
+          </h2>
+          <p class="mt-6 max-w-[48ch] text-[17px] leading-relaxed text-[#c9d4e3]">{promo.text}</p>
+          <ul class="mt-7 flex flex-wrap gap-2">
+            {promo.points.map((point) => (
+              <li class="vd-promo-chip">{point}</li>
+            ))}
+          </ul>
+          <a href={href} class="btn vd-promo-btn mt-9">
+            {promo.link} <Icon name="arrow" size={17} class="arrow" />
+          </a>
+        </div>
+        <a href={href} class="vd-promo-shot" data-reveal style="--d:120ms" tabindex="-1" aria-hidden="true">
+          <AppShot shot="agenda" dark sizes="(min-width: 1024px) 720px, 94vw" />
+          <span class="vd-promo-note">{shotNote}</span>
+        </a>
+      </div>
+    </section>
+  ) : (
+    <aside id="veodardental" class="vd-case spot" aria-labelledby="vd-case-title" data-node>
+      <div class="vd-case-copy">
+        <p class="eyebrow">{promo.caseKicker}</p>
+        <h2 id="vd-case-title" class="display h-md mt-4 max-w-[22ch]">
+          {promo.caseTitle}
+        </h2>
+        <p class="mt-4 text-[16px] leading-relaxed text-ink-2">{promo.caseText}</p>
+        <a href={href} class="link-arrow mt-5">
+          {promo.caseLink} <Icon name="arrow" size={16} />
+        </a>
+      </div>
+      <a href={href} class="vd-case-shot" tabindex="-1" aria-hidden="true">
+        <AppShot shot="odontograma" sizes="(min-width: 1024px) 460px, 90vw" />
+      </a>
+    </aside>
+  )
+}
+
+<style>
+  .vd-promo {
+    position: relative;
+    padding-block: clamp(4.5rem, 9vw, 7.5rem);
+    color: #eef2f7;
+    background:
+      radial-gradient(760px 420px at 82% 30%, rgb(45 212 191 / 0.2), transparent 70%),
+      radial-gradient(600px 400px at 8% 90%, rgb(37 99 235 / 0.18), transparent 70%),
+      #0d1c31;
+    overflow-x: clip;
+  }
+  .vd-promo-grid {
+    display: grid;
+    gap: 3rem;
+    align-items: center;
+  }
+  @media (min-width: 1024px) {
+    .vd-promo-grid {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: 4rem;
+    }
+  }
+  .vd-promo :global(.display em) {
+    color: #5eead4;
+  }
+  .vd-promo-eyebrow {
+    color: #9fb0c8;
+  }
+  .vd-promo-eyebrow::before {
+    background: #2dd4bf;
+  }
+  .vd-promo-chip {
+    padding: 0.32rem 0.75rem;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #c9d4e3;
+    background: rgb(255 255 255 / 0.06);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  }
+  .vd-promo-btn {
+    color: #04221f;
+    background: #2dd4bf;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.35),
+      0 12px 30px -12px rgb(45 212 191 / 0.9);
+  }
+  .vd-promo-btn:hover {
+    background: #5eead4;
+  }
+  .vd-promo-shot {
+    display: block;
+    perspective: 1600px;
+  }
+  .vd-promo-shot :global(.vd-window) {
+    transform: rotateY(-9deg) rotateX(4deg);
+    transform-origin: left center;
+    transition: transform 0.9s var(--ease-out-soft);
+  }
+  .vd-promo-shot:hover :global(.vd-window) {
+    transform: none;
+  }
+  .vd-promo-note {
+    display: block;
+    margin-top: 0.9rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #7f90aa;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vd-promo-shot :global(.vd-window) {
+      transform: none;
+    }
+  }
+
+  .vd-case {
+    display: grid;
+    gap: 1.75rem;
+    margin-top: 4rem;
+    padding: 2rem;
+    border-radius: 28px;
+    background:
+      radial-gradient(420px 260px at 90% 10%, rgb(45 212 191 / 0.18), transparent 70%),
+      linear-gradient(160deg, #e9f5f2, #e2eaf6);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  @media (min-width: 900px) {
+    .vd-case {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+      align-items: center;
+      padding: 2.5rem;
+    }
+  }
+  .vd-case-shot {
+    display: block;
+    transition: transform 0.6s var(--ease-out-soft);
+  }
+  .vd-case-shot:hover {
+    transform: translateY(-4px);
+  }
+</style>

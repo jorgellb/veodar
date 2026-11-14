@@ -148,6 +148,8 @@ export const PAGES = {
   glosario: { es: '/glosario/', en: '/en/glossary/' },
   almeria: { es: '/desarrollo-software-almeria/', en: '/en/software-development-almeria/' },
   mapa: { es: '/mapa-del-sitio/', en: '/en/sitemap/' },
+  // Our own product for dental clinics, hanging from the healthcare sector.
+  veodardental: { es: '/sectores/salud/veodardental/', en: '/en/industries/healthcare/veodardental/' },
 } as const;
 export type PageKey = keyof typeof PAGES;
 

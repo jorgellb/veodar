@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { servicesFor, serviceGroupsFor, serviceHref } from '../data/services';
 import { sectorsFor } from '../data/sectors';
+import { vdFor } from '../data/veodardental';
 import { termDescription, termsFor } from '../data/glossary';
 import { groupsFor } from '../data/technologies';
 import { company, site, siteText } from '../data/site';
@@ -21,7 +22,11 @@ export const GET: APIRoute = () => {
       .join('\n\n');
   const industries = (lang: Lang) =>
     sectorsFor(lang)
-      .map((sector) => `- [${sector.name}](${url(sectorHref(sector.id, lang))}): ${sector.description}`)
+      .flatMap((sector) => [
+        `- [${sector.name}](${url(sectorHref(sector.id, lang))}): ${sector.description}`,
+        // Our own product for dental clinics hangs from the healthcare sector.
+        ...(sector.id === 'salud' ? [`  - [VeodarDental](${url(pathTo('veodardental', lang))}): ${vdFor(lang).description}`] : []),
+      ])
       .join('\n');
   const technologies = (lang: Lang) =>
     groupsFor(lang)
