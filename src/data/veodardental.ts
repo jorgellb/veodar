@@ -34,18 +34,18 @@ export type DownloadKey = 'exe' | 'msi' | 'dmg-arm' | 'dmg-intel' | 'deb' | 'rpm
 // The version the download links point to: a GitHub release of jorgellb/veodardental,
 // published by its installers workflow when the version tag is pushed. Sizes are those
 // of that version's files, rounded to the megabyte. A new version changes these lines.
-export const VD_VERSION = '0.1.0';
+export const VD_VERSION = '0.2.0';
 export const VD_RELEASES = 'https://github.com/jorgellb/veodardental/releases';
 export const vdDownloads: Record<DownloadKey, { file: string; mb: number }> = {
-  exe: { file: `veodardental_${VD_VERSION}_x64-setup.exe`, mb: 13 },
-  msi: { file: `veodardental_${VD_VERSION}_x64_en-US.msi`, mb: 18 },
-  'dmg-arm': { file: `VeodarDental_${VD_VERSION}_aarch64.dmg`, mb: 17 },
-  'dmg-intel': { file: `VeodarDental_${VD_VERSION}_x64.dmg`, mb: 18 },
-  deb: { file: `veodardental_${VD_VERSION}_amd64.deb`, mb: 22 },
+  exe: { file: `veodardental_${VD_VERSION}_x64-setup.exe`, mb: 14 },
+  msi: { file: `veodardental_${VD_VERSION}_x64_en-US.msi`, mb: 19 },
+  'dmg-arm': { file: `VeodarDental_${VD_VERSION}_aarch64.dmg`, mb: 18 },
+  'dmg-intel': { file: `VeodarDental_${VD_VERSION}_x64.dmg`, mb: 19 },
+  deb: { file: `veodardental_${VD_VERSION}_amd64.deb`, mb: 23 },
   rpm: { file: `veodardental-${VD_VERSION}-1.x86_64.rpm`, mb: 16 },
-  arch: { file: `veodardental-${VD_VERSION}-1-x86_64.pkg.tar.zst`, mb: 20 },
-  appimage: { file: `veodardental_${VD_VERSION}_x86_64.AppImage`, mb: 21 },
-  portable: { file: `VeodarDental-${VD_VERSION}-linux-x86_64.tar.gz`, mb: 22 },
+  arch: { file: `veodardental-${VD_VERSION}-1-x86_64.pkg.tar.zst`, mb: 21 },
+  appimage: { file: `veodardental_${VD_VERSION}_x86_64.AppImage`, mb: 22 },
+  portable: { file: `VeodarDental-${VD_VERSION}-linux-x86_64.tar.gz`, mb: 23 },
 };
 export const vdDownloadUrl = (key: DownloadKey) => `${VD_RELEASES}/download/v${VD_VERSION}/${vdDownloads[key].file}`;
 
