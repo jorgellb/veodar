@@ -95,6 +95,15 @@ describe('the VeodarDental page', () => {
     }
   });
 
+  it('says the program is free, and that what is paid for is the work around it', () => {
+    const cost = { es: '¿Cuánto cuesta?', en: 'How much does it cost?' };
+    for (const lang of LANGS) {
+      const answer = vdFor(lang).faq.find((item) => item.q === cost[lang])?.a ?? '';
+      assert.match(answer, lang === 'es' ? /es gratuito/ : /is free/, `${lang}: the cost answer`);
+      assert.match(vdFor(lang).download.text, lang === 'es' ? /gratuito/ : /free/, `${lang}: the download text`);
+    }
+  });
+
   it('says the installers are not signed yet, and how to open them', () => {
     assert.match(vdFor('es').download.firstTime.text, /no van firmados/);
     assert.match(vdFor('en').download.firstTime.text, /not signed/);

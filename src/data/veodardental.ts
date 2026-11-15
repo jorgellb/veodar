@@ -123,14 +123,14 @@ export type VdText = {
 const es: VdText = {
   title: 'VeodarDental: software para clínicas dentales',
   description:
-    'Agenda, odontograma, periodontograma, presupuestos, cobros, facturas VERI*FACTU y recordatorios por WhatsApp para tu clínica dental. Funciona sin internet.',
+    'Programa gratuito para clínicas dentales: agenda, odontograma, periodontograma, presupuestos, cobros, facturas VERI*FACTU y WhatsApp. Funciona sin internet.',
   crumb: 'VeodarDental',
   kicker: 'Producto Veodar · Clínicas dentales',
   h1: ['Toda tu clínica dental en ', 'un solo', ' programa.'],
   lead: 'VeodarDental lleva la agenda, la historia clínica con odontograma y periodontograma, los presupuestos, los cobros, las facturas VERI*FACTU y los recordatorios a pacientes. Funciona en los ordenadores de la clínica, también sin internet, y está hecho en Rust para ir rápido y no perder un dato aunque se corte la luz a mitad de un guardado.',
   cta: 'Pide una demostración',
   ctaDownload: 'Descargar',
-  chips: ['Agenda por profesional', 'Odontograma', 'Periodontograma', 'VERI*FACTU', 'WhatsApp y SMS', 'RGPD'],
+  chips: ['Gratuito', 'Agenda por profesional', 'Odontograma', 'Periodontograma', 'VERI*FACTU', 'WhatsApp y SMS', 'RGPD'],
   archTitle: 'Odontograma de VeodarDental',
   archLegend: { planned: 'Previsto', done: 'Realizado', prior: 'Previo' },
   archNotes: [
@@ -361,7 +361,7 @@ const es: VdText = {
   download: {
     kicker: 'Descargar',
     title: 'Pruébalo en tu ordenador.',
-    text: 'Se instala en un momento y se abre con una clínica de ejemplo, con pacientes, citas y facturas inventados. Entra como Dirección con la contraseña inicial 0000, que te pedirá cambiar.',
+    text: 'Es gratuito, sin licencia ni límite de puestos. Se instala en un momento y se abre con una clínica de ejemplo, con pacientes, citas y facturas inventados: entra como Dirección con la contraseña inicial 0000, que te pedirá cambiar.',
     version: 'Versión',
     notes: 'Notas de la versión y anteriores, en GitHub',
     yours: 'Tu sistema',
@@ -416,7 +416,7 @@ const es: VdText = {
     { q: '¿Puedo probarlo antes?', a: 'Sí. Descárgalo en esta página: se abre con una clínica de ejemplo inventada para que lo pruebes sin miedo. Cuando empieces con la clínica de verdad, los datos de ejemplo se quitan.' },
     { q: '¿Qué aparatos de rayos se pueden conectar?', a: 'Los que se manejan con su propio programa: radiovisiógrafos, ortopantomógrafos, TAC, cámaras y escáneres intraorales. VeodarDental abre ese programa con el paciente ya puesto, por parámetros o con el fichero puente IMCONECT.ini, y recoge las imágenes que deja en su carpeta. En la instalación lo probamos con los aparatos de tu clínica.' },
     { q: '¿Abre cualquier TAC?', a: 'Abre los estudios DICOM sin comprimir, en una serie de cortes o en un solo fichero. Si el TAC los exporta comprimidos (JPEG o JPEG 2000), el programa lo dice, y se ven con el visor del propio TAC, que también se abre desde la ficha.' },
-    { q: '¿Cuánto cuesta?', a: 'Depende de los puestos y de lo que necesites. Te lo damos por escrito después de la demostración, con lo que entra y lo que no.' },
+    { q: '¿Cuánto cuesta?', a: 'El programa es gratuito: se descarga y se usa sin licencia, sin límite de puestos ni de pacientes. Lo que se paga, si lo quieres, es nuestro trabajo: la instalación, el paso desde tu programa actual, el servidor y el soporte. Te lo damos por escrito después de la demostración, con lo que entra y lo que no.' },
   ],
   ctaTitle: '¿Lo vemos con tu agenda de esta semana?',
   ctaText: 'Te enseñamos VeodarDental con datos parecidos a los de tu clínica y te decimos qué haría falta para cambiarte.',
@@ -451,14 +451,14 @@ const es: VdText = {
 const en: VdText = {
   title: 'VeodarDental: Dental Practice Management Software',
   description:
-    'Scheduling, odontogram, periodontal chart, treatment plans, payments, VERI*FACTU invoices and WhatsApp reminders for your dental clinic. Works offline.',
+    'Free dental practice software: scheduling, odontogram, periodontal chart, treatment plans, payments, VERI*FACTU invoices and WhatsApp reminders. Works offline.',
   crumb: 'VeodarDental',
   kicker: 'A Veodar product · Dental clinics',
   h1: ['Your whole dental clinic in ', 'one', ' program.'],
   lead: 'VeodarDental runs the schedule, the clinical record with odontogram and periodontal chart, treatment plans, payments, VERI*FACTU invoices and patient reminders. It works on the clinic’s own computers, offline too, and it is built in Rust to be fast and to lose no data even if the power goes out halfway through a save.',
   cta: 'Ask for a demo',
   ctaDownload: 'Download',
-  chips: ['Schedule by practitioner', 'Odontogram', 'Periodontal chart', 'VERI*FACTU', 'WhatsApp and SMS', 'GDPR'],
+  chips: ['Free', 'Schedule by practitioner', 'Odontogram', 'Periodontal chart', 'VERI*FACTU', 'WhatsApp and SMS', 'GDPR'],
   archTitle: 'VeodarDental odontogram',
   archLegend: { planned: 'Planned', done: 'Done', prior: 'Existing' },
   archNotes: [
@@ -689,7 +689,7 @@ const en: VdText = {
   download: {
     kicker: 'Download',
     title: 'Try it on your computer.',
-    text: 'It installs in a moment and opens with an example clinic, with invented patients, appointments and invoices. Sign in as Dirección (management) with the initial password 0000, which it will ask you to change.',
+    text: 'It is free, with no license and no limit on workstations. It installs in a moment and opens with an example clinic, with invented patients, appointments and invoices: sign in as Dirección (management) with the initial password 0000, which it will ask you to change.',
     version: 'Version',
     notes: 'Release notes and earlier versions, on GitHub',
     yours: 'Your system',
@@ -744,7 +744,7 @@ const en: VdText = {
     { q: 'Can I try it first?', a: 'Yes. Download it from this page: it opens with an invented example clinic so you can try it without worry. When you start with your real clinic, the example data is removed.' },
     { q: 'Which X-ray devices can be connected?', a: 'Those run by their own program: intraoral sensors, panoramic units, CT scanners, intraoral cameras and scanners. VeodarDental opens that program with the patient already set, through parameters or the IMCONECT.ini bridge file, and collects the images it saves in their folder. At installation we test it with your clinic’s devices.' },
     { q: 'Does it open any CT scan?', a: 'It opens uncompressed DICOM studies, as a series of slices or a single file. If the scanner exports them compressed (JPEG or JPEG 2000), the program says so, and they are viewed with the scanner’s own viewer, which also opens from the record.' },
-    { q: 'How much does it cost?', a: 'It depends on the workstations and on what you need. We put it in writing after the demo, with what is included and what is not.' },
+    { q: 'How much does it cost?', a: 'The program is free: you download it and use it with no license and no limit on workstations or patients. What you pay for, if you want it, is our work: installation, moving from your current program, the server and support. We put it in writing after the demo, with what is included and what is not.' },
   ],
   ctaTitle: 'Shall we look at it with this week’s schedule?',
   ctaText: 'We show you VeodarDental with data similar to your clinic’s and tell you what switching would take.',
