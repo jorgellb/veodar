@@ -1,0 +1,589 @@
+---
+// How an imaging device connects, in four steps: the button in the patient's record, the
+// bridge file the program writes (IMCONECT.ini, with what the program really writes for
+// the demo patient), the device's own program capturing, and the images landing in the
+// patient's gallery. It plays in a loop while in view; without JavaScript, or with
+// "reduce motion", it is shown finished.
+import { Picture } from 'astro:assets';
+import axial from '../../assets/veodardental/tac-axial.png';
+import { deviceGlyphs } from './glyphs';
+import { vdFor } from '../../data/veodardental';
+import { langOf } from '../../i18n';
+
+const lang = langOf(Astro.url);
+const { flow, views } = vdFor(lang).imaging;
+// The demo patient (Carlos Martínez Sanz, record 1002): the lines VeodarDental writes,
+// minus the address and phone ones.
+const ini: [string, string][] = [
+  ['IdPac', '101'],
+  ['NumPac', '1002'],
+  ['Nombre', 'CARLOS'],
+  ['Apellidos', 'MARTÍNEZ SANZ'],
+  ['FecNacim', '2/2/1972'],
+  ['Sexo', 'H'],
+];
+const CT = 2;
+const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
+---
+
+<figure class="vd-bridge" data-vd-bridge aria-label={flow.label}>
+  <ol class="vd-bridge-steps">
+    <li class="vd-bridge-step">
+      <div class="vd-bridge-vis" aria-hidden="true">
+        <div class="vd-bridge-win">
+          <p class="vd-bridge-who"><span class="vd-bridge-avatar">CM</span>Carlos Martínez Sanz <em>1002</em></p>
+          <p class="vd-bridge-cap">{flow.capture}</p>
+          <ul class="vd-bridge-devs">
+            {
+              flow.devices.map((device, index) => (
+                <li class:list={['vd-bridge-dev', index === CT && 'vd-bridge-dev--on']}>
+                  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={deviceGlyphs[index]} />
+                  {device}
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+      <p class="vd-bridge-n">1</p>
+      <h3 class="vd-bridge-title">{flow.steps[0].title}</h3>
+      <p class="vd-bridge-text">{flow.steps[0].text}</p>
+    </li>
+
+    <li class="vd-bridge-step">
+      <div class="vd-bridge-vis" aria-hidden="true">
+        <div class="vd-bridge-file">
+          <p class="vd-bridge-file-tab">IMCONECT.ini</p>
+          <pre class="vd-bridge-ini"><span class="vd-bridge-line vd-bridge-sec" style="--i:0">[DATOS FILIACION]</span>{ini.map(([key, value], index) => <span class="vd-bridge-line" style={`--i:${index + 1}`}><b>{key}</b>={value}</span>)}<span class="vd-bridge-line vd-bridge-more" style={`--i:${ini.length + 1}`}>…</span></pre>
+          <p class="vd-bridge-cmd vd-bridge-line" style={`--i:${ini.length + 2}`}><span>›</span> CS3DImaging.exe /patientid=1002</p>
+        </div>
+      </div>
+      <p class="vd-bridge-n">2</p>
+      <h3 class="vd-bridge-title">{flow.steps[1].title}</h3>
+      <p class="vd-bridge-text">{flow.steps[1].text}</p>
+    </li>
+
+    <li class="vd-bridge-step">
+      <div class="vd-bridge-vis" aria-hidden="true">
+        <div class="vd-bridge-device">
+          <p class="vd-bridge-device-bar">
+            <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={deviceGlyphs[CT]} />
+            {flow.program}
+          </p>
+          <div class="vd-bridge-shot">
+            <Picture src={axial} alt={views.alt.replace('{view}', views.labels[0])} formats={['avif', 'webp']} widths={[385]} sizes="240px" class="vd-bridge-img" loading="lazy" decoding="async" />
+            <span class="vd-bridge-scan"></span>
+          </div>
+          <p class="vd-bridge-folder">→ {flow.folder} / 1002</p>
+        </div>
+      </div>
+      <p class="vd-bridge-n">3</p>
+      <h3 class="vd-bridge-title">{flow.steps[2].title}</h3>
+      <p class="vd-bridge-text">{flow.steps[2].text}</p>
+    </li>
+
+    <li class="vd-bridge-step">
+      <div class="vd-bridge-vis" aria-hidden="true">
+        <div class="vd-bridge-gallery">
+          <p class="vd-bridge-import">⬇ {flow.importLabel}</p>
+          <ul>
+            {
+              flow.kinds.map((kind, index) => (
+                <li class:list={['vd-bridge-row', index === CT && 'vd-bridge-row--new']} style={`--i:${index}`}>
+                  <span class="vd-bridge-thumb">
+                    <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={deviceGlyphs[index]} />
+                  </span>
+                  <span class="vd-bridge-kind">{kind}</span>
+                  <span class="vd-bridge-date">{dates[index]}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+      <p class="vd-bridge-n">4</p>
+      <h3 class="vd-bridge-title">{flow.steps[3].title}</h3>
+      <p class="vd-bridge-text">{flow.steps[3].text}</p>
+    </li>
+  </ol>
+</figure>
+
+<style>
+  .vd-bridge {
+    position: relative;
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+    border-radius: 28px;
+    color: #eef2f7;
+    background:
+      radial-gradient(600px 300px at 85% 0%, rgb(45 212 191 / 0.16), transparent 70%),
+      radial-gradient(500px 300px at 0% 100%, rgb(37 99 235 / 0.16), transparent 70%),
+      #0d1c31;
+    box-shadow: 0 30px 70px -36px rgb(13 28 49 / 0.8);
+  }
+  .vd-bridge-steps {
+    display: grid;
+    gap: 1.5rem;
+    counter-reset: step;
+  }
+  @media (min-width: 720px) {
+    .vd-bridge-steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1180px) {
+    .vd-bridge-steps {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1.75rem;
+    }
+  }
+  .vd-bridge-step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  /* A line with a travelling light from each step to the next, on wide screens. */
+  @media (min-width: 1180px) {
+    .vd-bridge-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 114px;
+      left: calc(100% + 0.2rem);
+      width: 1.35rem;
+      height: 2px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #2dd4bf, rgb(45 212 191 / 0.15));
+    }
+  }
+  .vd-bridge-vis {
+    height: 228px;
+    display: grid;
+    place-items: center;
+    padding: 0.9rem;
+    border-radius: 18px;
+    background: #13243b;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+    overflow: hidden;
+  }
+  .vd-bridge-n {
+    margin-top: 1.1rem;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: #5eead4;
+  }
+  .vd-bridge-n::before {
+    content: '0';
+  }
+  .vd-bridge-title {
+    margin-top: 0.35rem;
+    font-size: 16.5px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .vd-bridge-text {
+    margin-top: 0.4rem;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: #b3c1d4;
+    text-wrap: pretty;
+  }
+
+  /* 1 · the record */
+  .vd-bridge-win {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 12px;
+    color: #1d2a3d;
+    background: #f7f9fc;
+  }
+  .vd-bridge-who {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .vd-bridge-who em {
+    margin-left: auto;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 10.5px;
+    color: #1d4ed8;
+    background: #e0e9ff;
+  }
+  .vd-bridge-avatar {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    font-size: 9.5px;
+    color: #3b6db3;
+    background: #dde8f6;
+  }
+  .vd-bridge-cap {
+    margin-top: 0.75rem;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #4b5870;
+  }
+  .vd-bridge-devs {
+    margin-top: 0.4rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  .vd-bridge-dev {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    font-size: 11.5px;
+    color: #334155;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px #d5dce6;
+  }
+  .vd-bridge-dev--on {
+    color: #fff;
+    background: #0d9488;
+    box-shadow: 0 6px 16px -6px rgb(13 148 136 / 0.9);
+  }
+
+  /* 2 · the bridge file */
+  .vd-bridge-file {
+    width: 100%;
+    border-radius: 12px;
+    background: #091526;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+    overflow: hidden;
+  }
+  .vd-bridge-file-tab {
+    padding: 0.35rem 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: #9fb0c8;
+    background: #16253d;
+  }
+  .vd-bridge-ini {
+    display: grid;
+    padding: 0.5rem 0.7rem 0.2rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.5;
+    color: #c9d4e3;
+    white-space: pre;
+    overflow: hidden;
+  }
+  .vd-bridge-ini b {
+    font-weight: 500;
+    color: #5eead4;
+  }
+  .vd-bridge-sec {
+    color: #93c5fd;
+  }
+  .vd-bridge-more {
+    color: #64748b;
+  }
+  .vd-bridge-cmd {
+    margin: 0.15rem 0.7rem 0.6rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 7px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: #eef2f7;
+    background: rgb(45 212 191 / 0.12);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .vd-bridge-cmd span {
+    color: #5eead4;
+  }
+
+  /* 3 · the device's program */
+  .vd-bridge-device {
+    width: 100%;
+    border-radius: 12px;
+    background: #000;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+    overflow: hidden;
+  }
+  .vd-bridge-device-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.6rem;
+    font-size: 10.5px;
+    color: #9fb0c8;
+    background: #16253d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .vd-bridge-shot {
+    position: relative;
+    height: 112px;
+    display: grid;
+    place-items: center;
+  }
+  .vd-bridge-shot :global(.vd-bridge-img) {
+    height: 112px;
+    width: auto;
+  }
+  .vd-bridge-scan {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 2px;
+    background: #5eead4;
+    box-shadow: 0 0 14px 3px rgb(94 234 212 / 0.6);
+    opacity: 0;
+  }
+  .vd-bridge-folder {
+    padding: 0.35rem 0.6rem 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: #5eead4;
+  }
+
+  /* 4 · the gallery */
+  .vd-bridge-gallery {
+    width: 100%;
+  }
+  .vd-bridge-import {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 11px;
+    color: #eef2f7;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25);
+  }
+  .vd-bridge-gallery ul {
+    margin-top: 0.5rem;
+    display: grid;
+    gap: 0.28rem;
+  }
+  .vd-bridge-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.2rem 0.45rem 0.2rem 0.25rem;
+    border-radius: 9px;
+    font-size: 11.5px;
+    background: rgb(255 255 255 / 0.04);
+  }
+  .vd-bridge-row--new {
+    background: rgb(45 212 191 / 0.16);
+    box-shadow: inset 0 0 0 1px rgb(45 212 191 / 0.45);
+  }
+  .vd-bridge-thumb {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 20px;
+    border-radius: 5px;
+    color: #cfe7ff;
+    background: #000;
+  }
+  .vd-bridge-kind {
+    flex: 1;
+  }
+  .vd-bridge-date {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: #7f90aa;
+  }
+
+  /* ── The loop: 9 seconds, every part on the same clock, waiting until in view ── */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .vd-bridge-dev--on,
+    :global(.js) .vd-bridge-line,
+    :global(.js) .vd-bridge-shot :global(.vd-bridge-img),
+    :global(.js) .vd-bridge-scan,
+    :global(.js) .vd-bridge-row,
+    :global(.js) .vd-bridge-step::after {
+      animation-duration: 9s;
+      animation-iteration-count: infinite;
+      animation-timing-function: var(--ease-out-soft, ease-out);
+      animation-fill-mode: both;
+      animation-play-state: paused;
+    }
+    :global(.js) .vd-bridge[data-on] :is(.vd-bridge-dev--on, .vd-bridge-line, .vd-bridge-scan, .vd-bridge-row),
+    :global(.js) .vd-bridge[data-on] .vd-bridge-step::after,
+    :global(.js) .vd-bridge[data-on] .vd-bridge-shot :global(.vd-bridge-img) {
+      animation-play-state: running;
+    }
+    :global(.js) .vd-bridge-dev--on {
+      animation-name: vd-press;
+    }
+    :global(.js) .vd-bridge-line {
+      animation-name: vd-type;
+      animation-delay: calc(var(--i) * 0.2s);
+    }
+    :global(.js) .vd-bridge-shot :global(.vd-bridge-img) {
+      animation-name: vd-expose;
+      animation-timing-function: linear;
+    }
+    :global(.js) .vd-bridge-scan {
+      animation-name: vd-scan;
+      animation-timing-function: linear;
+    }
+    :global(.js) .vd-bridge-row {
+      animation-name: vd-arrive;
+      animation-delay: calc(var(--i) * 0.14s);
+    }
+    :global(.js) .vd-bridge-step:nth-child(1)::after {
+      animation-name: vd-wire-1;
+    }
+    :global(.js) .vd-bridge-step:nth-child(2)::after {
+      animation-name: vd-wire-2;
+    }
+    :global(.js) .vd-bridge-step:nth-child(3)::after {
+      animation-name: vd-wire-3;
+    }
+  }
+  @keyframes vd-press {
+    0%,
+    4% {
+      color: #334155;
+      background: #fff;
+      box-shadow: inset 0 0 0 1px #d5dce6;
+      transform: none;
+    }
+    7% {
+      transform: scale(0.9);
+    }
+    10%,
+    88% {
+      color: #fff;
+      background: #0d9488;
+      box-shadow: 0 6px 16px -6px rgb(13 148 136 / 0.9);
+      transform: none;
+    }
+    96%,
+    100% {
+      color: #334155;
+      background: #fff;
+      box-shadow: inset 0 0 0 1px #d5dce6;
+    }
+  }
+  @keyframes vd-type {
+    0%,
+    13% {
+      opacity: 0;
+      transform: translateX(-6px);
+    }
+    17%,
+    88% {
+      opacity: 1;
+      transform: none;
+    }
+    95%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes vd-expose {
+    0%,
+    40% {
+      clip-path: inset(0 0 100% 0);
+    }
+    62%,
+    90% {
+      clip-path: inset(0 0 0 0);
+    }
+    97%,
+    100% {
+      clip-path: inset(0 0 100% 0);
+    }
+  }
+  @keyframes vd-scan {
+    0%,
+    39% {
+      opacity: 0;
+      transform: translateY(0);
+    }
+    41% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    62% {
+      opacity: 1;
+      transform: translateY(110px);
+    }
+    64%,
+    100% {
+      opacity: 0;
+      transform: translateY(110px);
+    }
+  }
+  @keyframes vd-arrive {
+    0%,
+    66% {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    70%,
+    90% {
+      opacity: 1;
+      transform: none;
+    }
+    97%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes vd-wire-1 {
+    0%,
+    9% {
+      opacity: 0.25;
+    }
+    12%,
+    16% {
+      opacity: 1;
+    }
+    24%,
+    100% {
+      opacity: 0.25;
+    }
+  }
+  @keyframes vd-wire-2 {
+    0%,
+    34% {
+      opacity: 0.25;
+    }
+    38%,
+    42% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0.25;
+    }
+  }
+  @keyframes vd-wire-3 {
+    0%,
+    62% {
+      opacity: 0.25;
+    }
+    65%,
+    69% {
+      opacity: 1;
+    }
+    77%,
+    100% {
+      opacity: 0.25;
+    }
+  }
+</style>
+
+<script>
+  // Run the loop only while the figure is on screen.
+  const io = new IntersectionObserver((entries) => {
+    for (const entry of entries) (entry.target as HTMLElement).toggleAttribute('data-on', entry.isIntersecting);
+  });
+  document.querySelectorAll('[data-vd-bridge]').forEach((el) => io.observe(el));
+</script>

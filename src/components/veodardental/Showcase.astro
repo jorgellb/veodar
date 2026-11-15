@@ -1,20 +1,27 @@
 ---
 // The program, screen by screen: a row of tabs and the screenshot of each, with what it
 // does beside it. Without JavaScript every panel is shown, one under the other; with it,
-// one at a time (arrow keys move between tabs, as in any tab list).
+// one at a time (arrow keys move between tabs, as in any tab list). The tour by default;
+// another set of tabs (the imaging one) can be passed in.
 import AppShot from './AppShot.astro';
 import Icon from '../Icon.astro';
-import { vdFor } from '../../data/veodardental';
+import { vdFor, type Tab } from '../../data/veodardental';
 import { langOf } from '../../i18n';
 
+interface Props {
+  tabs?: Tab[];
+  /** What the row of tabs is, for screen readers. */
+  label?: string;
+}
 const lang = langOf(Astro.url);
 const { tour, shotNote } = vdFor(lang);
+const { tabs = tour.tabs, label = tour.kicker } = Astro.props;
 ---
 
 <div class="vd-show" data-vd-show>
-  <div class="vd-show-tabs" role="tablist" aria-label={tour.kicker}>
+  <div class="vd-show-tabs" role="tablist" aria-label={label}>
     {
-      tour.tabs.map((tab, index) => (
+      tabs.map((tab, index) => (
         <button
           type="button"
           role="tab"
@@ -32,7 +39,7 @@ const { tour, shotNote } = vdFor(lang);
 
   <div class="vd-show-stage">
     {
-      tour.tabs.map((tab, index) => (
+      tabs.map((tab, index) => (
         <section
           id={`vd-panel-${tab.shot}`}
           role="tabpanel"

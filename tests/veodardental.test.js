@@ -5,12 +5,26 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import { alternatesOf, pathTo } from '../src/i18n/index.ts';
-import { vdFor } from '../src/data/veodardental.ts';
+import { VD_RELEASES, VD_VERSION, vdDownloads, vdDownloadUrl, vdFor } from '../src/data/veodardental.ts';
 
 const file = (path) => new URL(`../${path}`, import.meta.url);
 const LANGS = ['es', 'en'];
 const SUFFIX = ' | Veodar'.length;
-const SHOTS = ['inicio', 'agenda', 'odontograma', 'odontograma-radiografia', 'periodontograma', 'presupuestos', 'facturas', 'comunicaciones'];
+const SHOTS = [
+  'inicio',
+  'agenda',
+  'odontograma',
+  'odontograma-radiografia',
+  'periodontograma',
+  'presupuestos',
+  'facturas',
+  'comunicaciones',
+  'equipos',
+  'ficha-imagenes',
+  'tac',
+  'comparar-radiografias',
+  'ia-radiografia',
+];
 
 describe('the VeodarDental page', () => {
   it('lives under the healthcare sector, paired with its translation both ways', () => {
@@ -61,9 +75,29 @@ describe('the VeodarDental page', () => {
       for (const lang of LANGS) assert.ok(vdFor(lang).shotAlt[shot].length > 30, `${shot} (${lang}) needs a real description`);
     }
     for (const lang of LANGS) {
-      for (const tab of vdFor(lang).tour.tabs) assert.ok(SHOTS.includes(tab.shot), `${tab.shot} is not a screenshot`);
+      for (const tab of [...vdFor(lang).tour.tabs, ...vdFor(lang).imaging.tabs]) assert.ok(SHOTS.includes(tab.shot), `${tab.shot} is not a screenshot`);
     }
+    for (const view of ['axial', 'coronal', 'sagital']) assert.ok(existsSync(file(`src/assets/veodardental/tac-${view}.png`)), `tac-${view}.png`);
     assert.ok(existsSync(file('public/og-veodardental.png')) && existsSync(file('public/og-veodardental-en.png')), 'an image to share in each language');
+  });
+
+  it('links every download to a file of the published version', () => {
+    assert.match(VD_VERSION, /^\d+\.\d+\.\d+$/);
+    assert.equal(VD_RELEASES, 'https://github.com/jorgellb/veodardental/releases');
+    for (const [key, { file, mb }] of Object.entries(vdDownloads)) {
+      assert.ok(file.includes(VD_VERSION), `${key}: ${file} is not version ${VD_VERSION}`);
+      assert.ok(mb > 0 && mb < 100, `${key}: ${mb} MB`);
+      assert.equal(vdDownloadUrl(key), `${VD_RELEASES}/download/v${VD_VERSION}/${file}`);
+    }
+    for (const lang of LANGS) {
+      const keys = vdFor(lang).download.systems.flatMap((system) => system.files.map((f) => f.key));
+      assert.deepEqual([...keys].sort(), Object.keys(vdDownloads).sort(), `${lang}: every installer, once`);
+    }
+  });
+
+  it('says the installers are not signed yet, and how to open them', () => {
+    assert.match(vdFor('es').download.firstTime.text, /no van firmados/);
+    assert.match(vdFor('en').download.firstTime.text, /not signed/);
   });
 
   it('names the teeth of the odontogram as the program does (FDI)', () => {

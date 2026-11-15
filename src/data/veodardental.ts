@@ -9,9 +9,45 @@
 // its invented demo data; phone numbers and ID numbers are blurred anyway.
 import type { Lang } from '../i18n';
 
-export type Shot = 'inicio' | 'agenda' | 'odontograma' | 'odontograma-radiografia' | 'periodontograma' | 'presupuestos' | 'facturas' | 'comunicaciones';
+export type Shot =
+  | 'inicio'
+  | 'agenda'
+  | 'odontograma'
+  | 'odontograma-radiografia'
+  | 'periodontograma'
+  | 'presupuestos'
+  | 'facturas'
+  | 'comunicaciones'
+  | 'equipos'
+  | 'ficha-imagenes'
+  | 'tac'
+  | 'comparar-radiografias'
+  | 'ia-radiografia';
 
 export type Feature = { title: string; text: string };
+
+export type Tab = { shot: Shot; tab: string; title: string; text: string; points: string[] };
+
+/** The installers of the published version, as the release workflow names them. */
+export type DownloadKey = 'exe' | 'msi' | 'dmg-arm' | 'dmg-intel' | 'deb' | 'rpm' | 'arch' | 'appimage' | 'portable';
+
+// The version the download links point to: a GitHub release of jorgellb/veodardental,
+// published by its installers workflow when the version tag is pushed. Sizes are those
+// of that version's files, rounded to the megabyte. A new version changes these lines.
+export const VD_VERSION = '0.1.0';
+export const VD_RELEASES = 'https://github.com/jorgellb/veodardental/releases';
+export const vdDownloads: Record<DownloadKey, { file: string; mb: number }> = {
+  exe: { file: `veodardental_${VD_VERSION}_x64-setup.exe`, mb: 13 },
+  msi: { file: `veodardental_${VD_VERSION}_x64_en-US.msi`, mb: 18 },
+  'dmg-arm': { file: `VeodarDental_${VD_VERSION}_aarch64.dmg`, mb: 17 },
+  'dmg-intel': { file: `VeodarDental_${VD_VERSION}_x64.dmg`, mb: 18 },
+  deb: { file: `veodardental_${VD_VERSION}_amd64.deb`, mb: 22 },
+  rpm: { file: `veodardental-${VD_VERSION}-1.x86_64.rpm`, mb: 16 },
+  arch: { file: `veodardental-${VD_VERSION}-1-x86_64.pkg.tar.zst`, mb: 20 },
+  appimage: { file: `veodardental_${VD_VERSION}_x86_64.AppImage`, mb: 21 },
+  portable: { file: `VeodarDental-${VD_VERSION}-linux-x86_64.tar.gz`, mb: 22 },
+};
+export const vdDownloadUrl = (key: DownloadKey) => `${VD_RELEASES}/download/v${VD_VERSION}/${vdDownloads[key].file}`;
 
 export type VdText = {
   title: string;
@@ -22,15 +58,36 @@ export type VdText = {
   h1: [string, string, string];
   lead: string;
   cta: string;
-  ctaTour: string;
+  ctaDownload: string;
   chips: string[];
   archTitle: string;
   archLegend: { planned: string; done: string; prior: string };
   archNotes: { tooth: string; what: string; state: 'planned' | 'done' | 'prior' }[];
   shotNote: string;
   facts: Feature[];
-  tour: { kicker: string; title: string; text: string; tabs: { shot: Shot; tab: string; title: string; text: string; points: string[] }[] };
+  tour: { kicker: string; title: string; text: string; tabs: Tab[] };
   clinic: { kicker: string; title: string; text: string; features: Feature[] };
+  imaging: {
+    kicker: string;
+    title: string;
+    text: string;
+    flow: {
+      label: string;
+      steps: Feature[];
+      capture: string;
+      devices: string[];
+      program: string;
+      folder: string;
+      importLabel: string;
+      kinds: string[];
+    };
+    devicesTitle: string;
+    devices: Feature[];
+    vendors: string;
+    tabsLabel: string;
+    tabs: Tab[];
+    views: { title: string; text: string; labels: [string, string, string]; alt: string };
+  };
   desk: {
     kicker: string;
     title: string;
@@ -42,6 +99,18 @@ export type VdText = {
   trust: { kicker: string; title: string; text: string; features: Feature[] };
   move: { kicker: string; title: string; text: string; steps: Feature[] };
   built: { kicker: string; title: string; text: string; features: Feature[]; service: string; rust: string };
+  download: {
+    kicker: string;
+    title: string;
+    text: string;
+    version: string;
+    notes: string;
+    yours: string;
+    systems: { id: 'windows' | 'macos' | 'linux'; name: string; req: string; files: { key: DownloadKey; label: string }[] }[];
+    firstTime: { title: string; text: string; windows: string; mac: string };
+    clinic: string;
+    contact: string;
+  };
   faqTitle: string;
   faq: { q: string; a: string }[];
   ctaTitle: string;
@@ -60,7 +129,7 @@ const es: VdText = {
   h1: ['Toda tu clínica dental en ', 'un solo', ' programa.'],
   lead: 'VeodarDental lleva la agenda, la historia clínica con odontograma y periodontograma, los presupuestos, los cobros, las facturas VERI*FACTU y los recordatorios a pacientes. Funciona en los ordenadores de la clínica, también sin internet, y está hecho en Rust para ir rápido y no perder un dato aunque se corte la luz a mitad de un guardado.',
   cta: 'Pide una demostración',
-  ctaTour: 'Ver el programa',
+  ctaDownload: 'Descargar',
   chips: ['Agenda por profesional', 'Odontograma', 'Periodontograma', 'VERI*FACTU', 'WhatsApp y SMS', 'RGPD'],
   archTitle: 'Odontograma de VeodarDental',
   archLegend: { planned: 'Previsto', done: 'Realizado', prior: 'Previo' },
@@ -146,6 +215,79 @@ const es: VdText = {
       { title: 'Ortodoncia y laboratorio', text: 'Controles de ortodoncia con sus cuotas. Órdenes al laboratorio con sus adjuntos, de serie sin el nombre del paciente.' },
     ],
   },
+  imaging: {
+    kicker: 'Radiología e imagen',
+    title: 'Tus aparatos de rayos, conectados a la ficha.',
+    text: 'Desde la ficha del paciente se abre el programa de cada aparato, del radiovisiógrafo al TAC, con el paciente ya elegido. Lo que captura vuelve a su galería, ordenado por tipo y por fecha.',
+    flow: {
+      label: 'Cómo se conecta un aparato de imagen',
+      steps: [
+        { title: 'Un botón en la ficha', text: '«Capturar con» muestra un botón por cada aparato de la clínica.' },
+        { title: 'El paciente, ya puesto', text: 'VeodarDental escribe sus datos en el fichero puente IMCONECT.ini y abre el programa del aparato con sus parámetros.' },
+        { title: 'El aparato captura', text: 'Con el programa de su fabricante, que deja las imágenes en la carpeta del paciente.' },
+        { title: 'A su galería', text: '«Importar» las trae y las ordena: periapicales, panorámicas, TAC, fotos y modelos 3D.' },
+      ],
+      capture: 'Capturar con',
+      devices: ['RVG', 'Panorámica', 'TAC', 'Cámara', 'Escáner'],
+      program: 'Programa del aparato',
+      folder: 'Carpeta del paciente',
+      importLabel: 'Importar',
+      kinds: ['Periapical', 'Panorámica', 'TAC 3D', 'Foto intraoral', 'Escáner 3D'],
+    },
+    devicesTitle: 'Los aparatos que se conectan',
+    devices: [
+      { title: 'Radiovisiógrafo (RVG)', text: 'Periapicales y aletas de mordida, con las piezas a las que corresponden.' },
+      { title: 'Ortopantomógrafo', text: 'Panorámicas y telerradiografías.' },
+      { title: 'TAC / CBCT', text: 'Estudios DICOM en vista axial, coronal y sagital.' },
+      { title: 'Cámara intraoral', text: 'Fotos para el plan de tratamiento y para enseñárselas al paciente.' },
+      { title: 'Escáner intraoral', text: 'Modelos 3D en STL que se giran y se miden en milímetros.' },
+    ],
+    vendors: 'Trae enlaces de partida para los programas de Carestream, Acteon, Planmeca y Dentsply Sirona, y cualquier otro se añade con su ruta y sus parámetros. En la instalación se ajustan a los aparatos de tu clínica y se prueban con ellos.',
+    tabsLabel: 'Radiología e imagen, pantalla a pantalla',
+    tabs: [
+      {
+        shot: 'equipos',
+        tab: 'Equipos',
+        title: 'Cada aparato, configurado una vez',
+        text: 'En «Imágenes y enlaces» está cada aparato con su programa, sus parámetros y la carpeta donde deja las imágenes. Si en ese ordenador no está instalado, lo dice.',
+        points: ['Comodines con los datos del paciente: número de historia, nombre, DNI, fecha de nacimiento', 'Un registro de cada apertura, con su resultado'],
+      },
+      {
+        shot: 'ficha-imagenes',
+        tab: 'En la ficha',
+        title: 'Capturar sin salir del paciente',
+        text: 'En la pestaña Imágenes de cada paciente: un botón por aparato, su galería por tipo y un visor con zoom, brillo, contraste, negativo y giro.',
+        points: ['«Importar» recoge lo que el aparato ha dejado en la carpeta del paciente', 'Cada imagen con su fecha, sus piezas y el aparato del que viene'],
+      },
+      {
+        shot: 'tac',
+        tab: 'TAC',
+        title: 'El TAC, dentro de la ficha',
+        text: 'Los estudios DICOM y CBCT se abren en la ficha en vista axial, coronal o sagital, con la proporción real, la escala en milímetros y la orientación en los bordes.',
+        points: ['Muestra el paciente y la fecha que dice el propio fichero, para comprobar que es su estudio', 'La ventana del fichero, o la que se elija'],
+      },
+      {
+        shot: 'comparar-radiografias',
+        tab: 'Comparar',
+        title: 'Antes y después, lado a lado',
+        text: 'Dos radiografías del mismo paciente, la más antigua a la izquierda, con sus fechas, sus piezas y los días entre una y otra.',
+        points: ['El mismo zoom y el mismo giro en las dos', 'Solo compara imágenes del mismo paciente'],
+      },
+      {
+        shot: 'ia-radiografia',
+        tab: 'IA',
+        title: 'Una segunda mirada, como borrador',
+        text: 'Si la clínica la activa, la IA propone hallazgos por pieza sobre una radiografía, con su gravedad y su confianza. Nada entra en la historia sin la revisión de un profesional.',
+        points: ['A la IA solo viaja la imagen, sin el nombre del paciente', 'Queda apuntado qué modelo respondió y quién lo pidió'],
+      },
+    ],
+    views: {
+      title: 'Un TAC en sus tres planos',
+      text: 'Un estudio de ejemplo, inventado, abierto en el visor de VeodarDental: el implante del 46 y el hueco del 36, cortados en los tres planos.',
+      labels: ['Axial', 'Coronal', 'Sagital'],
+      alt: 'Corte {view} de un TAC dental de ejemplo en el visor de VeodarDental',
+    },
+  },
   desk: {
     kicker: 'Recepción',
     title: 'Menos teléfono en recepción.',
@@ -216,13 +358,64 @@ const es: VdText = {
     service: 'Apps de escritorio a medida',
     rust: 'Desarrollo con Rust',
   },
+  download: {
+    kicker: 'Descargar',
+    title: 'Pruébalo en tu ordenador.',
+    text: 'Se instala en un momento y se abre con una clínica de ejemplo, con pacientes, citas y facturas inventados. Entra como Dirección con la contraseña inicial 0000, que te pedirá cambiar.',
+    version: 'Versión',
+    notes: 'Notas de la versión y anteriores, en GitHub',
+    yours: 'Tu sistema',
+    systems: [
+      {
+        id: 'windows',
+        name: 'Windows',
+        req: 'Windows 10 y 11, 64 bits',
+        files: [
+          { key: 'exe', label: 'Instalador' },
+          { key: 'msi', label: 'Para instalar en varios equipos' },
+        ],
+      },
+      {
+        id: 'macos',
+        name: 'macOS',
+        req: 'macOS 11 o posterior',
+        files: [
+          { key: 'dmg-arm', label: 'Mac con chip de Apple' },
+          { key: 'dmg-intel', label: 'Mac con Intel' },
+        ],
+      },
+      {
+        id: 'linux',
+        name: 'Linux',
+        req: 'Probado en Ubuntu 20.04 y 24.04, Debian 12 y 13, Fedora, Rocky Linux 8, openSUSE Leap y Arch',
+        files: [
+          { key: 'deb', label: 'Debian, Ubuntu, Mint' },
+          { key: 'rpm', label: 'Fedora, Red Hat, Rocky, Alma, openSUSE' },
+          { key: 'arch', label: 'Arch, Manjaro' },
+          { key: 'appimage', label: 'AppImage, sin instalar' },
+          { key: 'portable', label: 'Portable, para cualquier distribución' },
+        ],
+      },
+    ],
+    firstTime: {
+      title: 'La primera vez',
+      text: 'Los instaladores todavía no van firmados, y Windows y macOS avisan al abrirlos.',
+      windows: 'En Windows: «Windows protegió su PC» › «Más información» › «Ejecutar de todos modos».',
+      mac: 'En macOS: si no se abre, Ajustes del Sistema › Privacidad y seguridad › «Abrir igualmente».',
+    },
+    clinic: 'Para usarlo en la clínica, con varios puestos, tus datos y VERI*FACTU, te ayudamos con la puesta en marcha.',
+    contact: 'Hablemos',
+  },
   faqTitle: 'Lo que suelen preguntar las clínicas',
   faq: [
     { q: '¿Necesito internet para trabajar?', a: 'No. VeodarDental funciona en los ordenadores de la clínica. La conexión solo hace falta para lo que sale fuera: los recordatorios, la cita online y el envío de facturas a la AEAT.' },
     { q: '¿Cumple VERI*FACTU?', a: 'Genera los registros de facturación encadenados con su huella, el código QR y el envío a la AEAT. Lo activamos con el certificado de tu clínica, primero en el entorno de pruebas de la AEAT.' },
     { q: '¿Puedo traer los datos de mi programa actual?', a: 'Sí. Primero hacemos un simulacro con una exportación de tu programa y comparamos recuentos y totales. Solo cuando cuadra se hace el cambio.' },
     { q: '¿Cuántos ordenadores pueden usarlo a la vez?', a: 'Hasta 15 puestos por clínica, con un servidor en uno de los ordenadores de la clínica. Si tenéis varios centros, cada uno con su servidor y las cifras del grupo juntas.' },
-    { q: '¿En qué ordenadores funciona?', a: 'Es un programa de escritorio para Windows, macOS y Linux. Antes de instalarlo, lo probamos en los equipos de tu clínica.' },
+    { q: '¿En qué ordenadores funciona?', a: 'En Windows 10 y 11, en macOS 11 o posterior (con chip de Apple o con Intel) y en Linux: Debian, Ubuntu, Fedora, Red Hat y sus derivadas, openSUSE y Arch. Antes de instalarlo en la clínica, lo probamos en vuestros equipos.' },
+    { q: '¿Puedo probarlo antes?', a: 'Sí. Descárgalo en esta página: se abre con una clínica de ejemplo inventada para que lo pruebes sin miedo. Cuando empieces con la clínica de verdad, los datos de ejemplo se quitan.' },
+    { q: '¿Qué aparatos de rayos se pueden conectar?', a: 'Los que se manejan con su propio programa: radiovisiógrafos, ortopantomógrafos, TAC, cámaras y escáneres intraorales. VeodarDental abre ese programa con el paciente ya puesto, por parámetros o con el fichero puente IMCONECT.ini, y recoge las imágenes que deja en su carpeta. En la instalación lo probamos con los aparatos de tu clínica.' },
+    { q: '¿Abre cualquier TAC?', a: 'Abre los estudios DICOM sin comprimir, en una serie de cortes o en un solo fichero. Si el TAC los exporta comprimidos (JPEG o JPEG 2000), el programa lo dice, y se ven con el visor del propio TAC, que también se abre desde la ficha.' },
     { q: '¿Cuánto cuesta?', a: 'Depende de los puestos y de lo que necesites. Te lo damos por escrito después de la demostración, con lo que entra y lo que no.' },
   ],
   ctaTitle: '¿Lo vemos con tu agenda de esta semana?',
@@ -247,6 +440,11 @@ const es: VdText = {
     presupuestos: 'Libro de presupuestos de VeodarDental con pendientes, aceptados y tasa de aceptación',
     facturas: 'Facturas de VeodarDental con la serie correlativa y la huella de cada registro',
     comunicaciones: 'Comunicaciones de VeodarDental: recordatorios por WhatsApp, SMS y correo pendientes de enviar',
+    equipos: 'Pantalla Imágenes y enlaces de VeodarDental con el radiovisiógrafo, el ortopantomógrafo, el TAC y la cámara intraoral configurados',
+    'ficha-imagenes': 'Pestaña Imágenes de un paciente en VeodarDental, con un botón para capturar con cada aparato, su galería y una periapical',
+    tac: 'Estudio de TAC de ejemplo en el visor de VeodarDental, en vista axial con su orientación y su escala en milímetros',
+    'comparar-radiografias': 'Dos periapicales del mismo paciente comparadas lado a lado en VeodarDental, con los días entre una y otra',
+    'ia-radiografia': 'Análisis con IA de una panorámica en VeodarDental: hallazgos por pieza en borrador, pendientes de la revisión de un profesional',
   },
 };
 
@@ -259,7 +457,7 @@ const en: VdText = {
   h1: ['Your whole dental clinic in ', 'one', ' program.'],
   lead: 'VeodarDental runs the schedule, the clinical record with odontogram and periodontal chart, treatment plans, payments, VERI*FACTU invoices and patient reminders. It works on the clinic’s own computers, offline too, and it is built in Rust to be fast and to lose no data even if the power goes out halfway through a save.',
   cta: 'Ask for a demo',
-  ctaTour: 'See the program',
+  ctaDownload: 'Download',
   chips: ['Schedule by practitioner', 'Odontogram', 'Periodontal chart', 'VERI*FACTU', 'WhatsApp and SMS', 'GDPR'],
   archTitle: 'VeodarDental odontogram',
   archLegend: { planned: 'Planned', done: 'Done', prior: 'Existing' },
@@ -345,6 +543,79 @@ const en: VdText = {
       { title: 'Orthodontics and the lab', text: 'Orthodontic check-ups with their instalments. Lab orders with their attachments, without the patient’s name by default.' },
     ],
   },
+  imaging: {
+    kicker: 'X-rays and imaging',
+    title: 'Your X-ray equipment, connected to the record.',
+    text: 'From the patient’s record you open the program of each device, from the intraoral sensor to the CBCT scanner, with the patient already selected. What it captures comes back to their gallery, sorted by type and date.',
+    flow: {
+      label: 'How an imaging device connects',
+      steps: [
+        { title: 'One button in the record', text: '“Capture with” shows a button for each device in the clinic.' },
+        { title: 'The patient, already set', text: 'VeodarDental writes their details to the IMCONECT.ini bridge file and opens the device’s program with its parameters.' },
+        { title: 'The device captures', text: 'With its maker’s own program, which saves the images in the patient’s folder.' },
+        { title: 'Into their gallery', text: '“Import” brings them in and sorts them: periapicals, panoramics, CT scans, photos and 3D models.' },
+      ],
+      capture: 'Capture with',
+      devices: ['Sensor', 'Panoramic', 'CBCT', 'Camera', 'Scanner'],
+      program: 'Device program',
+      folder: 'Patient folder',
+      importLabel: 'Import',
+      kinds: ['Periapical', 'Panoramic', '3D CT', 'Intraoral photo', '3D scan'],
+    },
+    devicesTitle: 'The devices that connect',
+    devices: [
+      { title: 'Intraoral sensor (RVG)', text: 'Periapicals and bitewings, with the teeth they belong to.' },
+      { title: 'Panoramic unit', text: 'Panoramic and cephalometric X-rays.' },
+      { title: 'CT / CBCT', text: 'DICOM studies in axial, coronal and sagittal views.' },
+      { title: 'Intraoral camera', text: 'Photos for the treatment plan and to show the patient.' },
+      { title: 'Intraoral scanner', text: '3D models in STL that you can turn and measure in millimeters.' },
+    ],
+    vendors: 'It comes with starting links for the programs of Carestream, Acteon, Planmeca and Dentsply Sirona, and any other is added with its path and parameters. At installation they are adjusted to your clinic’s devices and tested with them.',
+    tabsLabel: 'X-rays and imaging, screen by screen',
+    tabs: [
+      {
+        shot: 'equipos',
+        tab: 'Devices',
+        title: 'Each device, set up once',
+        text: 'Under “Images and links” each device has its program, its parameters and the folder where it saves the images. If it is not installed on that computer, it says so.',
+        points: ['Placeholders for the patient’s details: record number, name, ID, date of birth', 'A log of every launch, with its result'],
+      },
+      {
+        shot: 'ficha-imagenes',
+        tab: 'In the record',
+        title: 'Capture without leaving the patient',
+        text: 'In each patient’s Images tab: a button per device, their gallery by type and a viewer with zoom, brightness, contrast, negative and rotation.',
+        points: ['“Import” collects what the device left in the patient’s folder', 'Each image with its date, its teeth and the device it came from'],
+      },
+      {
+        shot: 'tac',
+        tab: 'CBCT',
+        title: 'The CT scan, inside the record',
+        text: 'DICOM and CBCT studies open in the record in axial, coronal or sagittal view, at their true proportions, with a millimeter scale and the orientation on the edges.',
+        points: ['It shows the patient and date the file itself carries, to check it is their study', 'The file’s window, or one you choose'],
+      },
+      {
+        shot: 'comparar-radiografias',
+        tab: 'Compare',
+        title: 'Before and after, side by side',
+        text: 'Two X-rays of the same patient, the older one on the left, with their dates, their teeth and the days between them.',
+        points: ['The same zoom and rotation on both', 'It only compares images of the same patient'],
+      },
+      {
+        shot: 'ia-radiografia',
+        tab: 'AI',
+        title: 'A second look, as a draft',
+        text: 'If the clinic switches it on, the AI suggests findings per tooth on an X-ray, with their severity and confidence. Nothing enters the record without a practitioner’s review.',
+        points: ['Only the image goes to the AI, without the patient’s name', 'It records which model answered and who asked'],
+      },
+    ],
+    views: {
+      title: 'A CT scan in its three planes',
+      text: 'An invented example study opened in the VeodarDental viewer: the implant at 46 and the gap at 36, cut in all three planes.',
+      labels: ['Axial', 'Coronal', 'Sagittal'],
+      alt: '{view} slice of an example dental CT scan in the VeodarDental viewer',
+    },
+  },
   desk: {
     kicker: 'Front desk',
     title: 'Less time on the phone at the front desk.',
@@ -415,13 +686,64 @@ const en: VdText = {
     service: 'Custom desktop apps',
     rust: 'Rust development',
   },
+  download: {
+    kicker: 'Download',
+    title: 'Try it on your computer.',
+    text: 'It installs in a moment and opens with an example clinic, with invented patients, appointments and invoices. Sign in as Dirección (management) with the initial password 0000, which it will ask you to change.',
+    version: 'Version',
+    notes: 'Release notes and earlier versions, on GitHub',
+    yours: 'Your system',
+    systems: [
+      {
+        id: 'windows',
+        name: 'Windows',
+        req: 'Windows 10 and 11, 64-bit',
+        files: [
+          { key: 'exe', label: 'Installer' },
+          { key: 'msi', label: 'For installing on several computers' },
+        ],
+      },
+      {
+        id: 'macos',
+        name: 'macOS',
+        req: 'macOS 11 or later',
+        files: [
+          { key: 'dmg-arm', label: 'Mac with Apple silicon' },
+          { key: 'dmg-intel', label: 'Mac with Intel' },
+        ],
+      },
+      {
+        id: 'linux',
+        name: 'Linux',
+        req: 'Tested on Ubuntu 20.04 and 24.04, Debian 12 and 13, Fedora, Rocky Linux 8, openSUSE Leap and Arch',
+        files: [
+          { key: 'deb', label: 'Debian, Ubuntu, Mint' },
+          { key: 'rpm', label: 'Fedora, Red Hat, Rocky, Alma, openSUSE' },
+          { key: 'arch', label: 'Arch, Manjaro' },
+          { key: 'appimage', label: 'AppImage, no install' },
+          { key: 'portable', label: 'Portable, for any distribution' },
+        ],
+      },
+    ],
+    firstTime: {
+      title: 'The first time',
+      text: 'The installers are not signed yet, so Windows and macOS warn you when you open them.',
+      windows: 'On Windows: “Windows protected your PC” › “More info” › “Run anyway”.',
+      mac: 'On macOS: if it does not open, System Settings › Privacy & Security › “Open Anyway”.',
+    },
+    clinic: 'To use it in your clinic, with several workstations, your data and VERI*FACTU, we help you set it up.',
+    contact: 'Let’s talk',
+  },
   faqTitle: 'What clinics usually ask',
   faq: [
     { q: 'Do I need the internet to work?', a: 'No. VeodarDental runs on the clinic’s computers. A connection is only needed for what goes out: reminders, online booking and sending invoices to the Spanish tax agency.' },
     { q: 'Does it comply with VERI*FACTU?', a: 'It creates the chained billing records with their hash, the QR code and the submission to the Spanish tax agency. We switch it on with your clinic’s certificate, first in the agency’s test environment.' },
     { q: 'Can I bring the data from my current program?', a: 'Yes. First we run a rehearsal with an export from your program and compare counts and totals. Only when they match do we switch.' },
     { q: 'How many computers can use it at once?', a: 'Up to 15 workstations per clinic, with a server on one of the clinic’s computers. With several sites, each has its own server and the group’s figures come together.' },
-    { q: 'Which computers does it run on?', a: 'It is a desktop program for Windows, macOS and Linux. Before installing it, we test it on your clinic’s computers.' },
+    { q: 'Which computers does it run on?', a: 'Windows 10 and 11, macOS 11 or later (with Apple silicon or Intel) and Linux: Debian, Ubuntu, Fedora, Red Hat and its derivatives, openSUSE and Arch. Before installing it in the clinic, we test it on your computers.' },
+    { q: 'Can I try it first?', a: 'Yes. Download it from this page: it opens with an invented example clinic so you can try it without worry. When you start with your real clinic, the example data is removed.' },
+    { q: 'Which X-ray devices can be connected?', a: 'Those run by their own program: intraoral sensors, panoramic units, CT scanners, intraoral cameras and scanners. VeodarDental opens that program with the patient already set, through parameters or the IMCONECT.ini bridge file, and collects the images it saves in their folder. At installation we test it with your clinic’s devices.' },
+    { q: 'Does it open any CT scan?', a: 'It opens uncompressed DICOM studies, as a series of slices or a single file. If the scanner exports them compressed (JPEG or JPEG 2000), the program says so, and they are viewed with the scanner’s own viewer, which also opens from the record.' },
     { q: 'How much does it cost?', a: 'It depends on the workstations and on what you need. We put it in writing after the demo, with what is included and what is not.' },
   ],
   ctaTitle: 'Shall we look at it with this week’s schedule?',
@@ -446,6 +768,11 @@ const en: VdText = {
     presupuestos: 'VeodarDental treatment plan book with pending and accepted plans and the acceptance rate',
     facturas: 'VeodarDental invoices with the sequential series and the hash of each record',
     comunicaciones: 'VeodarDental messages: WhatsApp, SMS and email reminders waiting to be sent',
+    equipos: 'The VeodarDental Images and links screen with the intraoral sensor, panoramic unit, CT scanner and intraoral camera set up',
+    'ficha-imagenes': 'A patient’s Images tab in VeodarDental, with a button to capture with each device, their gallery and a periapical',
+    tac: 'An example CT study in the VeodarDental viewer, in axial view with its orientation and millimeter scale',
+    'comparar-radiografias': 'Two periapicals of the same patient compared side by side in VeodarDental, with the days between them',
+    'ia-radiografia': 'AI analysis of a panoramic X-ray in VeodarDental: findings per tooth as a draft awaiting a practitioner’s review',
   },
 };
 

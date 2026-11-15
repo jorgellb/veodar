@@ -11,7 +11,7 @@ export const UPDATED = {
   glossary: '2026-11-10',
   local: '2026-11-10',
   legal: '2026-11-10',
-  veodardental: '2026-11-14',
+  veodardental: '2026-11-15',
 } as const;
 export type UpdatedKey = keyof typeof UPDATED;
 

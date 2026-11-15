@@ -12,8 +12,12 @@ import AppShot from '../components/veodardental/AppShot.astro';
 import Showcase from '../components/veodardental/Showcase.astro';
 import Chat from '../components/veodardental/Chat.astro';
 import Chain from '../components/veodardental/Chain.astro';
+import Bridge from '../components/veodardental/Bridge.astro';
+import TacViews from '../components/veodardental/TacViews.astro';
+import Download from '../components/veodardental/Download.astro';
+import { deviceGlyphs } from '../components/veodardental/glyphs';
 import { shots } from '../components/veodardental/shots';
-import { vdFor } from '../data/veodardental';
+import { VD_RELEASES, VD_VERSION, vdFor } from '../data/veodardental';
 import { sectorsFor } from '../data/sectors';
 import { breadcrumbLd, faqLd, site } from '../data/site';
 import { langOf, pathTo, sectorHref, serviceHref, techHref } from '../i18n';
@@ -24,8 +28,8 @@ const t = vdFor(lang);
 const health = sectorsFor(lang).find((s) => s.id === 'salud')!;
 const url = new URL(pathTo('veodardental', lang), site.url).href;
 const T = {
-  es: { home: 'Inicio', sectors: 'Sectores', onPage: 'En esta página', nav: ['El programa', 'Clínica', 'Recepción', 'Cuentas', 'Seguridad', 'Cambiarse'] },
-  en: { home: 'Home', sectors: 'Industries', onPage: 'On this page', nav: ['The program', 'Clinical', 'Front desk', 'Accounts', 'Security', 'Switching'] },
+  es: { home: 'Inicio', sectors: 'Sectores', onPage: 'En esta página', nav: ['El programa', 'Clínica', 'Imagen', 'Recepción', 'Cuentas', 'Seguridad', 'Cambiarse', 'Descargar'] },
+  en: { home: 'Home', sectors: 'Industries', onPage: 'On this page', nav: ['The program', 'Clinical', 'Imaging', 'Front desk', 'Accounts', 'Security', 'Switching', 'Download'] },
 }[lang];
 const crumbs = [
   { name: T.home, path: pathTo('home', lang) },
@@ -33,7 +37,7 @@ const crumbs = [
   { name: health.name, path: sectorHref('salud', lang) },
   { name: t.crumb, path: pathTo('veodardental', lang) },
 ];
-const sections = ['programa', 'clinica', 'recepcion', 'cuentas', 'seguridad', 'cambio'];
+const sections = ['programa', 'clinica', 'imagen', 'recepcion', 'cuentas', 'seguridad', 'cambio', 'descargar'];
 const factIcons = ['desktop', 'grid', 'shield', 'compass'];
 const trustIcons = ['desktop', 'refresh', 'layers', 'key', 'check', 'bell'];
 // What the program is, for search engines: no price, no ratings (there are none to give).
@@ -43,7 +47,9 @@ const appLd = {
   name: 'VeodarDental',
   applicationCategory: 'BusinessApplication',
   applicationSubCategory: lang === 'en' ? 'Dental practice management' : 'Gestión de clínicas dentales',
-  operatingSystem: 'Windows, macOS, Linux',
+  operatingSystem: 'Windows 10, Windows 11, macOS 11+, Linux',
+  softwareVersion: VD_VERSION,
+  downloadUrl: `${VD_RELEASES}/tag/v${VD_VERSION}`,
   description: t.description,
   url,
   inLanguage: ['es', 'ca', 'eu', 'gl', 'en'],
@@ -82,7 +88,12 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
             <a href={pathTo('contacto', lang)} class="btn vd-btn">
               {t.cta} <Icon name="arrow" size={17} class="arrow" />
             </a>
-            <a href="#programa" class="btn vd-btn-ghost">{t.ctaTour}</a>
+            <a href="#descargar" class="btn vd-btn-ghost">
+              {t.ctaDownload}
+              <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 3.5v9M6.2 8.8 10 12.6l3.8-3.8M4 16.5h12" />
+              </svg>
+            </a>
           </div>
           <ul class="vd-chips mt-10" data-reveal style="--d:240ms">
             {t.chips.map((chip) => <li>{chip}</li>)}
@@ -163,7 +174,43 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     </div>
   </section>
 
-  <section id="recepcion" class="vd-section" data-spine="0.5" aria-labelledby="recepcion-title">
+  <section id="imagen" class="vd-section vd-section--cool" data-spine="0.5" aria-labelledby="imagen-title">
+    <div class="wrap">
+      <div class="vd-head">
+        <p class="eyebrow vd-eyebrow-teal">{t.imaging.kicker}</p>
+        <h2 id="imagen-title" class="display h-lg mt-4 max-w-[17ch]">{t.imaging.title}</h2>
+        <p class="lead mt-5 max-w-[62ch]">{t.imaging.text}</p>
+      </div>
+      <div class="mt-12" data-reveal>
+        <Bridge />
+      </div>
+      <div class="mt-14">
+        <p class="vd-devices-title">{t.imaging.devicesTitle}</p>
+        <ul class="vd-devices mt-5">
+          {
+            t.imaging.devices.map((device, index) => (
+              <li class="vd-device" data-reveal style={`--d:${index * 60}ms`}>
+                <span class="vd-device-icon">
+                  <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={deviceGlyphs[index]} />
+                </span>
+                <p class="vd-list-title mt-3">{device.title}</p>
+                <p class="vd-device-text">{device.text}</p>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="vd-vendors mt-6">{t.imaging.vendors}</p>
+      </div>
+      <div class="mt-16">
+        <Showcase tabs={t.imaging.tabs} label={t.imaging.tabsLabel} />
+      </div>
+      <div class="mt-6">
+        <TacViews />
+      </div>
+    </div>
+  </section>
+
+  <section id="recepcion" class="vd-section vd-section--line" data-spine="0.5" aria-labelledby="recepcion-title">
     <div class="wrap vd-split vd-split--even">
       <div>
         <p class="eyebrow vd-eyebrow-teal">{t.desk.kicker}</p>
@@ -280,6 +327,19 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
           ))
         }
       </ul>
+    </div>
+  </section>
+
+  <section id="descargar" class="vd-section vd-section--tint" data-spine="0.5" aria-labelledby="descargar-title">
+    <div class="wrap">
+      <div class="vd-head">
+        <p class="eyebrow vd-eyebrow-teal">{t.download.kicker}</p>
+        <h2 id="descargar-title" class="display h-lg mt-4 max-w-[16ch]">{t.download.title}</h2>
+        <p class="lead mt-5 max-w-[60ch]">{t.download.text}</p>
+      </div>
+      <div class="mt-10">
+        <Download />
+      </div>
     </div>
   </section>
 
@@ -518,6 +578,58 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   }
   .vd-section--tint {
     background: linear-gradient(180deg, #e8f2ef, var(--color-paper));
+  }
+  /* Imaging: the cool grey of a light box. */
+  .vd-section--cool {
+    background: linear-gradient(180deg, #e9eef5, var(--color-paper) 70%);
+  }
+  .vd-devices-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .vd-devices {
+    display: grid;
+    gap: 0.75rem;
+  }
+  @media (min-width: 640px) {
+    .vd-devices {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1024px) {
+    .vd-devices {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+  }
+  .vd-device {
+    padding: 1.1rem 1.15rem 1.2rem;
+    border-radius: 18px;
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  .vd-device-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    color: #5eead4;
+    background: #0d1c31;
+  }
+  .vd-device-text {
+    margin-top: 0.3rem;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-ink-2);
+  }
+  .vd-vendors {
+    max-width: 78ch;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--color-ink-2);
   }
   .vd-dark {
     background:
