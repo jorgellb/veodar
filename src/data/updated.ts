@@ -12,6 +12,7 @@ export const UPDATED = {
   local: '2026-11-10',
   legal: '2026-11-10',
   veodardental: '2026-11-15',
+  dentalGratis: '2026-11-15',
 } as const;
 export type UpdatedKey = keyof typeof UPDATED;
 

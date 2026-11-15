@@ -150,6 +150,8 @@ export const PAGES = {
   mapa: { es: '/mapa-del-sitio/', en: '/en/sitemap/' },
   // Our own product for dental clinics, hanging from the healthcare sector.
   veodardental: { es: '/sectores/salud/veodardental/', en: '/en/industries/healthcare/veodardental/' },
+  // The page for the "free dental software" search: short URL with the words people type.
+  dentalGratis: { es: '/programa-gestion-dental-gratis/', en: '/en/free-dental-software/' },
 } as const;
 export type PageKey = keyof typeof PAGES;
 

@@ -36,6 +36,7 @@ export const GET: APIRoute = ({ site: astroSite }) => {
       updated: sectorUpdated(sector.id),
     })),
     { paths: PAGES.veodardental, priority: '0.8', updated: UPDATED.veodardental },
+    { paths: PAGES.dentalGratis, priority: '0.9', updated: UPDATED.dentalGratis },
     { paths: PAGES.almeria, priority: '0.7', updated: UPDATED.local },
     { paths: PAGES.glosario, priority: '0.6', updated: UPDATED.glossary },
     ...termsFor('es').map((term) => ({

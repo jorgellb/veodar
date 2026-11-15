@@ -13,7 +13,7 @@ interface Props {
 }
 const { variant } = Astro.props;
 const lang = langOf(Astro.url);
-const { promo, shotNote } = vdFor(lang);
+const { promo, shotNote, download } = vdFor(lang);
 const href = pathTo('veodardental', lang);
 ---
 
@@ -32,9 +32,14 @@ const href = pathTo('veodardental', lang);
               <li class="vd-promo-chip">{point}</li>
             ))}
           </ul>
-          <a href={href} class="btn vd-promo-btn mt-9">
-            {promo.link} <Icon name="arrow" size={17} class="arrow" />
-          </a>
+          <div class="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <a href={href} class="btn vd-promo-btn">
+              {promo.link} <Icon name="arrow" size={17} class="arrow" />
+            </a>
+            <a href={pathTo('dentalGratis', lang)} class="link-arrow vd-promo-free">
+              {download.freeLink} <Icon name="arrow" size={16} />
+            </a>
+          </div>
         </div>
         <a href={href} class="vd-promo-shot" data-reveal style="--d:120ms" tabindex="-1" aria-hidden="true">
           <AppShot shot="agenda" dark sizes="(min-width: 1024px) 720px, 94vw" />
@@ -62,6 +67,9 @@ const href = pathTo('veodardental', lang);
 }
 
 <style>
+  .vd-promo-free {
+    color: #5eead4;
+  }
   .vd-promo {
     position: relative;
     padding-block: clamp(4.5rem, 9vw, 7.5rem);

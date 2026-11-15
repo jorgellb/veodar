@@ -367,6 +367,9 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
       <div class="mt-10">
         <Download />
       </div>
+      <a href={pathTo('dentalGratis', lang)} class="link-arrow vd-free-link mt-8">
+        {t.download.freeLink} <Icon name="arrow" size={16} />
+      </a>
     </div>
   </section>
 
@@ -941,6 +944,10 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   }
   .vd-link {
     color: #5eead4;
+  }
+  .vd-free-link {
+    color: #0f766e;
+    font-weight: 560;
   }
 </style>
 

@@ -65,7 +65,12 @@ const groups: Group[] = [
     links: sectorsFor(lang).flatMap((sector) => [
       { href: sectorHref(sector.id, lang), label: sector.name },
       // Our product for dental clinics, right after the healthcare sector it hangs from.
-      ...(sector.id === 'salud' ? [{ href: pathTo('veodardental', lang), label: 'VeodarDental' }] : []),
+      ...(sector.id === 'salud'
+        ? [
+            { href: pathTo('veodardental', lang), label: 'VeodarDental' },
+            { href: pathTo('dentalGratis', lang), label: lang === 'en' ? 'Free dental software' : 'Programa de gestión dental gratis' },
+          ]
+        : []),
     ]),
   },
   ...categories.map((category) => ({

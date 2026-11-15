@@ -111,6 +111,8 @@ export type VdText = {
     firstTime: { title: string; text: string; windows: string; mac: string };
     clinic: string;
     contact: string;
+    /** The link to the free dental software page. */
+    freeLink: string;
   };
   faqTitle: string;
   faq: { q: string; a: string }[];
@@ -380,7 +382,7 @@ const es: VdText = {
   download: {
     kicker: 'Descargar',
     title: 'Pruébalo en tu ordenador.',
-    text: 'Es gratuito, sin licencia ni límite de puestos. Se instala en un momento y se abre con una clínica de ejemplo, con pacientes, citas y facturas inventados: entra como Dirección con la contraseña inicial 0000, que te pedirá cambiar.',
+    text: 'Es gratuito, sin licencia ni pago por puesto. Se instala en un momento y se abre con una clínica de ejemplo, con pacientes, citas y facturas inventados: entra como Dirección con la contraseña inicial 0000, que te pedirá cambiar.',
     version: 'Versión',
     notes: 'Notas de la versión y anteriores, en GitHub',
     yours: 'Tu sistema',
@@ -423,6 +425,7 @@ const es: VdText = {
       mac: 'En macOS: si no se abre, Ajustes del Sistema › Privacidad y seguridad › «Abrir igualmente».',
     },
     clinic: 'Para usarlo en la clínica, con varios puestos, tus datos y VERI*FACTU, te ayudamos con la puesta en marcha.',
+    freeLink: 'Programa de gestión dental gratis: qué incluye y cómo elegirlo',
     contact: 'Hablemos',
   },
   faqTitle: 'Lo que suelen preguntar las clínicas',
@@ -435,7 +438,7 @@ const es: VdText = {
     { q: '¿Puedo probarlo antes?', a: 'Sí. Descárgalo en esta página: se abre con una clínica de ejemplo inventada para que lo pruebes sin miedo. Cuando empieces con la clínica de verdad, los datos de ejemplo se quitan.' },
     { q: '¿Qué aparatos de rayos se pueden conectar?', a: 'Radiovisiógrafos, ortopantomógrafos, TAC, cámaras y escáneres intraorales, de cuatro maneras: abriendo el programa del fabricante con el paciente ya puesto (por parámetros o con un fichero puente), trayendo a la ficha lo que deja en su carpeta, por DICOM en red con los aparatos que lo admiten (les da la lista de citados y recibe sus imágenes) y, para un sensor o un escáner sin programa propio, capturando por TWAIN con NAPS2. Antes de instalarlo comprobamos cómo se conecta cada aparato de tu clínica.' },
     { q: '¿Sustituye al visor de mi TAC?', a: 'No. El TAC se sigue viendo, midiendo y planificando con el programa de su fabricante, que se abre desde la ficha con un botón. El visor de VeodarDental es para echar un vistazo en la consulta: abre los estudios DICOM, también comprimidos en JPEG, JPEG 2000 o RLE; los de JPEG-LS los deja para el visor del fabricante.' },
-    { q: '¿Cuánto cuesta?', a: 'El programa es gratuito: se descarga y se usa sin licencia, sin límite de puestos ni de pacientes. Lo que se paga, si lo quieres, es nuestro trabajo: la instalación, el paso desde tu programa actual, el servidor y el soporte. Te lo damos por escrito después de la demostración, con lo que entra y lo que no.' },
+    { q: '¿Cuánto cuesta?', a: 'El programa es gratuito: se descarga y se usa sin licencia, sin pagar por puesto ni por paciente. Lo que se paga, si lo quieres, es nuestro trabajo: la instalación, el paso desde tu programa actual, el servidor y el soporte. Te lo damos por escrito después de la demostración, con lo que entra y lo que no.' },
   ],
   ctaTitle: '¿Lo vemos con tu agenda de esta semana?',
   ctaText: 'Te enseñamos VeodarDental con datos parecidos a los de tu clínica y te decimos qué haría falta para cambiarte.',
@@ -448,7 +451,7 @@ const es: VdText = {
     caseTitle: 'VeodarDental, nuestro programa de gestión dental.',
     caseText: 'Un programa de escritorio en Rust para clínicas dentales: varios puestos con un servidor en la clínica, sin depender de internet y con un diario que no pierde nada aunque se vaya la luz.',
     caseLink: 'Ver VeodarDental',
-    points: ['Agenda y odontograma', 'VERI*FACTU', 'Sin internet'],
+    points: ['Gratuito', 'Agenda y odontograma', 'VERI*FACTU', 'Sin internet'],
   },
   shotAlt: {
     inicio: 'Pantalla de inicio de VeodarDental con las citas de hoy, la sala de espera, lo cobrado y los avisos',
@@ -726,7 +729,7 @@ const en: VdText = {
   download: {
     kicker: 'Download',
     title: 'Try it on your computer.',
-    text: 'It is free, with no license and no limit on workstations. It installs in a moment and opens with an example clinic, with invented patients, appointments and invoices: sign in as Dirección (management) with the initial password 0000, which it will ask you to change.',
+    text: 'It is free, with no license and no per-workstation charge. It installs in a moment and opens with an example clinic, with invented patients, appointments and invoices: sign in as Dirección (management) with the initial password 0000, which it will ask you to change.',
     version: 'Version',
     notes: 'Release notes and earlier versions, on GitHub',
     yours: 'Your system',
@@ -769,6 +772,7 @@ const en: VdText = {
       mac: 'On macOS: if it does not open, System Settings › Privacy & Security › “Open Anyway”.',
     },
     clinic: 'To use it in your clinic, with several workstations, your data and VERI*FACTU, we help you set it up.',
+    freeLink: 'Free dental software: what it includes and how to choose',
     contact: 'Let’s talk',
   },
   faqTitle: 'What clinics usually ask',
@@ -781,7 +785,7 @@ const en: VdText = {
     { q: 'Can I try it first?', a: 'Yes. Download it from this page: it opens with an invented example clinic so you can try it without worry. When you start with your real clinic, the example data is removed.' },
     { q: 'Which X-ray devices can be connected?', a: 'Intraoral sensors, panoramic units, CT scanners, intraoral cameras and scanners, in four ways: opening the maker’s program with the patient already set (through parameters or a bridge file), bringing into the record what it saves in its folder, over the DICOM network with devices that support it (they get the list of booked patients and send their images) and, for a sensor or scanner without its own program, capturing through TWAIN with NAPS2. Before installing, we check how each of your clinic’s devices connects.' },
     { q: 'Does it replace my CT scanner’s viewer?', a: 'No. The CT scan is still viewed, measured and planned in its maker’s program, which opens from the record with one button. VeodarDental’s viewer is for a quick look in the surgery: it opens DICOM studies, compressed ones too (JPEG, JPEG 2000 or RLE); JPEG-LS studies are left to the maker’s viewer.' },
-    { q: 'How much does it cost?', a: 'The program is free: you download it and use it with no license and no limit on workstations or patients. What you pay for, if you want it, is our work: installation, moving from your current program, the server and support. We put it in writing after the demo, with what is included and what is not.' },
+    { q: 'How much does it cost?', a: 'The program is free: you download it and use it with no license and no charge per workstation or patient. What you pay for, if you want it, is our work: installation, moving from your current program, the server and support. We put it in writing after the demo, with what is included and what is not.' },
   ],
   ctaTitle: 'Shall we look at it with this week’s schedule?',
   ctaText: 'We show you VeodarDental with data similar to your clinic’s and tell you what switching would take.',
@@ -794,7 +798,7 @@ const en: VdText = {
     caseTitle: 'VeodarDental, our dental practice management program.',
     caseText: 'A Rust desktop program for dental clinics: several workstations with a server in the clinic, no dependence on the internet and a journal that loses nothing even if the power goes out.',
     caseLink: 'See VeodarDental',
-    points: ['Schedule and odontogram', 'VERI*FACTU', 'Offline'],
+    points: ['Free', 'Schedule and odontogram', 'VERI*FACTU', 'Offline'],
   },
   shotAlt: {
     inicio: 'VeodarDental home screen with today’s appointments, the waiting room, payments collected and alerts',
