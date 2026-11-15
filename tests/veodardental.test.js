@@ -104,6 +104,12 @@ describe('the VeodarDental page', () => {
     }
   });
 
+  it('says that each device keeps its maker’s program and viewer', () => {
+    assert.match(vdFor('es').imaging.roles.text, /no lo sustituye/);
+    assert.match(vdFor('en').imaging.roles.text, /does not replace/);
+    for (const lang of LANGS) assert.ok(vdFor(lang).faq.some((item) => /visor de mi TAC|CT scanner’s viewer/.test(item.q)), `${lang}: the viewer question`);
+  });
+
   it('says the installers are not signed yet, and how to open them', () => {
     assert.match(vdFor('es').download.firstTime.text, /no van firmados/);
     assert.match(vdFor('en').download.firstTime.text, /not signed/);

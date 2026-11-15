@@ -81,6 +81,7 @@ export type VdText = {
       importLabel: string;
       kinds: string[];
     };
+    roles: { title: string; text: string; device: { title: string; points: string[] }; veodar: { title: string; points: string[] } };
     devicesTitle: string;
     devices: Feature[];
     vendors: string;
@@ -218,7 +219,7 @@ const es: VdText = {
   imaging: {
     kicker: 'Radiología e imagen',
     title: 'Tus aparatos de rayos, conectados a la ficha.',
-    text: 'Desde la ficha del paciente se abre el programa de cada aparato, del radiovisiógrafo al TAC, con el paciente ya elegido. Lo que captura vuelve a su galería, ordenado por tipo y por fecha.',
+    text: 'Cada aparato sigue con el programa de su fabricante, que es el que hace las tomas y las enseña con su visor profesional. VeodarDental lo abre desde la ficha con el paciente ya elegido y junta en su galería lo que captura, ordenado por tipo y por fecha.',
     flow: {
       label: 'Cómo se conecta un aparato de imagen',
       steps: [
@@ -233,6 +234,23 @@ const es: VdText = {
       folder: 'Carpeta del paciente',
       importLabel: 'Importar',
       kinds: ['Periapical', 'Panorámica', 'TAC 3D', 'Foto intraoral', 'Escáner 3D'],
+    },
+    roles: {
+      title: 'Cada aparato, con su propio programa.',
+      text: 'Cada clínica tiene su TAC, su ortopantomógrafo, sus sensores y su cámara, y cada uno trae el programa de su fabricante: Carestream, Acteon AIS, Planmeca, Dentsply Sirona u otro. VeodarDental no lo sustituye: se integra con él.',
+      device: {
+        title: 'Lo hace el programa del aparato',
+        points: ['Las tomas: radiografías, TAC y fotos', 'Su visor profesional: medidas, reconstrucciones y planificación de implantes', 'Guardar los estudios a su manera'],
+      },
+      veodar: {
+        title: 'Lo hace VeodarDental',
+        points: [
+          'Abrir ese programa desde la ficha, con el paciente ya puesto',
+          'Juntar en la ficha lo que captura, con su fecha y sus piezas',
+          'Volver a abrir un estudio en el visor del fabricante con un botón',
+          'Un visor rápido para la consulta: radiografías, TAC en tres planos y modelos 3D',
+        ],
+      },
     },
     devicesTitle: 'Los aparatos que se conectan',
     devices: [
@@ -262,9 +280,9 @@ const es: VdText = {
       {
         shot: 'tac',
         tab: 'TAC',
-        title: 'El TAC, dentro de la ficha',
-        text: 'Los estudios DICOM y CBCT se abren en la ficha en vista axial, coronal o sagital, con la proporción real, la escala en milímetros y la orientación en los bordes.',
-        points: ['Muestra el paciente y la fecha que dice el propio fichero, para comprobar que es su estudio', 'La ventana del fichero, o la que se elija'],
+        title: 'Un vistazo al TAC sin salir de la ficha',
+        text: 'Para enseñarlo en la consulta o comprobar qué estudio es: vista axial, coronal o sagital, con la proporción real, la escala en milímetros y la orientación en los bordes. Para planificar, «Abrir en visor 3D» lo abre en el programa del fabricante.',
+        points: ['Muestra el paciente y la fecha que dice el propio fichero, para comprobar que es su estudio', 'El visor profesional del TAC, a un botón, con el paciente ya puesto'],
       },
       {
         shot: 'comparar-radiografias',
@@ -283,7 +301,7 @@ const es: VdText = {
     ],
     views: {
       title: 'Un TAC en sus tres planos',
-      text: 'Un estudio de ejemplo, inventado, abierto en el visor de VeodarDental: el implante del 46 y el hueco del 36, cortados en los tres planos.',
+      text: 'Un estudio de ejemplo, inventado, en el visor rápido de VeodarDental: el implante del 46 y el hueco del 36 en los tres planos. Las medidas y la planificación se hacen en el visor del fabricante del TAC, que se abre desde la ficha.',
       labels: ['Axial', 'Coronal', 'Sagital'],
       alt: 'Corte {view} de un TAC dental de ejemplo en el visor de VeodarDental',
     },
@@ -414,8 +432,8 @@ const es: VdText = {
     { q: '¿Cuántos ordenadores pueden usarlo a la vez?', a: 'Hasta 15 puestos por clínica, con un servidor en uno de los ordenadores de la clínica. Si tenéis varios centros, cada uno con su servidor y las cifras del grupo juntas.' },
     { q: '¿En qué ordenadores funciona?', a: 'En Windows 10 y 11, en macOS 11 o posterior (con chip de Apple o con Intel) y en Linux: Debian, Ubuntu, Fedora, Red Hat y sus derivadas, openSUSE y Arch. Antes de instalarlo en la clínica, lo probamos en vuestros equipos.' },
     { q: '¿Puedo probarlo antes?', a: 'Sí. Descárgalo en esta página: se abre con una clínica de ejemplo inventada para que lo pruebes sin miedo. Cuando empieces con la clínica de verdad, los datos de ejemplo se quitan.' },
-    { q: '¿Qué aparatos de rayos se pueden conectar?', a: 'Los que se manejan con su propio programa: radiovisiógrafos, ortopantomógrafos, TAC, cámaras y escáneres intraorales. VeodarDental abre ese programa con el paciente ya puesto, por parámetros o con el fichero puente IMCONECT.ini, y recoge las imágenes que deja en su carpeta. En la instalación lo probamos con los aparatos de tu clínica.' },
-    { q: '¿Abre cualquier TAC?', a: 'Abre los estudios DICOM sin comprimir, en una serie de cortes o en un solo fichero. Si el TAC los exporta comprimidos (JPEG o JPEG 2000), el programa lo dice, y se ven con el visor del propio TAC, que también se abre desde la ficha.' },
+    { q: '¿Qué aparatos de rayos se pueden conectar?', a: 'Los que se manejan con el programa de su fabricante: radiovisiógrafos, ortopantomógrafos, TAC, cámaras y escáneres intraorales. Ese programa sigue haciendo las tomas y enseñándolas con su visor; VeodarDental lo abre con el paciente ya puesto, por parámetros o con el fichero puente IMCONECT.ini, y recoge las imágenes que deja en su carpeta. Antes de instalarlo comprobamos cómo se conecta cada aparato de tu clínica.' },
+    { q: '¿Sustituye al visor de mi TAC?', a: 'No. El TAC se sigue viendo, midiendo y planificando con el programa de su fabricante, que se abre desde la ficha con un botón. El visor de VeodarDental es para echar un vistazo en la consulta: abre los estudios DICOM sin comprimir, y si un TAC los guarda comprimidos (JPEG o JPEG 2000), los deja para el visor del fabricante.' },
     { q: '¿Cuánto cuesta?', a: 'El programa es gratuito: se descarga y se usa sin licencia, sin límite de puestos ni de pacientes. Lo que se paga, si lo quieres, es nuestro trabajo: la instalación, el paso desde tu programa actual, el servidor y el soporte. Te lo damos por escrito después de la demostración, con lo que entra y lo que no.' },
   ],
   ctaTitle: '¿Lo vemos con tu agenda de esta semana?',
@@ -546,7 +564,7 @@ const en: VdText = {
   imaging: {
     kicker: 'X-rays and imaging',
     title: 'Your X-ray equipment, connected to the record.',
-    text: 'From the patient’s record you open the program of each device, from the intraoral sensor to the CBCT scanner, with the patient already selected. What it captures comes back to their gallery, sorted by type and date.',
+    text: 'Each device keeps its maker’s program, which takes the images and shows them in its professional viewer. VeodarDental opens it from the record with the patient already selected and gathers what it captures in their gallery, sorted by type and date.',
     flow: {
       label: 'How an imaging device connects',
       steps: [
@@ -561,6 +579,23 @@ const en: VdText = {
       folder: 'Patient folder',
       importLabel: 'Import',
       kinds: ['Periapical', 'Panoramic', '3D CT', 'Intraoral photo', '3D scan'],
+    },
+    roles: {
+      title: 'Each device, with its own program.',
+      text: 'Every clinic has its CBCT, its panoramic unit, its sensors and its camera, each with its maker’s program: Carestream, Acteon AIS, Planmeca, Dentsply Sirona or another. VeodarDental does not replace it: it works with it.',
+      device: {
+        title: 'What the device’s program does',
+        points: ['The captures: X-rays, CT scans and photos', 'Its professional viewer: measurements, reconstructions and implant planning', 'Storing the studies its own way'],
+      },
+      veodar: {
+        title: 'What VeodarDental does',
+        points: [
+          'Open that program from the record, with the patient already set',
+          'Gather what it captures in the record, with its date and teeth',
+          'Reopen a study in the maker’s viewer with one button',
+          'A quick viewer for the surgery: X-rays, CT in three planes and 3D models',
+        ],
+      },
     },
     devicesTitle: 'The devices that connect',
     devices: [
@@ -590,9 +625,9 @@ const en: VdText = {
       {
         shot: 'tac',
         tab: 'CBCT',
-        title: 'The CT scan, inside the record',
-        text: 'DICOM and CBCT studies open in the record in axial, coronal or sagittal view, at their true proportions, with a millimeter scale and the orientation on the edges.',
-        points: ['It shows the patient and date the file itself carries, to check it is their study', 'The file’s window, or one you choose'],
+        title: 'A look at the CT scan without leaving the record',
+        text: 'To show it in the surgery or check which study it is: axial, coronal or sagittal view, at true proportions, with a millimeter scale and the orientation on the edges. For planning, “Open in 3D viewer” opens it in the maker’s program.',
+        points: ['It shows the patient and date the file itself carries, to check it is their study', 'The scanner’s professional viewer, one button away, with the patient already set'],
       },
       {
         shot: 'comparar-radiografias',
@@ -611,7 +646,7 @@ const en: VdText = {
     ],
     views: {
       title: 'A CT scan in its three planes',
-      text: 'An invented example study opened in the VeodarDental viewer: the implant at 46 and the gap at 36, cut in all three planes.',
+      text: 'An invented example study in VeodarDental’s quick viewer: the implant at 46 and the gap at 36 in all three planes. Measuring and planning are done in the scanner maker’s viewer, which opens from the record.',
       labels: ['Axial', 'Coronal', 'Sagittal'],
       alt: '{view} slice of an example dental CT scan in the VeodarDental viewer',
     },
@@ -742,8 +777,8 @@ const en: VdText = {
     { q: 'How many computers can use it at once?', a: 'Up to 15 workstations per clinic, with a server on one of the clinic’s computers. With several sites, each has its own server and the group’s figures come together.' },
     { q: 'Which computers does it run on?', a: 'Windows 10 and 11, macOS 11 or later (with Apple silicon or Intel) and Linux: Debian, Ubuntu, Fedora, Red Hat and its derivatives, openSUSE and Arch. Before installing it in the clinic, we test it on your computers.' },
     { q: 'Can I try it first?', a: 'Yes. Download it from this page: it opens with an invented example clinic so you can try it without worry. When you start with your real clinic, the example data is removed.' },
-    { q: 'Which X-ray devices can be connected?', a: 'Those run by their own program: intraoral sensors, panoramic units, CT scanners, intraoral cameras and scanners. VeodarDental opens that program with the patient already set, through parameters or the IMCONECT.ini bridge file, and collects the images it saves in their folder. At installation we test it with your clinic’s devices.' },
-    { q: 'Does it open any CT scan?', a: 'It opens uncompressed DICOM studies, as a series of slices or a single file. If the scanner exports them compressed (JPEG or JPEG 2000), the program says so, and they are viewed with the scanner’s own viewer, which also opens from the record.' },
+    { q: 'Which X-ray devices can be connected?', a: 'Those run by their maker’s program: intraoral sensors, panoramic units, CT scanners, intraoral cameras and scanners. That program still takes the images and shows them in its viewer; VeodarDental opens it with the patient already set, through parameters or the IMCONECT.ini bridge file, and collects the images it saves in their folder. Before installing, we check how each of your clinic’s devices connects.' },
+    { q: 'Does it replace my CT scanner’s viewer?', a: 'No. The CT scan is still viewed, measured and planned in its maker’s program, which opens from the record with one button. VeodarDental’s viewer is for a quick look in the surgery: it opens uncompressed DICOM studies, and if a scanner stores them compressed (JPEG or JPEG 2000), it leaves them to the maker’s viewer.' },
     { q: 'How much does it cost?', a: 'The program is free: you download it and use it with no license and no limit on workstations or patients. What you pay for, if you want it, is our work: installation, moving from your current program, the server and support. We put it in writing after the demo, with what is included and what is not.' },
   ],
   ctaTitle: 'Shall we look at it with this week’s schedule?',

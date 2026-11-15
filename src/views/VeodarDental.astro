@@ -183,7 +183,32 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
         <h2 id="imagen-title" class="display h-lg mt-4 max-w-[17ch]">{t.imaging.title}</h2>
         <p class="lead mt-5 max-w-[62ch]">{t.imaging.text}</p>
       </div>
-      <div class="mt-12" data-reveal>
+      <div class="vd-roles mt-12" data-reveal>
+        <div class="vd-roles-head">
+          <h3 class="vd-roles-title">{t.imaging.roles.title}</h3>
+          <p class="vd-roles-text">{t.imaging.roles.text}</p>
+        </div>
+        <div class="vd-roles-grid">
+          {
+            [t.imaging.roles.device, t.imaging.roles.veodar].map((side, index) => (
+              <div class:list={['vd-role', index === 1 && 'vd-role--ours']}>
+                <p class="vd-role-title">{side.title}</p>
+                <ul class="vd-role-list">
+                  {side.points.map((point) => (
+                    <li>
+                      <span class="vd-role-mark" aria-hidden="true">
+                        <Icon name="check" size={12} />
+                      </span>
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+      <div class="mt-6" data-reveal>
         <Bridge />
       </div>
       <div class="mt-14">
@@ -584,6 +609,90 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   /* Imaging: the cool grey of a light box. */
   .vd-section--cool {
     background: linear-gradient(180deg, #e9eef5, var(--color-paper) 70%);
+  }
+  /* Who does what: the device's own program and VeodarDental, side by side. */
+  .vd-roles {
+    display: grid;
+    gap: 1.5rem;
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+    border-radius: 28px;
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  @media (min-width: 1024px) {
+    .vd-roles {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: 2.5rem;
+      align-items: center;
+    }
+  }
+  .vd-roles-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .vd-roles-text {
+    margin-top: 0.8rem;
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--color-ink-2);
+    text-wrap: pretty;
+  }
+  .vd-roles-grid {
+    display: grid;
+    gap: 0.75rem;
+  }
+  @media (min-width: 720px) {
+    .vd-roles-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .vd-role {
+    padding: 1.2rem 1.25rem 1.3rem;
+    border-radius: 20px;
+    background: #f1f4f8;
+    box-shadow: inset 0 0 0 1px #dde3ec;
+  }
+  .vd-role--ours {
+    color: #eef2f7;
+    background: #0d1c31;
+    box-shadow: 0 20px 44px -26px rgb(13 28 49 / 0.8);
+  }
+  .vd-role-title {
+    font-weight: 600;
+    font-size: 15.5px;
+  }
+  .vd-role-list {
+    margin-top: 0.8rem;
+    display: grid;
+    gap: 0.55rem;
+  }
+  .vd-role-list li {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 14.5px;
+    line-height: 1.45;
+    color: var(--color-ink-2);
+  }
+  .vd-role--ours .vd-role-list li {
+    color: #c9d4e3;
+  }
+  .vd-role-mark {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    border-radius: 999px;
+    color: #475569;
+    background: #e2e8f0;
+  }
+  .vd-role--ours .vd-role-mark {
+    color: #04221f;
+    background: #5eead4;
   }
   .vd-devices-title {
     font-family: var(--font-mono);
