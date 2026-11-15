@@ -26,7 +26,7 @@ const href = pathTo('veodardental', lang);
           <h2 id="vd-promo-title" class="display h-lg mt-5 max-w-[16ch]">
             {promo.title}
           </h2>
-          <p class="mt-6 max-w-[48ch] text-[17px] leading-relaxed text-[#c9d4e3]">{promo.text}</p>
+          <p class="mt-6 max-w-[48ch] text-[17px] leading-relaxed text-[#c6d9d3]">{promo.text}</p>
           <ul class="mt-7 flex flex-wrap gap-2">
             {promo.points.map((point) => (
               <li class="vd-promo-chip">{point}</li>
@@ -68,16 +68,16 @@ const href = pathTo('veodardental', lang);
 
 <style>
   .vd-promo-free {
-    color: #5eead4;
+    color: #7ee0c3;
   }
   .vd-promo {
     position: relative;
     padding-block: clamp(4.5rem, 9vw, 7.5rem);
-    color: #eef2f7;
+    color: #edf3f1;
     background:
-      radial-gradient(760px 420px at 82% 30%, rgb(45 212 191 / 0.2), transparent 70%),
-      radial-gradient(600px 400px at 8% 90%, rgb(37 99 235 / 0.18), transparent 70%),
-      #0d1c31;
+      radial-gradient(760px 420px at 82% 30%, rgb(60 207 168 / 0.2), transparent 70%),
+      radial-gradient(600px 400px at 8% 90%, rgb(52 120 150 / 0.18), transparent 70%),
+      #081a16;
     overflow-x: clip;
   }
   .vd-promo-grid {
@@ -92,32 +92,32 @@ const href = pathTo('veodardental', lang);
     }
   }
   .vd-promo :global(.display em) {
-    color: #5eead4;
+    color: #7ee0c3;
   }
   .vd-promo-eyebrow {
-    color: #9fb0c8;
+    color: #9fbdb4;
   }
   .vd-promo-eyebrow::before {
-    background: #2dd4bf;
+    background: #3ccfa8;
   }
   .vd-promo-chip {
     padding: 0.32rem 0.75rem;
     border-radius: 999px;
     font-family: var(--font-mono);
     font-size: 12px;
-    color: #c9d4e3;
+    color: #c6d9d3;
     background: rgb(255 255 255 / 0.06);
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
   }
   .vd-promo-btn {
     color: #04221f;
-    background: #2dd4bf;
+    background: #3ccfa8;
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 0.35),
-      0 12px 30px -12px rgb(45 212 191 / 0.9);
+      0 12px 30px -12px rgb(60 207 168 / 0.9);
   }
   .vd-promo-btn:hover {
-    background: #5eead4;
+    background: #7ee0c3;
   }
   .vd-promo-shot {
     display: block;
@@ -136,7 +136,7 @@ const href = pathTo('veodardental', lang);
     margin-top: 0.9rem;
     font-family: var(--font-mono);
     font-size: 11px;
-    color: #7f90aa;
+    color: #80a097;
   }
   @media (prefers-reduced-motion: reduce) {
     .vd-promo-shot :global(.vd-window) {
@@ -151,7 +151,7 @@ const href = pathTo('veodardental', lang);
     padding: 2rem;
     border-radius: 28px;
     background:
-      radial-gradient(420px 260px at 90% 10%, rgb(45 212 191 / 0.18), transparent 70%),
+      radial-gradient(420px 260px at 90% 10%, rgb(60 207 168 / 0.18), transparent 70%),
       linear-gradient(160deg, #e9f5f2, #e2eaf6);
     box-shadow: inset 0 0 0 1px var(--color-line);
   }

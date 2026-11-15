@@ -6,7 +6,8 @@
 // third party first (the AEAT with the clinic's certificate, a WhatsApp Business account,
 // the bank's payment terminal) says so. No prices, clients, ratings or results: a test
 // (tests/veodardental.test.js) checks it. The screenshots are of the program running with
-// its invented demo data; phone numbers and ID numbers are blurred anyway.
+// its invented demo data; phone, ID and bank account numbers are blurred anyway (the
+// program marks where it draws them: --zonas-privadas).
 import type { Lang } from '../i18n';
 
 export type Shot =
@@ -22,11 +23,38 @@ export type Shot =
   | 'ficha-imagenes'
   | 'tac'
   | 'comparar-radiografias'
-  | 'ia-radiografia';
+  | 'ia-radiografia'
+  | 'ficha-resumen'
+  | 'ficha-filiacion'
+  | 'ficha-salud'
+  | 'ficha-historial'
+  | 'ficha-documentos'
+  | 'ficha-presupuestos'
+  | 'ficha-cuenta'
+  | 'cobros'
+  | 'verifactu'
+  | 'caja'
+  | 'gastos'
+  | 'bancos'
+  | 'recalls'
+  | 'listin'
+  | 'almacen'
+  | 'laboratorio'
+  | 'ortodoncia'
+  | 'tarifas'
+  | 'colaboradores'
+  | 'informes'
+  | 'configuracion'
+  | 'modulos'
+  | 'pizarra'
+  | 'entrada';
 
 export type Feature = { title: string; text: string };
 
 export type Tab = { shot: Shot; tab: string; title: string; text: string; points: string[] };
+
+/** A screen in the gallery: its screenshot, its name and one line on what it is for. */
+export type Screen = { shot: Shot; title: string; text: string };
 
 /** The installers of the published version, as the release workflow names them. */
 export type DownloadKey = 'exe' | 'msi' | 'dmg-arm' | 'dmg-intel' | 'deb' | 'rpm' | 'arch' | 'appimage' | 'portable';
@@ -66,6 +94,20 @@ export type VdText = {
   shotNote: string;
   facts: Feature[];
   tour: { kicker: string; title: string; text: string; tabs: Tab[] };
+  /** Every screen of the program, by area, each one opening large. */
+  gallery: {
+    kicker: string;
+    title: string;
+    text: string;
+    /** «Ampliar», before the name of the screen, for the link that opens it large. */
+    open: string;
+    close: string;
+    prev: string;
+    next: string;
+    /** What the row of links to the groups is, for screen readers. */
+    jump: string;
+    groups: { id: string; title: string; text: string; screens: Screen[] }[];
+  };
   clinic: { kicker: string; title: string; text: string; features: Feature[] };
   imaging: {
     kicker: string;
@@ -202,6 +244,97 @@ const es: VdText = {
         title: 'Recordatorios que salen solos',
         text: 'Citas, revisiones, cumpleaños y presupuestos por WhatsApp, SMS o correo, según lo que prefiera cada paciente.',
         points: ['Solo a quien ha dado su consentimiento', 'Sin datos de salud en los mensajes'],
+      },
+    ],
+  },
+  gallery: {
+    kicker: 'Todas las pantallas',
+    title: 'El programa entero, pantalla a pantalla.',
+    text: 'Casi todo VeodarDental tal como se ve hoy, con sus datos de ejemplo, ordenado por áreas. Pulsa en una captura para verla en grande y pasar a la siguiente con las flechas.',
+    open: 'Ampliar',
+    close: 'Cerrar',
+    prev: 'Anterior',
+    next: 'Siguiente',
+    jump: 'Áreas del programa',
+    groups: [
+      {
+        id: 'recepcion',
+        title: 'Recepción',
+        text: 'Lo que tiene abierto quien atiende el mostrador y el teléfono.',
+        screens: [
+          { shot: 'inicio', title: 'Inicio', text: 'Las citas de hoy, la sala de espera, lo cobrado, lo pendiente y los avisos del día.' },
+          { shot: 'agenda', title: 'Agenda', text: 'Cada profesional en su columna; las citas pedidas por internet esperan a un lado para confirmarlas.' },
+          { shot: 'pizarra', title: 'Pizarra de la sala de espera', text: 'Para la pantalla de la sala: a quién le toca y en qué gabinete, con solo las iniciales si se prefiere.' },
+          { shot: 'recalls', title: 'Recalls', text: 'Las revisiones que tocan, vencidas o próximas, con el teléfono a mano para llamar.' },
+          { shot: 'listin', title: 'Listín telefónico', text: 'Contactos, colaboradores, laboratorios y proveedores en un solo listín, con las últimas llamadas.' },
+          { shot: 'entrada', title: 'Entrada', text: 'Cada persona entra con su usuario y su PIN, y el programa se bloquea solo tras un rato sin uso.' },
+        ],
+      },
+      {
+        id: 'ficha',
+        title: 'Ficha del paciente',
+        text: 'Todo lo de un paciente en pestañas, con sus alertas clínicas siempre arriba.',
+        screens: [
+          { shot: 'ficha-resumen', title: 'Resumen', text: 'Lo realizado, lo cobrado y lo previsto, sus datos de contacto y sus próximas citas.' },
+          { shot: 'ficha-filiacion', title: 'Filiación', text: 'Datos personales y administrativos, tarifa o mutua, domiciliación bancaria y quién paga.' },
+          { shot: 'ficha-salud', title: 'Salud', text: 'El cuestionario de salud con su fecha y su estado; el paciente puede rellenarlo desde el enlace de su cita.' },
+          { shot: 'ficha-historial', title: 'Historial', text: 'Lo hecho y lo previsto, pieza a pieza, con su doctor, su fecha y su importe.' },
+          { shot: 'ficha-documentos', title: 'Documentos y consentimientos', text: 'Consentimientos con el texto de cada tratamiento, firmados por el paciente en la pantalla.' },
+          { shot: 'ficha-presupuestos', title: 'Presupuestos del paciente', text: 'Sus presupuestos, con su estado, su validez y su importe.' },
+          { shot: 'ficha-cuenta', title: 'Cuenta', text: 'Cargos y cobros con su saldo, para cobrar o devolver desde la misma pestaña.' },
+        ],
+      },
+      {
+        id: 'clinica',
+        title: 'Clínica',
+        text: 'Las herramientas del gabinete.',
+        screens: [
+          { shot: 'odontograma', title: 'Odontograma', text: 'Lo previsto, lo realizado y lo previo de cada pieza, por caras, con su doctor y su tarifa.' },
+          { shot: 'odontograma-radiografia', title: 'Odontograma en vista de radiografía', text: 'La misma boca sobre fondo oscuro, como se ve en una radiografía.' },
+          { shot: 'periodontograma', title: 'Periodontograma', text: 'Sondaje, sangrado, placa, recesión, furca y movilidad, comparados con el sondaje anterior.' },
+          { shot: 'ortodoncia', title: 'Ortodoncia', text: 'Casos activos con su aparato, sus controles y lo que falta de tratamiento.' },
+          { shot: 'laboratorio', title: 'Laboratorio', text: 'Trabajos encargados con su fecha de entrega y los retrasados a la vista.' },
+        ],
+      },
+      {
+        id: 'imagen',
+        title: 'Imagen',
+        text: 'Radiografías, TAC y fotos, con los programas de cada aparato.',
+        screens: [
+          { shot: 'equipos', title: 'Imágenes y enlaces', text: 'Cada aparato de la clínica con su programa y su carpeta, configurado una vez.' },
+          { shot: 'ficha-imagenes', title: 'Imágenes del paciente', text: 'Un botón para capturar con cada aparato y su galería, con la radiografía abierta.' },
+          { shot: 'tac', title: 'TAC', text: 'Un estudio de ejemplo en el visor del programa, en vista axial con su escala.' },
+          { shot: 'comparar-radiografias', title: 'Comparar radiografías', text: 'Dos imágenes del mismo paciente lado a lado, con los días entre una y otra.' },
+          { shot: 'ia-radiografia', title: 'IA de radiografías', text: 'Hallazgos propuestos por pieza, en borrador hasta que los revisa un dentista.' },
+        ],
+      },
+      {
+        id: 'cuentas',
+        title: 'Cuentas',
+        text: 'Del presupuesto al banco.',
+        screens: [
+          { shot: 'presupuestos', title: 'Presupuestos', text: 'Pendientes, aceptados, rechazados y caducados, con la tasa de aceptación.' },
+          { shot: 'cobros', title: 'Cobros', text: 'Cada cobro con su forma de pago; las remesas SEPA y los pagos por internet, en sus pestañas.' },
+          { shot: 'facturas', title: 'Facturas', text: 'Serie correlativa por año, cada factura encadenada a la anterior con su huella.' },
+          { shot: 'verifactu', title: 'VERI*FACTU', text: 'Los registros pendientes de enviar a la AEAT, los aceptados y los rechazados.' },
+          { shot: 'caja', title: 'Caja', text: 'Movimientos del día y arqueo del efectivo, billete a billete.' },
+          { shot: 'gastos', title: 'Gastos', text: 'Gastos por categoría y proveedor, con lo pendiente de pago y el resultado del periodo.' },
+          { shot: 'bancos', title: 'Bancos', text: 'El extracto del banco, en Norma 43 o Excel, conciliado con los cobros y los gastos.' },
+        ],
+      },
+      {
+        id: 'gestion',
+        title: 'Gestión',
+        text: 'Lo que lleva la dirección de la clínica.',
+        screens: [
+          { shot: 'comunicaciones', title: 'Comunicaciones', text: 'Recordatorios por WhatsApp, SMS o correo, solo a quien ha dado su consentimiento.' },
+          { shot: 'almacen', title: 'Almacén', text: 'Productos con su stock, lotes que caducan y pedidos a proveedores.' },
+          { shot: 'tarifas', title: 'Tarifas y tratamientos', text: 'El catálogo de tratamientos con su precio en cada tarifa o mutua.' },
+          { shot: 'colaboradores', title: 'Colaboradores', text: 'Doctores, higienistas y personal, con su horario de consulta y su producción.' },
+          { shot: 'informes', title: 'Informes', text: 'Libro diario, producción, ingresos, captación y resumen económico, entre las fechas que elijas.' },
+          { shot: 'configuracion', title: 'Configuración', text: 'Datos de la clínica, gabinetes, usuarios y permisos, cita online, copias de seguridad y trabajo en red.' },
+          { shot: 'modulos', title: 'Más módulos', text: 'Las integraciones (radiología, WhatsApp, receta electrónica, bancos…) y dónde se configura cada una.' },
+        ],
       },
     ],
   },
@@ -467,6 +600,30 @@ const es: VdText = {
     tac: 'Estudio de TAC de ejemplo en el visor de VeodarDental, en vista axial con su orientación y su escala en milímetros',
     'comparar-radiografias': 'Dos periapicales del mismo paciente comparadas lado a lado en VeodarDental, con los días entre una y otra',
     'ia-radiografia': 'Análisis con IA de una panorámica en VeodarDental: hallazgos por pieza en borrador, pendientes de la revisión de un profesional',
+    'ficha-resumen': 'Resumen de la ficha de un paciente en VeodarDental, con lo realizado, lo cobrado, lo previsto y sus próximas citas',
+    'ficha-filiacion': 'Pestaña Filiación de un paciente en VeodarDental, con datos personales, tarifa y domiciliación bancaria',
+    'ficha-salud': 'Cuestionario de salud de un paciente en VeodarDental, con su fecha y su estado',
+    'ficha-historial': 'Historial de tratamientos de un paciente en VeodarDental, pieza a pieza, con doctor, fecha e importe',
+    'ficha-documentos': 'Consentimiento informado de extracción en VeodarDental, firmado por el paciente en la pantalla',
+    'ficha-presupuestos': 'Presupuestos de un paciente en VeodarDental, con su estado, su validez y su importe',
+    'ficha-cuenta': 'Cuenta de un paciente en VeodarDental, con cargos, cobros y saldo',
+    cobros: 'Hoja de cobros de VeodarDental con cada cobro, su forma de pago y quién lo cobró',
+    verifactu: 'Pantalla VERI*FACTU de VeodarDental con los registros pendientes de enviar a la AEAT',
+    caja: 'Caja de VeodarDental con los movimientos del día y el arqueo del efectivo, billete a billete',
+    gastos: 'Gastos de VeodarDental por categoría y proveedor, con lo pendiente de pago y el resultado',
+    bancos: 'Bancos en VeodarDental: extracto importado y conciliación con cobros y gastos',
+    recalls: 'Lista de recalls de VeodarDental con las revisiones vencidas y próximas',
+    listin: 'Listín telefónico de VeodarDental con contactos, colaboradores, laboratorios y proveedores',
+    almacen: 'Almacén de VeodarDental con productos, stock, lotes que caducan y pedidos',
+    laboratorio: 'Trabajos de laboratorio en VeodarDental con su fecha de entrega y los retrasados',
+    ortodoncia: 'Casos de ortodoncia en VeodarDental con su aparato, sus controles y su avance',
+    tarifas: 'Tarifas y tratamientos de VeodarDental: el catálogo con su precio en cada tarifa o mutua',
+    colaboradores: 'Colaboradores de VeodarDental con su especialidad, su horario de consulta y su producción',
+    informes: 'Informes de VeodarDental: resumen económico entre dos fechas',
+    configuracion: 'Configuración de VeodarDental con los datos de la clínica y su horario',
+    modulos: 'Más módulos de VeodarDental: las integraciones y dónde se configura cada una',
+    pizarra: 'Pizarra de la sala de espera de VeodarDental: a quién le toca y en qué gabinete, con las iniciales',
+    entrada: 'Pantalla de entrada de VeodarDental con los usuarios de la clínica y el teclado del PIN',
   },
 };
 
@@ -549,6 +706,97 @@ const en: VdText = {
         title: 'Reminders that go out on their own',
         text: 'Appointments, check-ups, birthdays and treatment plans by WhatsApp, SMS or email, as each patient prefers.',
         points: ['Only to patients who have given consent', 'No health data in the messages'],
+      },
+    ],
+  },
+  gallery: {
+    kicker: 'Every screen',
+    title: 'The whole program, screen by screen.',
+    text: 'Almost all of VeodarDental as it looks today, with its demo data, sorted by area. Click a screenshot to see it large and move to the next one with the arrows.',
+    open: 'Enlarge',
+    close: 'Close',
+    prev: 'Previous',
+    next: 'Next',
+    jump: 'Areas of the program',
+    groups: [
+      {
+        id: 'recepcion',
+        title: 'Front desk',
+        text: 'What the person at the desk and on the phone keeps open.',
+        screens: [
+          { shot: 'inicio', title: 'Home', text: 'Today’s appointments, the waiting room, payments collected, what is owed and the day’s alerts.' },
+          { shot: 'agenda', title: 'Schedule', text: 'Each practitioner in their column; online booking requests wait at the side to be confirmed.' },
+          { shot: 'pizarra', title: 'Waiting room board', text: 'For the waiting room screen: whose turn it is and in which surgery, with initials only if you prefer.' },
+          { shot: 'recalls', title: 'Recalls', text: 'The check-ups that are due, overdue or coming up, with the phone number at hand to call.' },
+          { shot: 'listin', title: 'Phone book', text: 'Contacts, staff, labs and suppliers in one phone book, with the latest calls.' },
+          { shot: 'entrada', title: 'Sign-in', text: 'Each person signs in with their user and PIN, and the program locks itself after a while unused.' },
+        ],
+      },
+      {
+        id: 'ficha',
+        title: 'Patient record',
+        text: 'Everything about a patient in tabs, with their clinical alerts always on top.',
+        screens: [
+          { shot: 'ficha-resumen', title: 'Summary', text: 'What has been done, collected and planned, contact details and upcoming appointments.' },
+          { shot: 'ficha-filiacion', title: 'Personal details', text: 'Personal and administrative details, price list or insurer, direct debit and who pays.' },
+          { shot: 'ficha-salud', title: 'Health', text: 'The health questionnaire with its date and status; the patient can fill it in from their appointment link.' },
+          { shot: 'ficha-historial', title: 'History', text: 'What has been done and what is planned, tooth by tooth, with practitioner, date and amount.' },
+          { shot: 'ficha-documentos', title: 'Documents and consent', text: 'Consent forms with the text of each treatment, signed by the patient on the screen.' },
+          { shot: 'ficha-presupuestos', title: 'The patient’s plans', text: 'Their treatment plans, with status, validity and amount.' },
+          { shot: 'ficha-cuenta', title: 'Account', text: 'Charges and payments with the balance, to collect or refund from the same tab.' },
+        ],
+      },
+      {
+        id: 'clinica',
+        title: 'Clinical',
+        text: 'The tools of the surgery.',
+        screens: [
+          { shot: 'odontograma', title: 'Odontogram', text: 'What is planned, done and prior on each tooth, by surface, with practitioner and price list.' },
+          { shot: 'odontograma-radiografia', title: 'Odontogram in X-ray view', text: 'The same mouth on a dark background, as it looks on an X-ray.' },
+          { shot: 'periodontograma', title: 'Periodontal chart', text: 'Probing, bleeding, plaque, recession, furcation and mobility, compared with the previous exam.' },
+          { shot: 'ortodoncia', title: 'Orthodontics', text: 'Active cases with their appliance, their check-ups and the treatment left.' },
+          { shot: 'laboratorio', title: 'Laboratory', text: 'Work sent to the lab with its delivery date and the late ones in sight.' },
+        ],
+      },
+      {
+        id: 'imagen',
+        title: 'Imaging',
+        text: 'X-rays, CT and photos, with each device’s own program.',
+        screens: [
+          { shot: 'equipos', title: 'Images and links', text: 'Each device in the clinic with its program and its folder, set up once.' },
+          { shot: 'ficha-imagenes', title: 'The patient’s images', text: 'A button to capture with each device and their gallery, with the X-ray open.' },
+          { shot: 'tac', title: 'CT', text: 'An example study in the program’s viewer, in axial view with its scale.' },
+          { shot: 'comparar-radiografias', title: 'Compare X-rays', text: 'Two images of the same patient side by side, with the days between them.' },
+          { shot: 'ia-radiografia', title: 'X-ray AI', text: 'Findings proposed per tooth, as a draft until a dentist reviews them.' },
+        ],
+      },
+      {
+        id: 'cuentas',
+        title: 'Accounts',
+        text: 'From the treatment plan to the bank.',
+        screens: [
+          { shot: 'presupuestos', title: 'Treatment plans', text: 'Pending, accepted, rejected and expired, with the acceptance rate.' },
+          { shot: 'cobros', title: 'Payments', text: 'Each payment with its method; SEPA direct debits and online payments in their own tabs.' },
+          { shot: 'facturas', title: 'Invoices', text: 'A sequential series per year, each invoice chained to the previous one by its hash.' },
+          { shot: 'verifactu', title: 'VERI*FACTU', text: 'The records waiting to be sent to the AEAT, the accepted ones and the rejected ones.' },
+          { shot: 'caja', title: 'Cash desk', text: 'The day’s movements and the cash count, note by note.' },
+          { shot: 'gastos', title: 'Expenses', text: 'Expenses by category and supplier, with what is unpaid and the result for the period.' },
+          { shot: 'bancos', title: 'Banks', text: 'The bank statement, in Norma 43 or Excel, matched against payments and expenses.' },
+        ],
+      },
+      {
+        id: 'gestion',
+        title: 'Management',
+        text: 'What the clinic’s management looks after.',
+        screens: [
+          { shot: 'comunicaciones', title: 'Messages', text: 'Reminders by WhatsApp, SMS or email, only to those who have given consent.' },
+          { shot: 'almacen', title: 'Stock', text: 'Products with their stock, batches about to expire and orders to suppliers.' },
+          { shot: 'tarifas', title: 'Price lists and treatments', text: 'The treatment catalog with its price in each price list or insurer.' },
+          { shot: 'colaboradores', title: 'Staff', text: 'Dentists, hygienists and staff, with their surgery hours and their production.' },
+          { shot: 'informes', title: 'Reports', text: 'Day book, production, income, new patients and financial summary, between the dates you choose.' },
+          { shot: 'configuracion', title: 'Settings', text: 'Clinic details, surgeries, users and permissions, online booking, backups and network use.' },
+          { shot: 'modulos', title: 'More modules', text: 'The integrations (imaging, WhatsApp, e-prescription, banks…) and where each one is set up.' },
+        ],
       },
     ],
   },
@@ -814,6 +1062,30 @@ const en: VdText = {
     tac: 'An example CT study in the VeodarDental viewer, in axial view with its orientation and millimeter scale',
     'comparar-radiografias': 'Two periapicals of the same patient compared side by side in VeodarDental, with the days between them',
     'ia-radiografia': 'AI analysis of a panoramic X-ray in VeodarDental: findings per tooth as a draft awaiting a practitioner’s review',
+    'ficha-resumen': 'Summary of a patient record in VeodarDental, with what has been done, collected and planned, and upcoming appointments',
+    'ficha-filiacion': 'Personal details tab of a patient in VeodarDental, with price list and direct debit',
+    'ficha-salud': 'A patient’s health questionnaire in VeodarDental, with its date and status',
+    'ficha-historial': 'A patient’s treatment history in VeodarDental, tooth by tooth, with practitioner, date and amount',
+    'ficha-documentos': 'Informed consent for an extraction in VeodarDental, signed by the patient on the screen',
+    'ficha-presupuestos': 'A patient’s treatment plans in VeodarDental, with status, validity and amount',
+    'ficha-cuenta': 'A patient’s account in VeodarDental, with charges, payments and balance',
+    cobros: 'VeodarDental payments sheet with each payment, its method and who took it',
+    verifactu: 'VeodarDental VERI*FACTU screen with the records waiting to be sent to the AEAT',
+    caja: 'VeodarDental cash desk with the day’s movements and the cash count, note by note',
+    gastos: 'VeodarDental expenses by category and supplier, with what is unpaid and the result',
+    bancos: 'Banks in VeodarDental: an imported statement matched against payments and expenses',
+    recalls: 'VeodarDental recall list with overdue and upcoming check-ups',
+    listin: 'VeodarDental phone book with contacts, staff, labs and suppliers',
+    almacen: 'VeodarDental stock with products, quantities, expiring batches and orders',
+    laboratorio: 'Lab work in VeodarDental with its delivery date and the late jobs',
+    ortodoncia: 'Orthodontic cases in VeodarDental with their appliance, check-ups and progress',
+    tarifas: 'VeodarDental price lists and treatments: the catalog with its price in each list or insurer',
+    colaboradores: 'VeodarDental staff with their speciality, surgery hours and production',
+    informes: 'VeodarDental reports: financial summary between two dates',
+    configuracion: 'VeodarDental settings with the clinic details and opening hours',
+    modulos: 'VeodarDental more modules: the integrations and where each one is set up',
+    pizarra: 'VeodarDental waiting room board: whose turn it is and in which surgery, with initials',
+    entrada: 'VeodarDental sign-in screen with the clinic’s users and the PIN keypad',
   },
 };
 

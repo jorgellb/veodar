@@ -1,0 +1,439 @@
+---
+// Every screen of the program, by area: a row of links to the areas, then each area with
+// its screenshots. The first screenshot of an area is shown large. Each one is a link to
+// its large version: without JavaScript it opens the image; with it, a viewer over the
+// page (arrows to move, Escape or the button to close).
+import { Picture, getImage } from 'astro:assets';
+import { shots } from './shots';
+import { vdFor } from '../../data/veodardental';
+import { langOf } from '../../i18n';
+
+const lang = langOf(Astro.url);
+const { gallery, shotAlt, shotNote } = vdFor(lang);
+const screens = gallery.groups.flatMap((group) => group.screens);
+// The large version for the viewer: one WebP at the screenshot's own width.
+const large = Object.fromEntries(await Promise.all(screens.map(async (screen) => [screen.shot, (await getImage({ src: shots[screen.shot], format: 'webp', width: 1600 })).src])));
+---
+
+<div class="vd-gal" data-vd-gallery>
+  <nav class="vd-gal-jump" aria-label={gallery.jump}>
+    <ul>
+      {
+        gallery.groups.map((group) => (
+          <li>
+            <a href={`#pantallas-${group.id}`}>
+              {group.title} <span class="vd-gal-count">{group.screens.length}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  {
+    gallery.groups.map((group) => (
+      <section id={`pantallas-${group.id}`} class="vd-gal-group" aria-labelledby={`pantallas-${group.id}-title`}>
+        <div class="vd-gal-head">
+          <h3 id={`pantallas-${group.id}-title`} class="vd-gal-title">
+            {group.title}
+          </h3>
+          <p class="vd-gal-text">{group.text}</p>
+        </div>
+        <ul class="vd-gal-grid">
+          {group.screens.map((screen, index) => (
+            <li class:list={['vd-gal-item', index === 0 && 'vd-gal-item--lead']} data-reveal style={`--d:${(index % 3) * 60}ms`}>
+              <a class="vd-gal-link" href={large[screen.shot]} data-large={large[screen.shot]} data-title={screen.title} data-text={screen.text} aria-label={`${gallery.open}: ${screen.title}`}>
+                <span class="vd-gal-frame">
+                  <Picture
+                    src={shots[screen.shot]}
+                    alt={shotAlt[screen.shot]}
+                    formats={['avif', 'webp']}
+                    widths={index === 0 ? [640, 960, 1280] : [400, 640, 800]}
+                    sizes={index === 0 ? '(min-width: 1320px) 820px, (min-width: 768px) 64vw, 94vw' : '(min-width: 1320px) 400px, (min-width: 768px) 31vw, 94vw'}
+                    loading="lazy"
+                    decoding="async"
+                    class="vd-gal-img"
+                  />
+                  <span class="vd-gal-zoom" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                      <circle cx="8.5" cy="8.5" r="5.5" />
+                      <path d="m12.6 12.6 4.4 4.4M8.5 6v5M6 8.5h5" />
+                    </svg>
+                  </span>
+                </span>
+              </a>
+              <p class="vd-gal-name">{screen.title}</p>
+              <p class="vd-gal-desc">{screen.text}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+  <p class="vd-gal-note">{shotNote}</p>
+
+  <dialog class="vd-viewer" aria-labelledby="vd-viewer-title">
+    <div class="vd-viewer-bar">
+      <div class="vd-viewer-copy">
+        <p id="vd-viewer-title" class="vd-viewer-title"></p>
+        <p class="vd-viewer-text"></p>
+      </div>
+      <span class="vd-viewer-pos" aria-hidden="true"></span>
+      <div class="vd-viewer-ctl">
+        <button type="button" class="vd-viewer-btn" data-step="-1" aria-label={gallery.prev}>
+          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" /></svg>
+        </button>
+        <button type="button" class="vd-viewer-btn" data-step="1" aria-label={gallery.next}>
+          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5" /></svg>
+        </button>
+        <button type="button" class="vd-viewer-btn" data-close aria-label={gallery.close}>
+          <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" /></svg>
+        </button>
+      </div>
+    </div>
+    <div class="vd-viewer-stage"></div>
+  </dialog>
+</div>
+
+<style>
+  .vd-gal-jump ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .vd-gal-jump a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.95rem;
+    border-radius: 999px;
+    font-size: 14.5px;
+    font-weight: 540;
+    color: var(--color-ink-2);
+    background: rgb(255 255 255 / 0.6);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    transition:
+      background-color 0.25s,
+      box-shadow 0.25s,
+      color 0.25s;
+  }
+  .vd-gal-jump a:hover {
+    color: #075a4d;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgb(10 117 100 / 0.45);
+  }
+  .vd-gal-count {
+    min-width: 1.5rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    text-align: center;
+    color: #075a4d;
+    background: rgb(10 117 100 / 0.1);
+  }
+
+  .vd-gal-group {
+    margin-top: clamp(3rem, 6vw, 4.5rem);
+    scroll-margin-top: 8rem;
+  }
+  .vd-gal-head {
+    display: grid;
+    gap: 0.4rem;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+  @media (min-width: 768px) {
+    .vd-gal-head {
+      grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+      align-items: baseline;
+      gap: 2rem;
+    }
+  }
+  .vd-gal-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.3vw, 1.95rem);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+  }
+  /* Short enough to leave the page's line (data-spine 0.67, between the second and the
+     third column) free. */
+  .vd-gal-text {
+    max-width: 30rem;
+    font-size: 15.5px;
+    line-height: 1.55;
+    color: var(--color-ink-2);
+  }
+
+  .vd-gal-grid {
+    display: grid;
+    gap: 2rem 1.5rem;
+  }
+  @media (min-width: 640px) {
+    .vd-gal-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .vd-gal-item--lead {
+      grid-column: 1 / -1;
+    }
+  }
+  /* Three columns: the first screen of the area takes two of them and two rows. */
+  @media (min-width: 1024px) {
+    .vd-gal-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: start;
+    }
+    .vd-gal-item--lead {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+  }
+  .vd-gal-link {
+    display: block;
+    border-radius: 12px;
+  }
+  .vd-gal-link:focus-visible {
+    outline: 2px solid #0a7564;
+    outline-offset: 4px;
+  }
+  .vd-gal-frame {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #f0f4f2;
+    box-shadow:
+      0 0 0 1px rgb(8 26 22 / 0.12),
+      0 1px 2px rgb(8 26 22 / 0.06),
+      0 18px 40px -26px rgb(8 26 22 / 0.5);
+    transition:
+      transform 0.5s var(--ease-out-soft),
+      box-shadow 0.5s var(--ease-out-soft);
+  }
+  .vd-gal-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+  }
+  .vd-gal-zoom {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    color: #fff;
+    background: rgb(7 21 19 / 0.72);
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+      opacity 0.3s,
+      transform 0.3s var(--ease-out-soft);
+  }
+  @media (hover: hover) {
+    .vd-gal-link:hover .vd-gal-frame {
+      transform: translateY(-3px);
+      box-shadow:
+        0 0 0 1px rgb(10 117 100 / 0.35),
+        0 2px 4px rgb(8 26 22 / 0.06),
+        0 26px 50px -24px rgb(8 26 22 / 0.55);
+    }
+    .vd-gal-link:hover .vd-gal-zoom {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .vd-gal-link:focus-visible .vd-gal-zoom {
+    opacity: 1;
+    transform: none;
+  }
+  .vd-gal-name {
+    margin-top: 0.85rem;
+    font-size: 15.5px;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .vd-gal-desc {
+    margin-top: 0.25rem;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--color-ink-2);
+    text-wrap: pretty;
+  }
+  .vd-gal-item--lead .vd-gal-name {
+    font-size: 17px;
+  }
+  .vd-gal-note {
+    margin-top: 2.5rem;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+  }
+
+  /* The viewer: the screenshot as large as the window allows, over a dark veil. */
+  .vd-viewer {
+    width: min(1600px, 96vw);
+    max-width: none;
+    max-height: 96dvh;
+    margin: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    color: #e6f2ee;
+    background: #081a16;
+    box-shadow: 0 40px 120px -20px rgb(0 0 0 / 0.7);
+  }
+  .vd-viewer::backdrop {
+    background: rgb(4 12 10 / 0.82);
+    backdrop-filter: blur(4px);
+  }
+  .vd-viewer[open] {
+    display: flex;
+    flex-direction: column;
+    animation: vd-viewer-in 0.35s var(--ease-out-soft);
+  }
+  @keyframes vd-viewer-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.985);
+    }
+  }
+  .vd-viewer-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0.85rem 0.75rem 1.25rem;
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  }
+  .vd-viewer-copy {
+    flex: 1;
+    min-width: 0;
+  }
+  .vd-viewer-title {
+    font-weight: 600;
+    font-size: 15.5px;
+    color: #fff;
+  }
+  .vd-viewer-text {
+    margin-top: 0.1rem;
+    font-size: 13.5px;
+    color: #a9c7be;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .vd-viewer-pos {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #a9c7be;
+  }
+  .vd-viewer-ctl {
+    display: flex;
+    gap: 6px;
+  }
+  .vd-viewer-btn {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    color: #fff;
+    background: rgb(255 255 255 / 0.08);
+    transition: background-color 0.2s;
+    cursor: pointer;
+  }
+  .vd-viewer-btn:hover {
+    background: rgb(255 255 255 / 0.16);
+  }
+  .vd-viewer-btn:focus-visible {
+    outline: 2px solid #7ee0c3;
+    outline-offset: 2px;
+  }
+  .vd-viewer-stage {
+    min-height: 0;
+  }
+  .vd-viewer-stage :global(.vd-viewer-img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: calc(96dvh - 66px);
+    object-fit: contain;
+    background: #f0f4f2;
+  }
+  @media (max-width: 639px) {
+    .vd-viewer-text,
+    .vd-viewer-pos {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vd-gal-frame,
+    .vd-gal-zoom,
+    .vd-viewer[open] {
+      transition: none;
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-vd-gallery]')) {
+    const links = [...root.querySelectorAll<HTMLAnchorElement>('a[data-large]')];
+    const viewer = root.querySelector<HTMLDialogElement>('dialog')!;
+    // The image is made here, not in the page: without JavaScript there is no viewer.
+    const img = document.createElement('img');
+    img.className = 'vd-viewer-img';
+    img.width = 1600;
+    img.height = 1000;
+    img.decoding = 'async';
+    viewer.querySelector('.vd-viewer-stage')!.append(img);
+    const title = viewer.querySelector<HTMLElement>('.vd-viewer-title')!;
+    const text = viewer.querySelector<HTMLElement>('.vd-viewer-text')!;
+    const pos = viewer.querySelector<HTMLElement>('.vd-viewer-pos')!;
+    let current = 0;
+    const show = (index: number) => {
+      current = (index + links.length) % links.length;
+      const link = links[current];
+      img.src = link.dataset.large!;
+      img.alt = link.querySelector('img')?.alt ?? '';
+      title.textContent = link.dataset.title ?? '';
+      text.textContent = link.dataset.text ?? '';
+      pos.textContent = `${current + 1} / ${links.length}`;
+    };
+    links.forEach((link, index) =>
+      link.addEventListener('click', (event) => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+        event.preventDefault();
+        show(index);
+        viewer.showModal();
+        document.documentElement.style.overflow = 'hidden';
+      }),
+    );
+    viewer.addEventListener('close', () => {
+      document.documentElement.style.overflow = '';
+      links[current].focus({ preventScroll: true });
+    });
+    for (const button of viewer.querySelectorAll<HTMLButtonElement>('[data-step]')) button.addEventListener('click', () => show(current + Number(button.dataset.step)));
+    viewer.querySelector('[data-close]')!.addEventListener('click', () => viewer.close());
+    // A click on the veil (outside the viewer's box) closes it.
+    viewer.addEventListener('click', (event) => {
+      const box = viewer.getBoundingClientRect();
+      const inside = event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+      if (!inside) viewer.close();
+    });
+    viewer.addEventListener('keydown', (event) => {
+      const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+      if (step === undefined) return;
+      event.preventDefault();
+      show(current + step);
+    });
+  }
+</script>

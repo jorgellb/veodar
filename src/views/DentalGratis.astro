@@ -96,7 +96,7 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
             {t.ctaDownload}
             <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5v9M6.2 8.8 10 12.6l3.8-3.8M4 16.5h12" /></svg>
           </a>
-          <a href={pathTo('veodardental', lang)} class="fg-price-link">{t.ctaProgram} <Icon name="arrow" size={14} /></a>
+          <a href={pathTo('veodardental', lang, 'pantallas')} class="fg-price-link">{t.ctaProgram} <Icon name="arrow" size={14} /></a>
           <p class="fg-price-os">Windows · macOS · Linux · v{VD_VERSION}</p>
         </aside>
       </div>
@@ -236,7 +236,7 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
         <p class="fg-answer">{t.why.answer}</p>
         <p class="fg-text mt-4">{t.why.text}</p>
         <div class="mt-6 flex flex-wrap gap-x-6 gap-y-3">
-          <a href={pathTo('veodardental', lang)} class="link-arrow fg-link">{t.ctaProgram} <Icon name="arrow" size={16} /></a>
+          <a href={pathTo('veodardental', lang, 'pantallas')} class="link-arrow fg-link">{t.ctaProgram} <Icon name="arrow" size={16} /></a>
           <a href="https://github.com/jorgellb/veodardental" target="_blank" rel="noopener" class="link-arrow fg-link">{t.why.code} <Icon name="arrow" size={16} /></a>
         </div>
       </div>
@@ -253,17 +253,17 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
 <style>
   .fg-hero,
   .fg-dark {
-    color: #eef2f7;
-    background-color: #0d1c31;
+    color: #edf3f1;
+    background-color: #081a16;
   }
   .fg-hero {
     position: relative;
     margin-top: -68px;
     padding: calc(68px + 1.5rem) 0 clamp(4rem, 8vw, 6rem);
     background:
-      radial-gradient(820px 520px at 80% 18%, rgb(45 212 191 / 0.22), transparent 70%),
-      radial-gradient(700px 520px at 4% 4%, rgb(37 99 235 / 0.2), transparent 70%),
-      #0d1c31;
+      radial-gradient(820px 520px at 80% 18%, rgb(60 207 168 / 0.22), transparent 70%),
+      radial-gradient(700px 520px at 4% 4%, rgb(52 120 150 / 0.2), transparent 70%),
+      #081a16;
     overflow-x: clip;
   }
   .fg-crumbs ol {
@@ -273,7 +273,7 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     font-family: var(--font-mono);
     font-size: 12px;
     letter-spacing: 0.04em;
-    color: #7f90aa;
+    color: #80a097;
   }
   .fg-crumbs li {
     display: flex;
@@ -281,7 +281,7 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
   }
   .fg-crumbs a:hover,
   .fg-crumbs [aria-current] {
-    color: #eef2f7;
+    color: #edf3f1;
   }
   .fg-hero-grid {
     margin-top: 2.5rem;
@@ -296,10 +296,10 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     }
   }
   .fg-eyebrow {
-    color: #9fb0c8;
+    color: #9fbdb4;
   }
   .fg-eyebrow::before {
-    background: #2dd4bf;
+    background: #3ccfa8;
   }
   .fg-h1 {
     font-size: clamp(2.4rem, 5vw, 4.6rem);
@@ -310,7 +310,7 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     max-width: 60ch;
     font-size: clamp(1.05rem, 1.35vw, 1.2rem);
     line-height: 1.6;
-    color: #c9d4e3;
+    color: #c6d9d3;
     text-wrap: pretty;
   }
   .fg-chips {
@@ -326,27 +326,27 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     border-radius: 999px;
     font-size: 13.5px;
     color: #d6f5ef;
-    background: rgb(45 212 191 / 0.1);
-    box-shadow: inset 0 0 0 1px rgb(45 212 191 / 0.3);
+    background: rgb(60 207 168 / 0.1);
+    box-shadow: inset 0 0 0 1px rgb(60 207 168 / 0.3);
   }
   .fg-chips li :global(svg) {
-    color: #5eead4;
+    color: #7ee0c3;
   }
   .fg-price {
     padding: 1.75rem;
     border-radius: 26px;
     text-align: center;
-    background: #13243b;
+    background: #0f2a24;
     box-shadow:
       inset 0 0 0 1px rgb(255 255 255 / 0.1),
       0 30px 70px -30px rgb(0 0 0 / 0.7),
-      0 0 120px -40px rgb(45 212 191 / 0.5);
+      0 0 120px -40px rgb(60 207 168 / 0.5);
   }
   .fg-price-amount {
     font-family: var(--font-display);
     font-size: 2.2rem;
     line-height: 1;
-    color: #5eead4;
+    color: #7ee0c3;
   }
   .fg-price-amount span {
     font-size: 6.5rem;
@@ -356,24 +356,24 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
   .fg-price-label {
     margin-top: 0.5rem;
     font-size: 15px;
-    color: #c9d4e3;
+    color: #c6d9d3;
   }
   .fg-price-note {
     margin-top: 0.3rem;
     font-size: 13.5px;
-    color: #9fb0c8;
+    color: #9fbdb4;
   }
   .fg-btn {
     width: 100%;
     justify-content: center;
     color: #04221f;
-    background: #2dd4bf;
+    background: #3ccfa8;
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 0.35),
-      0 12px 30px -12px rgb(45 212 191 / 0.9);
+      0 12px 30px -12px rgb(60 207 168 / 0.9);
   }
   .fg-btn:hover {
-    background: #5eead4;
+    background: #7ee0c3;
   }
   .fg-price-link {
     margin-top: 1rem;
@@ -381,14 +381,14 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     align-items: center;
     gap: 0.35rem;
     font-size: 14px;
-    color: #5eead4;
+    color: #7ee0c3;
   }
   .fg-price-os {
     margin-top: 1rem;
     font-family: var(--font-mono);
     font-size: 11.5px;
     letter-spacing: 0.04em;
-    color: #7f90aa;
+    color: #80a097;
   }
   .fg-shot {
     margin-top: clamp(3rem, 6vw, 5rem);
@@ -407,8 +407,8 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
   }
   .fg-dark {
     background:
-      radial-gradient(760px 480px at 90% 10%, rgb(45 212 191 / 0.14), transparent 70%),
-      #0d1c31;
+      radial-gradient(760px 480px at 90% 10%, rgb(60 207 168 / 0.14), transparent 70%),
+      #081a16;
   }
   .fg-split {
     display: grid;
@@ -428,7 +428,7 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     text-wrap: pretty;
   }
   .fg-answer--dark {
-    color: #c9d4e3;
+    color: #c6d9d3;
   }
   .fg-text {
     font-size: 15.5px;
@@ -437,10 +437,10 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     text-wrap: pretty;
   }
   .fg-link {
-    color: #0f766e;
+    color: #075a4d;
   }
   .fg-dark .fg-link {
-    color: #5eead4;
+    color: #7ee0c3;
   }
 
   .fg-pay {
@@ -459,9 +459,9 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     box-shadow: inset 0 0 0 1px var(--color-line);
   }
   .fg-pay-col--free {
-    color: #eef2f7;
-    background: #0d1c31;
-    box-shadow: 0 24px 50px -28px rgb(13 28 49 / 0.8);
+    color: #edf3f1;
+    background: #081a16;
+    box-shadow: 0 24px 50px -28px rgb(8 26 22 / 0.8);
   }
   .fg-pay-title {
     font-weight: 600;
@@ -481,11 +481,11 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     color: var(--color-ink-2);
   }
   .fg-pay-col--free li {
-    color: #c9d4e3;
+    color: #c6d9d3;
   }
   .fg-pay-col--free li :global(svg) {
     flex: none;
-    color: #5eead4;
+    color: #7ee0c3;
     transform: translateY(2px);
   }
   .fg-dot {
@@ -523,8 +523,8 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     width: 38px;
     height: 38px;
     border-radius: 12px;
-    color: #5eead4;
-    background: #0d1c31;
+    color: #7ee0c3;
+    background: #081a16;
   }
   .fg-group-name {
     margin-top: 0.9rem;
@@ -551,7 +551,7 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     width: 5px;
     height: 5px;
     border-radius: 999px;
-    background: #0d9488;
+    background: #0a7564;
   }
 
   .fg-table-wrap {
@@ -575,7 +575,7 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--color-muted);
-    background: rgb(13 28 49 / 0.03);
+    background: rgb(8 26 22 / 0.03);
   }
   .fg-table tbody tr + tr {
     border-top: 1px solid var(--color-line);
@@ -597,7 +597,7 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
   .fg-vd :global(svg) {
     display: inline;
     margin-right: 0.35rem;
-    color: #0d9488;
+    color: #0a7564;
     vertical-align: -1px;
   }
   /* On a phone each row becomes a card, with the column name above each cell. */
@@ -662,7 +662,7 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     font-family: var(--font-mono);
     font-weight: 600;
     color: #fff;
-    background: #0d9488;
+    background: #0a7564;
   }
   .fg-step-title {
     margin-top: 1rem;
@@ -692,14 +692,14 @@ const groupIcons = ['cross', 'phone', 'bank', 'layers', 'shield'];
     border-radius: 18px;
     font-size: 14.5px;
     line-height: 1.45;
-    color: #c9d4e3;
-    background: #13243b;
+    color: #c6d9d3;
+    background: #0f2a24;
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
   }
   .fg-spain li :global(svg) {
     flex: none;
     margin-top: 3px;
-    color: #5eead4;
+    color: #7ee0c3;
   }
 
   .fg-why {

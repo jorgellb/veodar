@@ -113,12 +113,12 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     position: relative;
     padding: clamp(1.25rem, 2.5vw, 2rem);
     border-radius: 28px;
-    color: #eef2f7;
+    color: #edf3f1;
     background:
-      radial-gradient(600px 300px at 85% 0%, rgb(45 212 191 / 0.16), transparent 70%),
-      radial-gradient(500px 300px at 0% 100%, rgb(37 99 235 / 0.16), transparent 70%),
-      #0d1c31;
-    box-shadow: 0 30px 70px -36px rgb(13 28 49 / 0.8);
+      radial-gradient(600px 300px at 85% 0%, rgb(60 207 168 / 0.16), transparent 70%),
+      radial-gradient(500px 300px at 0% 100%, rgb(52 120 150 / 0.16), transparent 70%),
+      #081a16;
+    box-shadow: 0 30px 70px -36px rgb(8 26 22 / 0.8);
   }
   .vd-bridge-steps {
     display: grid;
@@ -151,7 +151,7 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
       width: 1.35rem;
       height: 2px;
       border-radius: 2px;
-      background: linear-gradient(90deg, #2dd4bf, rgb(45 212 191 / 0.15));
+      background: linear-gradient(90deg, #3ccfa8, rgb(60 207 168 / 0.15));
     }
   }
   .vd-bridge-vis {
@@ -160,7 +160,7 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     place-items: center;
     padding: 0.9rem;
     border-radius: 18px;
-    background: #13243b;
+    background: #0f2a24;
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
     overflow: hidden;
   }
@@ -169,7 +169,7 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     font-family: var(--font-mono);
     font-size: 12px;
     letter-spacing: 0.06em;
-    color: #5eead4;
+    color: #7ee0c3;
   }
   .vd-bridge-n::before {
     content: '0';
@@ -184,7 +184,7 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     margin-top: 0.4rem;
     font-size: 14.5px;
     line-height: 1.55;
-    color: #b3c1d4;
+    color: #b1c8c1;
     text-wrap: pretty;
   }
 
@@ -194,7 +194,7 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     padding: 0.8rem;
     border-radius: 12px;
     color: #1d2a3d;
-    background: #f7f9fc;
+    background: #f6f9f8;
   }
   .vd-bridge-who {
     display: flex;
@@ -227,7 +227,7 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     margin-top: 0.75rem;
     font-size: 11.5px;
     font-weight: 600;
-    color: #4b5870;
+    color: #4c655f;
   }
   .vd-bridge-devs {
     margin-top: 0.4rem;
@@ -242,14 +242,14 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     padding: 0.25rem 0.55rem;
     border-radius: 999px;
     font-size: 11.5px;
-    color: #334155;
+    color: #33433f;
     background: #fff;
-    box-shadow: inset 0 0 0 1px #d5dce6;
+    box-shadow: inset 0 0 0 1px #d3dfdb;
   }
   .vd-bridge-dev--on {
     color: #fff;
-    background: #0d9488;
-    box-shadow: 0 6px 16px -6px rgb(13 148 136 / 0.9);
+    background: #0a7564;
+    box-shadow: 0 6px 16px -6px rgb(10 117 100 / 0.9);
   }
 
   /* 2 · the bridge file */
@@ -264,8 +264,8 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     padding: 0.35rem 0.7rem;
     font-family: var(--font-mono);
     font-size: 10.5px;
-    color: #9fb0c8;
-    background: #16253d;
+    color: #9fbdb4;
+    background: #12302a;
   }
   .vd-bridge-ini {
     display: grid;
@@ -273,13 +273,13 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     font-family: var(--font-mono);
     font-size: 11px;
     line-height: 1.5;
-    color: #c9d4e3;
+    color: #c6d9d3;
     white-space: pre;
     overflow: hidden;
   }
   .vd-bridge-ini b {
     font-weight: 500;
-    color: #5eead4;
+    color: #7ee0c3;
   }
   .vd-bridge-sec {
     color: #93c5fd;
@@ -293,14 +293,14 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     border-radius: 7px;
     font-family: var(--font-mono);
     font-size: 10.5px;
-    color: #eef2f7;
-    background: rgb(45 212 191 / 0.12);
+    color: #edf3f1;
+    background: rgb(60 207 168 / 0.12);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .vd-bridge-cmd span {
-    color: #5eead4;
+    color: #7ee0c3;
   }
 
   /* 3 · the device's program */
@@ -317,8 +317,8 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     gap: 0.35rem;
     padding: 0.35rem 0.6rem;
     font-size: 10.5px;
-    color: #9fb0c8;
-    background: #16253d;
+    color: #9fbdb4;
+    background: #12302a;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -338,15 +338,15 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     inset: 0 auto auto 0;
     width: 100%;
     height: 2px;
-    background: #5eead4;
-    box-shadow: 0 0 14px 3px rgb(94 234 212 / 0.6);
+    background: #7ee0c3;
+    box-shadow: 0 0 14px 3px rgb(126 224 195 / 0.6);
     opacity: 0;
   }
   .vd-bridge-folder {
     padding: 0.35rem 0.6rem 0.45rem;
     font-family: var(--font-mono);
     font-size: 10.5px;
-    color: #5eead4;
+    color: #7ee0c3;
   }
 
   /* 4 · the gallery */
@@ -358,7 +358,7 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     padding: 0.2rem 0.6rem;
     border-radius: 999px;
     font-size: 11px;
-    color: #eef2f7;
+    color: #edf3f1;
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25);
   }
   .vd-bridge-gallery ul {
@@ -376,8 +376,8 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     background: rgb(255 255 255 / 0.04);
   }
   .vd-bridge-row--new {
-    background: rgb(45 212 191 / 0.16);
-    box-shadow: inset 0 0 0 1px rgb(45 212 191 / 0.45);
+    background: rgb(60 207 168 / 0.16);
+    box-shadow: inset 0 0 0 1px rgb(60 207 168 / 0.45);
   }
   .vd-bridge-thumb {
     display: grid;
@@ -394,7 +394,7 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
   .vd-bridge-date {
     font-family: var(--font-mono);
     font-size: 10px;
-    color: #7f90aa;
+    color: #80a097;
   }
 
   /* ── The loop: 9 seconds, every part on the same clock, waiting until in view ── */
@@ -448,9 +448,9 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
   @keyframes vd-press {
     0%,
     4% {
-      color: #334155;
+      color: #33433f;
       background: #fff;
-      box-shadow: inset 0 0 0 1px #d5dce6;
+      box-shadow: inset 0 0 0 1px #d3dfdb;
       transform: none;
     }
     7% {
@@ -459,15 +459,15 @@ const dates = ['16/09', '18/07', '15/11', '02/06', '15/11'];
     10%,
     88% {
       color: #fff;
-      background: #0d9488;
-      box-shadow: 0 6px 16px -6px rgb(13 148 136 / 0.9);
+      background: #0a7564;
+      box-shadow: 0 6px 16px -6px rgb(10 117 100 / 0.9);
       transform: none;
     }
     96%,
     100% {
-      color: #334155;
+      color: #33433f;
       background: #fff;
-      box-shadow: inset 0 0 0 1px #d5dce6;
+      box-shadow: inset 0 0 0 1px #d3dfdb;
     }
   }
   @keyframes vd-type {

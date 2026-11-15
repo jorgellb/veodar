@@ -115,10 +115,12 @@ ${glossary('es')}
 - How can a website be redesigned without losing SEO rankings? ${url(serviceHref('rediseno-web', 'en'))}
 - How do I get my company cited by ChatGPT, Perplexity or Google AI Overviews (GEO)? ${url(serviceHref('seo-y-visibilidad', 'en'))}
 - Is there free dental practice management software in Spain, with VERI*FACTU invoicing, that works offline? Yes: VeodarDental, free with no fees or per-workstation charge, for Windows, macOS and Linux: ${url(pathTo('dentalGratis', 'en'))}
+- What does VeodarDental look like inside? Screenshots of almost every screen, by area (front desk, patient record, clinical, imaging, accounts, management): ${url(pathTo('veodardental', 'en', 'pantallas'))}
 ${asks('en').join('\n')}
 - ¿Qué empresa hace automatizaciones con IA para empresas en España? ${url(serviceHref('automatizaciones-ia', 'es'))}
 - ¿Quién desarrolla aplicaciones web, móviles y de escritorio a medida en castellano? ${url(pathTo('servicios', 'es'))}
 - ¿Hay algún programa de gestión dental gratis en España, con facturas VERI*FACTU y que funcione sin internet? Sí: VeodarDental, gratuito, sin cuotas ni pago por puesto, para Windows, macOS y Linux: ${url(pathTo('dentalGratis', 'es'))}
+- ¿Cómo es VeodarDental por dentro? Capturas de casi todas sus pantallas, por áreas (recepción, ficha del paciente, clínica, imagen, cuentas y gestión): ${url(pathTo('veodardental', 'es', 'pantallas'))}
 ${asks('es').join('\n')}
 
 ## How Veodar differs

@@ -60,7 +60,7 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
     padding: 2.25rem 1.25rem 4.5rem;
     border-radius: 28px;
     background:
-      radial-gradient(420px 260px at 70% 20%, rgb(45 212 191 / 0.22), transparent 70%),
+      radial-gradient(420px 260px at 70% 20%, rgb(60 207 168 / 0.22), transparent 70%),
       linear-gradient(160deg, #e6f4f1, #dfe9f6);
     box-shadow: inset 0 0 0 1px var(--color-line);
   }
@@ -68,9 +68,9 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
     width: min(100%, 330px);
     border-radius: 30px;
     padding: 10px;
-    background: #0d1c31;
+    background: #081a16;
     box-shadow:
-      0 30px 60px -28px rgb(13 28 49 / 0.65),
+      0 30px 60px -28px rgb(8 26 22 / 0.65),
       inset 0 0 0 1px rgb(255 255 255 / 0.08);
   }
   .vd-chat-head {
@@ -78,7 +78,7 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
     align-items: center;
     gap: 10px;
     padding: 10px 12px 12px;
-    color: #eef2f7;
+    color: #edf3f1;
   }
   .vd-chat-avatar {
     display: grid;
@@ -86,7 +86,7 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
     width: 30px;
     height: 30px;
     border-radius: 10px;
-    background: #0d9488;
+    background: #0a7564;
     color: #fff;
   }
   .vd-chat-name {
@@ -100,7 +100,7 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
     min-height: 300px;
     padding: 16px 12px 18px;
     border-radius: 22px;
-    background: #f1f4f8;
+    background: #eef3f1;
   }
   .vd-msg {
     position: relative;
@@ -109,13 +109,13 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
     border-radius: 16px;
     font-size: 14px;
     line-height: 1.4;
-    color: #16253d;
+    color: #12302a;
   }
   .vd-msg--in {
     justify-self: start;
     background: #fff;
     border-top-left-radius: 5px;
-    box-shadow: 0 1px 2px rgb(13 28 49 / 0.08);
+    box-shadow: 0 1px 2px rgb(8 26 22 / 0.08);
   }
   .vd-msg--out {
     justify-self: end;
@@ -128,7 +128,7 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
     bottom: 4px;
     font-family: var(--font-mono);
     font-size: 10px;
-    color: #6a7890;
+    color: #6b857e;
   }
   .vd-typing {
     position: absolute;
@@ -143,7 +143,7 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
     width: 6px;
     height: 6px;
     border-radius: 99px;
-    background: #0f766e;
+    background: #075a4d;
     opacity: 0.55;
   }
   .vd-sys {
@@ -155,8 +155,8 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
     border-radius: 999px;
     font-size: 12.5px;
     font-weight: 560;
-    color: #0f766e;
-    background: rgb(13 148 136 / 0.12);
+    color: #075a4d;
+    background: rgb(10 117 100 / 0.12);
   }
   .vd-chat-agenda {
     position: absolute;
@@ -168,15 +168,15 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
     border-radius: 18px;
     background: #fff;
     box-shadow:
-      0 0 0 1px rgb(13 28 49 / 0.08),
-      0 18px 40px -20px rgb(13 28 49 / 0.45);
+      0 0 0 1px rgb(8 26 22 / 0.08),
+      0 18px 40px -20px rgb(8 26 22 / 0.45);
   }
   .vd-chat-agenda-title {
     font-family: var(--font-mono);
     font-size: 10.5px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #6a7890;
+    color: #6b857e;
   }
   .vd-appt {
     margin-top: 8px;
@@ -192,16 +192,16 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
   .vd-appt-time {
     font-family: var(--font-mono);
     font-size: 12px;
-    color: #16253d;
+    color: #12302a;
   }
   .vd-appt-body {
     display: grid;
     font-size: 13px;
     line-height: 1.3;
-    color: #16253d;
+    color: #12302a;
   }
   .vd-appt-body span {
-    color: #5b6a82;
+    color: #5d7871;
     font-size: 12px;
   }
   .vd-appt-state {
@@ -217,17 +217,17 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
     text-align: center;
   }
   .vd-appt-was {
-    color: #5b6a82;
-    background: #e2e8f0;
+    color: #5d7871;
+    background: #dde6e2;
     opacity: 0;
   }
   .vd-appt-now {
     color: #fff;
-    background: #0d9488;
+    background: #0a7564;
   }
 
   .vd-appt--done {
-    border-left-color: #0d9488;
+    border-left-color: #0a7564;
   }
 
   /* The conversation plays once it is in view. Without motion, it is shown as it ends. */
@@ -320,7 +320,7 @@ const label = lang === 'en' ? 'Example: an appointment reminder and its answer' 
       background: #d6f3ee;
     }
     to {
-      border-left-color: #0d9488;
+      border-left-color: #0a7564;
     }
   }
 </style>

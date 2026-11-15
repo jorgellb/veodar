@@ -1,8 +1,9 @@
 ---
 // /sectores/salud/veodardental/ and /en/industries/healthcare/veodardental/: the page of
 // VeodarDental, our own management program for dental clinics. It wears the program's
-// own colours (the night blue of its sidebar and its teal) inside the site's frame, and
-// opens with the thing every dental program is judged by: the odontogram.
+// own colours (since 0.2.1, «gabinete claro»: a green-black night and a surgical green)
+// inside the site's frame, and opens with the thing every dental program is judged by:
+// the odontogram.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import Faq from '../components/Faq.astro';
@@ -10,6 +11,7 @@ import CtaBand from '../components/CtaBand.astro';
 import Arch from '../components/veodardental/Arch.astro';
 import AppShot from '../components/veodardental/AppShot.astro';
 import Showcase from '../components/veodardental/Showcase.astro';
+import Gallery from '../components/veodardental/Gallery.astro';
 import Chat from '../components/veodardental/Chat.astro';
 import Chain from '../components/veodardental/Chain.astro';
 import Bridge from '../components/veodardental/Bridge.astro';
@@ -28,8 +30,8 @@ const t = vdFor(lang);
 const health = sectorsFor(lang).find((s) => s.id === 'salud')!;
 const url = new URL(pathTo('veodardental', lang), site.url).href;
 const T = {
-  es: { home: 'Inicio', sectors: 'Sectores', onPage: 'En esta página', nav: ['El programa', 'Clínica', 'Imagen', 'Recepción', 'Cuentas', 'Seguridad', 'Cambiarse', 'Descargar'] },
-  en: { home: 'Home', sectors: 'Industries', onPage: 'On this page', nav: ['The program', 'Clinical', 'Imaging', 'Front desk', 'Accounts', 'Security', 'Switching', 'Download'] },
+  es: { home: 'Inicio', sectors: 'Sectores', onPage: 'En esta página', nav: ['El programa', 'Pantallas', 'Clínica', 'Imagen', 'Recepción', 'Cuentas', 'Seguridad', 'Cambiarse', 'Descargar'] },
+  en: { home: 'Home', sectors: 'Industries', onPage: 'On this page', nav: ['The program', 'Screens', 'Clinical', 'Imaging', 'Front desk', 'Accounts', 'Security', 'Switching', 'Download'] },
 }[lang];
 const crumbs = [
   { name: T.home, path: pathTo('home', lang) },
@@ -37,7 +39,7 @@ const crumbs = [
   { name: health.name, path: sectorHref('salud', lang) },
   { name: t.crumb, path: pathTo('veodardental', lang) },
 ];
-const sections = ['programa', 'clinica', 'imagen', 'recepcion', 'cuentas', 'seguridad', 'cambio', 'descargar'];
+const sections = ['programa', 'pantallas', 'clinica', 'imagen', 'recepcion', 'cuentas', 'seguridad', 'cambio', 'descargar'];
 const factIcons = ['desktop', 'grid', 'shield', 'compass'];
 const trustIcons = ['desktop', 'refresh', 'layers', 'key', 'check', 'bell'];
 // What the program is, for search engines: free (price 0, decided 2026-11-15), and no
@@ -147,6 +149,19 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
       </div>
       <div class="mt-12">
         <Showcase />
+      </div>
+    </div>
+  </section>
+
+  <section id="pantallas" class="vd-section vd-section--tint" data-spine="0.67" aria-labelledby="pantallas-title">
+    <div class="wrap">
+      <div class="vd-head">
+        <p class="eyebrow vd-eyebrow-teal">{t.gallery.kicker}</p>
+        <h2 id="pantallas-title" class="display h-lg mt-4 max-w-[18ch]">{t.gallery.title}</h2>
+        <p class="lead mt-5 max-w-[62ch]">{t.gallery.text}</p>
+      </div>
+      <div class="mt-10">
+        <Gallery />
       </div>
     </div>
   </section>
@@ -384,8 +399,8 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   /* ── The program's own colours, inside the site's frame ─────────────── */
   .vd-hero,
   .vd-dark {
-    --vd-night: #0d1c31;
-    color: #eef2f7;
+    --vd-night: #081a16;
+    color: #edf3f1;
     background-color: var(--vd-night);
   }
   .vd-hero {
@@ -393,10 +408,10 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     margin-top: -68px;
     padding: calc(68px + 1.5rem) 0 clamp(4rem, 8vw, 6rem);
     background:
-      radial-gradient(820px 520px at 78% 22%, rgb(45 212 191 / 0.2), transparent 70%),
-      radial-gradient(700px 520px at 6% 4%, rgb(37 99 235 / 0.2), transparent 70%),
-      radial-gradient(900px 500px at 50% 100%, rgb(45 212 191 / 0.12), transparent 70%),
-      #0d1c31;
+      radial-gradient(820px 520px at 78% 22%, rgb(60 207 168 / 0.2), transparent 70%),
+      radial-gradient(700px 520px at 6% 4%, rgb(52 120 150 / 0.2), transparent 70%),
+      radial-gradient(900px 500px at 50% 100%, rgb(60 207 168 / 0.12), transparent 70%),
+      #081a16;
     overflow-x: clip;
   }
   .vd-crumbs ol {
@@ -406,7 +421,7 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     font-family: var(--font-mono);
     font-size: 12px;
     letter-spacing: 0.04em;
-    color: #7f90aa;
+    color: #80a097;
   }
   .vd-crumbs li {
     display: flex;
@@ -414,7 +429,7 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   }
   .vd-crumbs a:hover,
   .vd-crumbs [aria-current] {
-    color: #eef2f7;
+    color: #edf3f1;
   }
   .vd-hero-grid {
     margin-top: 2.5rem;
@@ -429,14 +444,14 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     }
   }
   .vd-eyebrow {
-    color: #9fb0c8;
+    color: #9fbdb4;
   }
   .vd-eyebrow::before,
   .vd-eyebrow-teal::before {
-    background: #2dd4bf;
+    background: #3ccfa8;
   }
   .vd-eyebrow-teal::before {
-    background: #0d9488;
+    background: #0a7564;
   }
   .vd-h1 {
     font-size: clamp(2.6rem, 5.6vw, 5.2rem);
@@ -446,27 +461,27 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   .vd-h1 em,
   .vd-dark :global(.display em),
   .vd-hero :global(.display em) {
-    color: #5eead4;
+    color: #7ee0c3;
   }
   .vd-lead {
     max-width: 56ch;
     font-size: clamp(1.05rem, 1.35vw, 1.2rem);
     line-height: 1.6;
-    color: #c9d4e3;
+    color: #c6d9d3;
     text-wrap: pretty;
   }
   .vd-btn {
     color: #04221f;
-    background: #2dd4bf;
+    background: #3ccfa8;
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 0.35),
-      0 12px 30px -12px rgb(45 212 191 / 0.9);
+      0 12px 30px -12px rgb(60 207 168 / 0.9);
   }
   .vd-btn:hover {
-    background: #5eead4;
+    background: #7ee0c3;
   }
   .vd-btn-ghost {
-    color: #eef2f7;
+    color: #edf3f1;
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22);
   }
   .vd-btn-ghost:hover {
@@ -483,7 +498,7 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     border-radius: 999px;
     font-family: var(--font-mono);
     font-size: 12px;
-    color: #c9d4e3;
+    color: #c6d9d3;
     background: rgb(255 255 255 / 0.05);
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
   }
@@ -543,8 +558,8 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     width: 38px;
     height: 38px;
     border-radius: 12px;
-    color: #0f766e;
-    background: rgb(13 148 136 / 0.12);
+    color: #075a4d;
+    background: rgb(10 117 100 / 0.12);
   }
   .vd-fact-title {
     margin-top: 0.9rem;
@@ -592,8 +607,8 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   }
   .vd-toc a:hover,
   .vd-toc a[aria-current='true'] {
-    color: #0f766e;
-    background: rgb(13 148 136 / 0.1);
+    color: #075a4d;
+    background: rgb(10 117 100 / 0.1);
   }
 
   /* ── Sections ─────────────────────────────────────────────────────── */
@@ -611,7 +626,7 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   }
   /* Imaging: the cool grey of a light box. */
   .vd-section--cool {
-    background: linear-gradient(180deg, #e9eef5, var(--color-paper) 70%);
+    background: linear-gradient(180deg, #e6efeb, var(--color-paper) 70%);
   }
   /* Who does what: the device's own program and VeodarDental, side by side. */
   .vd-roles {
@@ -655,13 +670,13 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   .vd-role {
     padding: 1.2rem 1.25rem 1.3rem;
     border-radius: 20px;
-    background: #f1f4f8;
-    box-shadow: inset 0 0 0 1px #dde3ec;
+    background: #eef3f1;
+    box-shadow: inset 0 0 0 1px #dbe4e0;
   }
   .vd-role--ours {
-    color: #eef2f7;
-    background: #0d1c31;
-    box-shadow: 0 20px 44px -26px rgb(13 28 49 / 0.8);
+    color: #edf3f1;
+    background: #081a16;
+    box-shadow: 0 20px 44px -26px rgb(8 26 22 / 0.8);
   }
   .vd-role-title {
     font-weight: 600;
@@ -680,7 +695,7 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     color: var(--color-ink-2);
   }
   .vd-role--ours .vd-role-list li {
-    color: #c9d4e3;
+    color: #c6d9d3;
   }
   .vd-role-mark {
     flex: none;
@@ -691,11 +706,11 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     margin-top: 1px;
     border-radius: 999px;
     color: #475569;
-    background: #e2e8f0;
+    background: #dde6e2;
   }
   .vd-role--ours .vd-role-mark {
     color: #04221f;
-    background: #5eead4;
+    background: #7ee0c3;
   }
   .vd-devices-title {
     font-family: var(--font-mono);
@@ -730,8 +745,8 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     width: 38px;
     height: 38px;
     border-radius: 12px;
-    color: #5eead4;
-    background: #0d1c31;
+    color: #7ee0c3;
+    background: #081a16;
   }
   .vd-device-text {
     margin-top: 0.3rem;
@@ -747,15 +762,15 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   }
   .vd-dark {
     background:
-      radial-gradient(760px 480px at 90% 10%, rgb(45 212 191 / 0.14), transparent 70%),
-      radial-gradient(700px 480px at 0% 100%, rgb(37 99 235 / 0.14), transparent 70%),
-      #0d1c31;
+      radial-gradient(760px 480px at 90% 10%, rgb(60 207 168 / 0.14), transparent 70%),
+      radial-gradient(700px 480px at 0% 100%, rgb(52 120 150 / 0.14), transparent 70%),
+      #081a16;
   }
   .vd-dark :global(.lead) {
-    color: #c9d4e3;
+    color: #c6d9d3;
   }
   .vd-eyebrow-teal {
-    color: #0f766e;
+    color: #075a4d;
   }
   .vd-split {
     display: grid;
@@ -813,7 +828,7 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   }
   /* Opaque, so the site's fibre line runs behind them, not through them. */
   .vd-cards--dark .vd-card {
-    background: #13243b;
+    background: #0f2a24;
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
   }
   .vd-card-title {
@@ -829,7 +844,7 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     text-wrap: pretty;
   }
   .vd-dark .vd-card-text {
-    color: #b3c1d4;
+    color: #b1c8c1;
   }
 
   .vd-list {
@@ -838,7 +853,7 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   }
   .vd-list li {
     padding-left: 1.1rem;
-    border-left: 2px solid rgb(13 148 136 / 0.45);
+    border-left: 2px solid rgb(10 117 100 / 0.45);
   }
   .vd-list-title {
     font-weight: 600;
@@ -872,7 +887,7 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     height: 38px;
     border-radius: 12px;
     color: #fff;
-    background: #0d9488;
+    background: #0a7564;
   }
 
   .vd-steps {
@@ -906,7 +921,7 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
       left: calc(100% - 0.4rem);
       width: 1.8rem;
       height: 2px;
-      background: linear-gradient(90deg, #0d9488, rgb(13 148 136 / 0.2));
+      background: linear-gradient(90deg, #0a7564, rgb(10 117 100 / 0.2));
     }
   }
   .vd-step-n {
@@ -918,7 +933,7 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
     font-family: var(--font-mono);
     font-weight: 600;
     color: #fff;
-    background: #0d9488;
+    background: #0a7564;
   }
   .vd-step-title {
     margin-top: 1rem;
@@ -939,14 +954,14 @@ const ld = [breadcrumbLd(crumbs), faqLd(t.faq), appLd];
   .vd-built-list li {
     padding: 1.35rem 1.4rem;
     border-radius: 20px;
-    background: #13243b;
+    background: #0f2a24;
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
   }
   .vd-link {
-    color: #5eead4;
+    color: #7ee0c3;
   }
   .vd-free-link {
-    color: #0f766e;
+    color: #075a4d;
     font-weight: 560;
   }
 </style>

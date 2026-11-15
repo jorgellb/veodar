@@ -24,6 +24,30 @@ const SHOTS = [
   'tac',
   'comparar-radiografias',
   'ia-radiografia',
+  'ficha-resumen',
+  'ficha-filiacion',
+  'ficha-salud',
+  'ficha-historial',
+  'ficha-documentos',
+  'ficha-presupuestos',
+  'ficha-cuenta',
+  'cobros',
+  'verifactu',
+  'caja',
+  'gastos',
+  'bancos',
+  'recalls',
+  'listin',
+  'almacen',
+  'laboratorio',
+  'ortodoncia',
+  'tarifas',
+  'colaboradores',
+  'informes',
+  'configuracion',
+  'modulos',
+  'pizarra',
+  'entrada',
 ];
 
 describe('the VeodarDental page', () => {
@@ -79,6 +103,22 @@ describe('the VeodarDental page', () => {
     }
     for (const view of ['axial', 'coronal', 'sagital']) assert.ok(existsSync(file(`src/assets/veodardental/tac-${view}.png`)), `tac-${view}.png`);
     assert.ok(existsSync(file('public/og-veodardental.png')) && existsSync(file('public/og-veodardental-en.png')), 'an image to share in each language');
+  });
+
+  it('shows almost every screen of the program, each once, in the same areas in both languages', () => {
+    const shotsOf = (lang) => vdFor(lang).gallery.groups.map((group) => [group.id, group.screens.map((screen) => screen.shot)]);
+    assert.deepEqual(shotsOf('en'), shotsOf('es'));
+    const all = shotsOf('es').flatMap(([, shots]) => shots);
+    assert.equal(new Set(all).size, all.length, 'a screen appears twice');
+    assert.ok(all.length >= 30, `only ${all.length} screens`);
+    for (const shot of all) assert.ok(SHOTS.includes(shot), `${shot} is not a screenshot`);
+    const ids = shotsOf('es').map(([id]) => id);
+    assert.equal(new Set(ids).size, ids.length, 'two areas with the same id');
+    for (const lang of LANGS) {
+      for (const group of vdFor(lang).gallery.groups) {
+        for (const screen of group.screens) assert.ok(screen.text.length >= 30 && screen.text.length <= 130, `${lang} ${screen.shot}: ${screen.text.length} characters`);
+      }
+    }
   });
 
   it('links every download to a file of the published version', () => {
